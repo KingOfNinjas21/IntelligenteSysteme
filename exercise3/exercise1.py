@@ -35,6 +35,7 @@ def main():
 
         printPos(clientID)
 
+
         for i in range(0, 4):
             vrep.simxSetJointTargetVelocity(clientID,wheelJoints[i],0,vrep.simx_opmode_oneshot)
 
@@ -46,10 +47,10 @@ def main():
 
         distX = 0
         dt = 0.0
-        while(distX < 2):
+        while(distX < 2.0):
             start = time.time()
             x, y, w = odometry(0.0, 0.0, 0.0, 0.0, 2.0, 0.0, dt)
-            distX = x
+            distX += x
             #printPos(clientID)
             end = time.time()
             dt = end - start
@@ -59,7 +60,8 @@ def main():
             vrep.simxSetJointTargetVelocity(clientID,wheelJoints[i],0,vrep.simx_opmode_oneshot)
 
         printPos(clientID)
-        
+
+
         # Stop simulation:
         vrep.simxStopSimulation(clientID,vrep.simx_opmode_oneshot_wait)
     
@@ -104,7 +106,8 @@ def printPos(clientID):
     base_orient = vrep.simxGetObjectOrientation(clientID, base, -1, vrep.simx_opmode_oneshot_wait)
     vrep.simxGetPingTime(clientID)  # make sure that all streaming data has reached the client at least once
 
-    print("%s %s" % base_pos, base_orient)
+    print "Position: ", base_pos[1]
+    print "Orientation: ", base_orient[1]
 
 #def move(wheelVelocities, sleapTime, wheelJoints, clientID):
 	    # set wheel velocity to 0
