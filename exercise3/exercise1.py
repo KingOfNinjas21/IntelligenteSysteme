@@ -6,11 +6,8 @@ import vrep
 import numpy as np
 import time
 import math
+import movementFunctions as move
 
-
-B = 0.1
-C = 0.471
-D = 0.30046
 
 def main():
     print ('Program started')
@@ -33,97 +30,61 @@ def main():
         res,wheelJoints[2]=vrep.simxGetObjectHandle(clientID,'rollingJoint_fr',vrep.simx_opmode_oneshot_wait)
         res,wheelJoints[3]=vrep.simxGetObjectHandle(clientID,'rollingJoint_rr',vrep.simx_opmode_oneshot_wait)
 
-        printPos(clientID)
+        move.printPos(clientID)
 
+        # start Hokuyo sensor
+        res = vrep.simxSetIntegerSignal(clientID, 'handle_xy_sensor', 2, vrep.simx_opmode_oneshot);
 
-        for i in range(0, 4):
-            vrep.simxSetJointTargetVelocity(clientID,wheelJoints[i],0,vrep.simx_opmode_oneshot)
+        # display range sensor beam
+        vrep.simxSetIntegerSignal(clientID, 'displaylasers', 1, vrep.simx_opmode_oneshot);
 
-        vrep.simxPauseCommunication(clientID, True)
-        for i in range(0, 4):
-            vrep.simxSetJointTargetVelocity(clientID,wheelJoints[i],wheelVel(0.0, 2.0, 0.0)[i],vrep.simx_opmode_oneshot)
-        vrep.simxPauseCommunication(clientID, False)
+        #Get sensor handle:
+        res, hokuyo1 = vrep.simxGetObjectHandle(clientID, 'fastHokuyo_sensor1', vrep.simx_opmode_oneshot_wait)
+        res, hokuyo2 = vrep.simxGetObjectHandle(clientID, 'fastHokuyo_sensor2', vrep.simx_opmode_oneshot_wait)
 
+        # retrieve sensor data, the streaming opmode is at least one time necessary, afterwards the buffer mode is enough to get data from range senor
+        res, aux, auxD = vrep.simxReadVisionSensor(clientID, hokuyo1, vrep.simx_opmode_streaming)
+        print "Streaming mode: ", auxD
+        res, aux, auxD = vrep.simxReadVisionSensor(clientID, hokuyo1, vrep.simx_opmode_buffer)
+        print "Buffer mode: ", auxD
 
-        distX = 0
-        dt = 0.0
-        while(distX < 2.0):
-            start = time.time()
-            x, y, w = odometry(0.0, 0.0, 0.0, 0.0, 2.0, 0.0, dt)
-            distX += x
-            #printPos(clientID)
-            end = time.time()
-            dt = end - start
+        #res, aux, auxD = vrep.simxReadVisionSensor(clientID, hokuyo1, vrep.simx_opmode_buffer)
+        # print "Buffer mode: ", auxD[1]
+        #positions = transformInMatrix(auxD)
+        #print positions
 
+        move.rotateDegrees(90.0, clientID, 0.25)
+        move.forward(3.0, 0.5, clientID)
+        move.forward(-3.0, 0.5, clientID)
 
-        for i in range(0, 4):
-            vrep.simxSetJointTargetVelocity(clientID,wheelJoints[i],0,vrep.simx_opmode_oneshot)
-
-        printPos(clientID)
-
+        #rotateDegrees(180, clientID, 0.25)
 
         # Stop simulation:
         vrep.simxStopSimulation(clientID,vrep.simx_opmode_oneshot_wait)
-    
+
         # Now close the connection to V-REP:
         vrep.simxFinish(clientID)
     else:
         print ('Failed connecting to remote API server')
     print ('Program ended')
 
-#def moveForward(meter, wheelJoints, clientID):
-#    move(wheelVel(16, 0, 0), meter*1.55, wheelJoints, clientID)
-	
 
-def wheelVel(forwBackVel, leftRightVel, rotVel):
-    return np.array([-forwBackVel-leftRightVel-rotVel, -forwBackVel+leftRightVel-rotVel, -forwBackVel+leftRightVel+rotVel, -forwBackVel-leftRightVel+rotVel])
+def transformInMatrix(auxD):
+    length = int(auxD[1][1])
+    #print length
+    width =  int(auxD[1][0])
+    #print width
+    result = [[0,0,0,0]]*(length*width)
+    #print result
+    k=2
 
-# this function calculates the new position of the robot based on the old position and the speed of every wheel and the time difference
-def odometry(x, y, w, forwBackVel, leftRightVel, rotVel, dt):
-    vf, vr, w0 = formatVel(forwBackVel, leftRightVel, rotVel)
+    #every entry in result represents x,y,z,distance of every point detected of the range sensor
 
-    o = w0 * dt
-    dx = -vf * dt * math.sin(o) + vr * dt * math.cos(o)
-    dy = vf * dt * math.cos(o) + vr * dt * math.sin(o)
-
-    x = x + dx
-    y = y + dy
-    w = w + o
-
-    return x, y, w
-
-# This function formats the spin of every wheel to a forward-, leftRightvelocety and an angle
-def formatVel(forwBackVel, leftRightVel, rotVel):
-    vf = forwBackVel * B/2.0
-    vr = leftRightVel * B/2.0
-    w0 = 2.0/(C+D) * rotVel * B/2.0
-
-    return vf, vr, w0
-
-def printPos(clientID):
-    res, base = vrep.simxGetObjectHandle(clientID, 'youBot_center', vrep.simx_opmode_oneshot_wait)
-    base_pos = vrep.simxGetObjectPosition(clientID, base, -1, vrep.simx_opmode_oneshot_wait)
-    base_orient = vrep.simxGetObjectOrientation(clientID, base, -1, vrep.simx_opmode_oneshot_wait)
-    vrep.simxGetPingTime(clientID)  # make sure that all streaming data has reached the client at least once
-
-    print "Position: ", base_pos[1]
-    print "Orientation: ", base_orient[1]
-
-#def move(wheelVelocities, sleapTime, wheelJoints, clientID):
-	    # set wheel velocity to 0
-#    for i in range(0, 4):
-#        vrep.simxSetJointTargetVelocity(clientID,wheelJoints[i],0,vrep.simx_opmode_oneshot)
-            
-		# set wheel velocity to given value
-#    vrep.simxPauseCommunication(clientID, True)
-#    for i in range(0, 4):
-#        vrep.simxSetJointTargetVelocity(clientID,wheelJoints[i],wheelVelocities[i],vrep.simx_opmode_oneshot)
-#    vrep.simxPauseCommunication(clientID, False)
-#    time.sleep(sleapTime)
-        
-        # set wheel velocity to 0
-#    for i in range(0, 4):
-#        vrep.simxSetJointTargetVelocity(clientID,wheelJoints[i],0,vrep.simx_opmode_oneshot)
+    for i in range(length*width) :
+        for j in range(4) :
+            result[i][j] = auxD[1][k]
+            k+=1
+    return result
 
 
 if __name__ == "__main__": main()
