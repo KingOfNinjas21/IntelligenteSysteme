@@ -1,0 +1,33 @@
+Exercise 2 (Cont.)
+The Odometry exercise page is already updated with additional information, please find the details in Exercise 2
+
+Exercise 3
+Extend exercise 2 and implement the disbug.pdf Algorithm (with two Hokuyo Range Sensors on the left and right sides) for Youbot.
+Use following Scene File and drive the Youbot (1) to the Goal using your obstacle avoidance algorithm and without using prior knowledge about the scene.
+Please note: Before this proseminar, your robot should follow walls and move towards the goal position properly based on the sensor input. You should at least try to implement Bug2 algorithm.
+
+Hints:
+
+Remove second Youbot from the scene.
+Start Hokuyo sensors with:
+	res = vrep.simxSetIntegerSignal(clientID, 'handle_xy_sensor', 2, vrep.simx_opmode_oneshot);
+Visualise sensor beams with:
+	vrep.simxSetIntegerSignal(clientID, 'displaylasers', 1, vrep.simx_opmode_oneshot);
+Get sensor handle:
+	res, hokuyo1 = vrep.simxGetObjectHandle(clientID, 'fastHokuyo_sensor1', vrep.simx_opmode_oneshot_wait)
+	res, hokuyo2 = vrep.simxGetObjectHandle(clientID, 'fastHokuyo_sensor2', vrep.simx_opmode_oneshot_wait)
+Retrieve sensor data with:
+	res, aux, auxD = vrep.simxReadVisionSensor(clientID, hokuyo1, vrep.simx_opmode_streaming)
+	res, aux, auxD = vrep.simxReadVisionSensor(clientID, hokuyo1, vrep.simx_opmode_buffer)
+Retrieved data from sensor contains information on all scanned points and distances. This is contained in second 
+vector within auxD (auxD[1]). This data comes in an unusual format. Thus, you need to transform it into the matrix
+of size (width * length, 4) where width = auxD[1][0] and length = auxD[1][1] and the rest are values containing x,y,z 
+coordinates and distances of detected points. By transforming the data in this way each row will represent a point [x, y, z, distance].
+
+You can use vrep.simxGetObjectPosition and vrep.simxGetObjectOrientation to get pose of sensors with respect 
+to the robot and to transform retrieved points detected by sensors.
+
+Maximum distance value which is detected by Hokuyo sensor is 5.0 m. If there is no obstacle detected, 
+a point with this value will be returned.
+
+Read more about given functions and Hokuyo sensors in the V-REP docummentation.
