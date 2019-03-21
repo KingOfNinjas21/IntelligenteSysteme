@@ -13,6 +13,8 @@ def main():
     print ('Program started')
     vrep.simxFinish(-1) # just in case, close all opened connections
     clientID=vrep.simxStart('127.0.0.1',19997,True,True, 2000,5)
+    
+    removeModel(clientID, "youBot2")    
 
     if clientID!=-1:
         print ('Connected to remote API server')
@@ -86,5 +88,8 @@ def transformInMatrix(auxD):
             k+=1
     return result
 
+def removeModel(clientID, name):
+    res,toRemove=vrep.simxGetObjectHandle(clientID, name, vrep.simx_opmode_blocking)
+    vrep.simxRemoveModel(clientID, toRemove, vrep.simx_opmode_oneshot)
 
 if __name__ == "__main__": main()
