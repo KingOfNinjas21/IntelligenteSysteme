@@ -109,6 +109,11 @@ def printPos(clientID):
     print "Position: ", base_pos[1]
     print "Orientation: ", base_orient[1]
 
+def getPos(clientID):
+    res, base = vrep.simxGetObjectHandle(clientID, 'youBot_center', vrep.simx_opmode_oneshot_wait)
+    base_pos = vrep.simxGetObjectPosition(clientID, base, -1, vrep.simx_opmode_oneshot_wait)
+    base_orient = vrep.simxGetObjectOrientation(clientID, base, -1, vrep.simx_opmode_oneshot_wait)
+    return base_pos[1], base_orient[1]
 
 def wheelVel(forwBackVel, leftRightVel, rotVel):
     return np.array([-forwBackVel-leftRightVel-rotVel, -forwBackVel+leftRightVel-rotVel, -forwBackVel+leftRightVel+rotVel, -forwBackVel-leftRightVel+rotVel])

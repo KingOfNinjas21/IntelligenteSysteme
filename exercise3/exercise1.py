@@ -7,7 +7,7 @@ import numpy as np
 import time
 import math
 import movementFunctions as move
-
+import rangeSensorFunctions as range
 
 def main():
     print ('Program started')
@@ -24,7 +24,7 @@ def main():
         # Start the simulation:
         vrep.simxStartSimulation(clientID,vrep.simx_opmode_oneshot_wait)
     
-        # initiaize robot
+        # initialize robot
         # Retrieve wheel joint handles:
         wheelJoints=np.empty(4, dtype=np.int); wheelJoints.fill(-1) #front left, rear left, rear right, front right
         res,wheelJoints[0]=vrep.simxGetObjectHandle(clientID,'rollingJoint_fl',vrep.simx_opmode_oneshot_wait)
@@ -34,32 +34,21 @@ def main():
 
         move.printPos(clientID)
 
-        # start Hokuyo sensor
-        res = vrep.simxSetIntegerSignal(clientID, 'handle_xy_sensor', 2, vrep.simx_opmode_oneshot);
+        # initialize sensor
+        range.initializeSensor(clientID)
 
-        # display range sensor beam
-        vrep.simxSetIntegerSignal(clientID, 'displaylasers', 1, vrep.simx_opmode_oneshot);
+        # Get sensor handle:
+        hokuyo = range.getSensorHandles(clientID)
 
-        #Get sensor handle:
-        res, hokuyo1 = vrep.simxGetObjectHandle(clientID, 'fastHokuyo_sensor1', vrep.simx_opmode_oneshot_wait)
-        res, hokuyo2 = vrep.simxGetObjectHandle(clientID, 'fastHokuyo_sensor2', vrep.simx_opmode_oneshot_wait)
+        # get range sensor data as list of x,y,z,distance
+        rangeData = range.getSensorData(clientID, hokuyo[1])
 
-        # retrieve sensor data, the streaming opmode is at least one time necessary, afterwards the buffer mode is enough to get data from range senor
-        res, aux, auxD = vrep.simxReadVisionSensor(clientID, hokuyo1, vrep.simx_opmode_streaming)
-        print "Streaming mode: ", auxD
-        res, aux, auxD = vrep.simxReadVisionSensor(clientID, hokuyo1, vrep.simx_opmode_buffer)
-        print "Buffer mode: ", auxD
+        print rangeData
 
-        #res, aux, auxD = vrep.simxReadVisionSensor(clientID, hokuyo1, vrep.simx_opmode_buffer)
-        # print "Buffer mode: ", auxD[1]
-        #positions = transformInMatrix(auxD)
-        #print positions
+        #move.rotateDegrees(90.0, clientID, 0.25)
+        #move.forward(3.0, 0.5, clientID)
 
-        move.rotateDegrees(90.0, clientID, 0.25)
-        move.forward(3.0, 0.5, clientID)
-        move.forward(-3.0, 0.5, clientID)
-
-        #rotateDegrees(180, clientID, 0.25)
+        headTowardsModel(clientID, "conferenceChair")
 
         # Stop simulation:
         vrep.simxStopSimulation(clientID,vrep.simx_opmode_oneshot_wait)
@@ -71,22 +60,22 @@ def main():
     print ('Program ended')
 
 
-def transformInMatrix(auxD):
-    length = int(auxD[1][1])
-    #print length
-    width =  int(auxD[1][0])
-    #print width
-    result = [[0,0,0,0]]*(length*width)
-    #print result
-    k=2
 
-    #every entry in result represents x,y,z,distance of every point detected of the range sensor
 
-    for i in range(length*width) :
-        for j in range(4) :
-            result[i][j] = auxD[1][k]
-            k+=1
-    return result
+def headTowardsModel(clientID, modelName):
+    res, objHandle = vrep.simxGetObjectHandle(clientID, modelName, vrep.simx_opmode_oneshot_wait)
+
+
+    targetPosition = vrep.simxGetObjectPosition(clientID, objHandle, -1, vrep.simx_opmode_oneshot_wait)
+    xTarget = targetPosition[1][0]
+    yTarget = targetPosition[1][1]
+    print modelName, " x= ",xTarget," y=",yTarget
+    pos, ori = move.getPos(clientID)
+    dist = calcDistanceToTarget(pos[0], pos[1], xTarget, yTarget)
+    move.forward(4, dist, clientID)
+
+def calcDistanceToTarget(xStart, yStart, xEnd, yEnd):
+    return math.sqrt((xEnd-xStart)*(xEnd-xStart)-(yEnd-yStart)*(yEnd-yStart))
 
 def removeModel(clientID, name):
     res,toRemove=vrep.simxGetObjectHandle(clientID, name, vrep.simx_opmode_blocking)
