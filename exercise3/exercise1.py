@@ -9,10 +9,12 @@ import math
 import movementFunctions as move
 import rangeSensorFunctions as range
 
+clientID=vrep.simxStart('127.0.0.1',19997,True,True, 2000,5)
+
 def main():
     print ('Program started')
     vrep.simxFinish(-1) # just in case, close all opened connections
-    clientID=vrep.simxStart('127.0.0.1',19997,True,True, 2000,5)
+
     
     removeModel(clientID, "youBot2")    
 
@@ -32,6 +34,7 @@ def main():
         res,wheelJoints[2]=vrep.simxGetObjectHandle(clientID,'rollingJoint_fr',vrep.simx_opmode_oneshot_wait)
         res,wheelJoints[3]=vrep.simxGetObjectHandle(clientID,'rollingJoint_rr',vrep.simx_opmode_oneshot_wait)
 
+        '''
         move.printPos(clientID)
 
         # initialize sensor
@@ -44,9 +47,21 @@ def main():
         rangeData = range.getSensorData(clientID, hokuyo[1])
 
         print rangeData
+        '''
+        '''
+        #move.forward(3, 0.5, clientID)
+        res, base = vrep.simxGetObjectHandle(clientID, 'rollingJoint_rr', vrep.simx_opmode_oneshot_wait)
+        base_pos = vrep.simxGetObjectPosition(clientID, base, -1, vrep.simx_opmode_oneshot_wait)
+        base_orient = vrep.simxGetObjectOrientation(clientID, base, -1, vrep.simx_opmode_oneshot_wait)
+        print(base_pos)
 
+        res, base = vrep.simxGetObjectHandle(clientID, 'rollingJoint_rl', vrep.simx_opmode_oneshot_wait)
+        base_pos = vrep.simxGetObjectPosition(clientID, base, -1, vrep.simx_opmode_oneshot_wait)
+        print(base_pos)
+        '''
         #move.rotateDegrees(90.0, clientID, 0.25)
         #move.forward(3.0, 0.5, clientID)
+        #move.printPos(clientID)
 
         headTowardsModel(clientID, "conferenceChair")
 
@@ -69,13 +84,45 @@ def headTowardsModel(clientID, modelName):
     targetPosition = vrep.simxGetObjectPosition(clientID, objHandle, -1, vrep.simx_opmode_oneshot_wait)
     xTarget = targetPosition[1][0]
     yTarget = targetPosition[1][1]
-    print modelName, " x= ",xTarget," y=",yTarget
+    print ("%s: x= %f, y= %f" ,modelName,xTarget,yTarget)
     pos, ori = move.getPos(clientID)
+    angle = calcAngleToTarget(pos[0], pos[1], xTarget, yTarget)
+    print("Angle: ", angle)
+    if angle>0:
+        move.rotateDegrees(angle, clientID, 0.25)
+    else:
+        move.rotateDegrees(angle, clientID, -0.25)
     dist = calcDistanceToTarget(pos[0], pos[1], xTarget, yTarget)
+
     move.forward(4, dist, clientID)
 
 def calcDistanceToTarget(xStart, yStart, xEnd, yEnd):
     return math.sqrt((xEnd-xStart)*(xEnd-xStart)-(yEnd-yStart)*(yEnd-yStart))
+
+def calcAngleToTarget(xStart, yStart, xEnd, yEnd):
+    GK=abs(float(yEnd-yStart))
+    AK=abs(float(xEnd-xStart))
+    angle = math.tan(GK/AK)*180.0/math.pi
+    # 4 cases where the target is
+
+    # case 1
+    if xEnd<xStart:
+        if yEnd<yStart:
+            if move.getOrientation(clientID)<0:
+                angle=180.0-abs(move.getOrientation(clientID))+angle
+            else:
+                angle = 180.0-move.getOrientation(clientID)-angle
+        if yEnd>yStart:
+            print()
+    # case 2:
+    elif xEnd>xStart:
+        print()
+    # case 3:
+    else:
+        print()
+
+
+    return angle
 
 def removeModel(clientID, name):
     res,toRemove=vrep.simxGetObjectHandle(clientID, name, vrep.simx_opmode_blocking)

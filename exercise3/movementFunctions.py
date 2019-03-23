@@ -27,8 +27,8 @@ def customMovement(time_arg, clientID, forw_back_vel, left_right_vel, rotvel):
 
 
 def forward(speed, distance, clientID):
-    print ("Begin forward at ")
-    printPos(clientID)
+    #print ("Begin forward at ")
+    #printPos(clientID)
     wheelJoints = getWheelJoints(clientID)
     for i in range(0, 4):
         vrep.simxSetJointTargetVelocity(clientID, wheelJoints[i], 0, vrep.simx_opmode_oneshot)
@@ -51,8 +51,8 @@ def forward(speed, distance, clientID):
 
     for i in range(0, 4):
         vrep.simxSetJointTargetVelocity(clientID, wheelJoints[i], 0, vrep.simx_opmode_oneshot)
-    print ("End forward at ")
-    printPos(clientID)
+    #print ("End forward at ")
+    #printPos(clientID)
 
 
 def rotateDegrees(degrees, clientID, rotateSpeed):
@@ -106,14 +106,20 @@ def printPos(clientID):
     base_orient = vrep.simxGetObjectOrientation(clientID, base, -1, vrep.simx_opmode_oneshot_wait)
     vrep.simxGetPingTime(clientID)  # make sure that all streaming data has reached the client at least once
 
-    print "Position: ", base_pos[1]
-    print "Orientation: ", base_orient[1]
+    print ("Position: ", base_pos[1])
+    print ("Orientation: alpha: {}, beta: {}, gamma: {}".format(base_orient[1][0]*180.0/math.pi, base_orient[1][1]*180.0/math.pi, base_orient[1][2]*180.0/math.pi))
 
 def getPos(clientID):
     res, base = vrep.simxGetObjectHandle(clientID, 'youBot_center', vrep.simx_opmode_oneshot_wait)
     base_pos = vrep.simxGetObjectPosition(clientID, base, -1, vrep.simx_opmode_oneshot_wait)
     base_orient = vrep.simxGetObjectOrientation(clientID, base, -1, vrep.simx_opmode_oneshot_wait)
     return base_pos[1], base_orient[1]
+
+# returns the youbot orientation in degree
+def getOrientation(clientID):
+    res, base = vrep.simxGetObjectHandle(clientID, 'youBot_center', vrep.simx_opmode_oneshot_wait)
+    base_orient = vrep.simxGetObjectOrientation(clientID, base, -1, vrep.simx_opmode_oneshot_wait)
+    return base_orient[1][2]*180.0/math.pi
 
 def wheelVel(forwBackVel, leftRightVel, rotVel):
     return np.array([-forwBackVel-leftRightVel-rotVel, -forwBackVel+leftRightVel-rotVel, -forwBackVel+leftRightVel+rotVel, -forwBackVel-leftRightVel+rotVel])
