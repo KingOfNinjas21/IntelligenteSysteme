@@ -26,21 +26,21 @@ def main():
         print("startPos:")
         move.printPos(clientID)
 
-        move.forward(2)
-        move.rotate(90)
-        move.printPos(clientID)
+        #move.forward(2, clientID)
+        move.rotate(90, clientID)
+        #move.printPos(clientID)
 
-        move.forward(2)
-        move.rotate(90)
-        move.printPos(clientID)
+        #move.forward(2, clientID)
+        #move.rotate(90, clientID)
+        #move.printPos(clientID)
 
-        move.forward(2)
-        move.rotate(90)
-        move.printPos(clientID)
+        #move.forward(2, clientID)
+        #move.rotate(90, clientID)
+        #move.printPos(clientID)
 
-        move.forward(2)
-        move.rotate(90)
-        move.printPos(clientID)
+        #move.forward(2, clientID)
+        #move.rotate(90, clientID)
+        #move.printPos(clientID)
 
         print("endPos:")
         move.printPos(clientID)

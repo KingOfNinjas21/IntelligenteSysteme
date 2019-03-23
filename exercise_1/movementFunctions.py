@@ -9,14 +9,17 @@ B = 0.1
 C = 0.471
 D = 0.30046
 
+FORWARD_VEL = 2.0
+SIDEWARD_VEL = 2.0
+ROTATE_VEL = 0.25
 
 def getWheelJoints(clientID):
     # Retrieve wheel joint handles:
     wheelJoints = np.empty(4, dtype=np.int)
     wheelJoints.fill(-1)  # front left, rear left, rear right, front right
     res, wheelJoints[0] = vrep.simxGetObjectHandle(clientID, 'rollingJoint_fl', vrep.simx_opmode_oneshot_wait)
-    res, wheelJoints[1] = vrep.simxGetObjectHandle(clientID, 'rollingJoint_fr', vrep.simx_opmode_oneshot_wait)
-    res, wheelJoints[2] = vrep.simxGetObjectHandle(clientID, 'rollingJoint_rl', vrep.simx_opmode_oneshot_wait)
+    res, wheelJoints[1] = vrep.simxGetObjectHandle(clientID, 'rollingJoint_rl', vrep.simx_opmode_oneshot_wait)
+    res, wheelJoints[2] = vrep.simxGetObjectHandle(clientID, 'rollingJoint_fr', vrep.simx_opmode_oneshot_wait)
     res, wheelJoints[3] = vrep.simxGetObjectHandle(clientID, 'rollingJoint_rr', vrep.simx_opmode_oneshot_wait)
 
     return wheelJoints
@@ -26,14 +29,73 @@ def customMovement(time_arg, clientID, forw_back_vel, left_right_vel, rotvel):
     wheelVelocities = wheelVel(forw_back_vel, left_right_vel, rotvel)
     startMovement(time_arg, clientID, wheelVelocities)
 
-def forward(meter):
+def forward(meter, clientID):
+    # set velocety to 0
+    wheelJoints = getWheelJoints(clientID)
+    for i in range(0, 4):
+        vrep.simxSetJointTargetVelocity(clientID, wheelJoints[i], 0, vrep.simx_opmode_oneshot)
+
+    # start moving
+    vrep.simxPauseCommunication(clientID, True)
+    for i in range(0, 4):
+        vrep.simxSetJointTargetVelocity(clientID, wheelJoints[i], wheelVel(FORWARD_VEL, 0.0, 0.0)[i],
+                                        vrep.simx_opmode_oneshot)
+    vrep.simxPauseCommunication(clientID, False)
+
+    # continuously check traveled distance
+    distance = 0.0
+    dt = 0.0
+    while distance < meter:
+        start = time.time()
+        x, y, w = odometry(0.0, 0.0, 0.0, FORWARD_VEL, 0.0, 0.0, dt)
+        distance += math.sqrt(x*x+y*y)
+        end = time.time()
+        dt = end -start
+
+    # stop moving
+    for i in range(0, 4):
+        vrep.simxSetJointTargetVelocity(clientID, wheelJoints[i], 0, vrep.simx_opmode_oneshot)
+
+
+
+def rotate(degree, clientID):
+    # set velocety to 0
+    wheelJoints = getWheelJoints(clientID)
+    for i in range(0, 4):
+        vrep.simxSetJointTargetVelocity(clientID, wheelJoints[i], 0, vrep.simx_opmode_oneshot)
+
+    # start moving
+    vrep.simxPauseCommunication(clientID, True)
+    for i in range(0, 4):
+        vrep.simxSetJointTargetVelocity(clientID, wheelJoints[i], wheelVel(0.0, 0.0, ROTATE_VEL)[i],
+                                        vrep.simx_opmode_oneshot)
+    vrep.simxPauseCommunication(clientID, False)
+
+    # continuously check traveled distance
+    turnedDigree = 0.0
+    dt = 0.0
+    printCounter = 0
+    while turnedDigree < degree/100:
+        start = time.time()
+        x, y, w = odometry(0.0, 0.0, 0.0, 0.0, 0.0, ROTATE_VEL, dt)
+        turnedDigree += w
+
+        if (100*turnedDigree)%100 >= printCounter:
+            printCounter += 1
+            print(turnedDigree)
+
+        end = time.time()
+        dt = end -start
+
+    print(turnedDigree)
+
+    # stop moving
+    for i in range(0, 4):
+        vrep.simxSetJointTargetVelocity(clientID, wheelJoints[i], 0, vrep.simx_opmode_oneshot)
     return
 
-def rotate(degree):
-    return 
 
-
-def forward(speed, distance, clientID):
+def oldforward(speed, distance, clientID):
     print ("Begin forward at ")
     printPos(clientID)
     wheelJoints = getWheelJoints(clientID)
