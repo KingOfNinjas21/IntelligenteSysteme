@@ -9,95 +9,81 @@ B = 0.1
 C = 0.471
 D = 0.30046
 
+FORWARD_VEL = 2.0
+SIDEWARD_VEL = 2.0
+ROTATE_VEL = 2.0
 
 def getWheelJoints(clientID):
     # Retrieve wheel joint handles:
-    wheelJoints = np.empty(4, dtype=np.int);
+    wheelJoints = np.empty(4, dtype=np.int)
     wheelJoints.fill(-1)  # front left, rear left, rear right, front right
     res, wheelJoints[0] = vrep.simxGetObjectHandle(clientID, 'rollingJoint_fl', vrep.simx_opmode_oneshot_wait)
-    res, wheelJoints[1] = vrep.simxGetObjectHandle(clientID, 'rollingJoint_fr', vrep.simx_opmode_oneshot_wait)
-    res, wheelJoints[2] = vrep.simxGetObjectHandle(clientID, 'rollingJoint_rl', vrep.simx_opmode_oneshot_wait)
+    res, wheelJoints[1] = vrep.simxGetObjectHandle(clientID, 'rollingJoint_rl', vrep.simx_opmode_oneshot_wait)
+    res, wheelJoints[2] = vrep.simxGetObjectHandle(clientID, 'rollingJoint_fr', vrep.simx_opmode_oneshot_wait)
     res, wheelJoints[3] = vrep.simxGetObjectHandle(clientID, 'rollingJoint_rr', vrep.simx_opmode_oneshot_wait)
+
     return wheelJoints
 
 
-def customMovement(time_arg, clientID, forw_back_vel, left_right_vel, rotvel):
-    wheelVelocities = wheelVel(forw_back_vel, left_right_vel, rotvel)
-    startMovement(time_arg, clientID, wheelVelocities)
-
-
-def forward(speed, distance, clientID):
-    #print ("Begin forward at ")
-    #printPos(clientID)
+def forward(meter, clientID):
+    # set velocety to 0
     wheelJoints = getWheelJoints(clientID)
     for i in range(0, 4):
         vrep.simxSetJointTargetVelocity(clientID, wheelJoints[i], 0, vrep.simx_opmode_oneshot)
 
+    # start moving
     vrep.simxPauseCommunication(clientID, True)
     for i in range(0, 4):
-        vrep.simxSetJointTargetVelocity(clientID, wheelJoints[i], wheelVel(-speed, 0.0, 0.0)[i],
+        vrep.simxSetJointTargetVelocity(clientID, wheelJoints[i], wheelVel(FORWARD_VEL, 0.0, 0.0)[i],
                                         vrep.simx_opmode_oneshot)
     vrep.simxPauseCommunication(clientID, False)
 
-    distanceTravelled = 0
+    # continuously check traveled distance
+    distance = 0.0
     dt = 0.0
-    while distanceTravelled < distance:
+    x = 0.0
+    y = 0.0
+    while distance <= meter:
         start = time.time()
-        x, y, w = odometry(0.0, 0.0, 0.0, 4.0, 0.0, 0.0, dt)
-        distanceTravelled+=math.sqrt(x*x+y*y)
-        #printPos(clientID)
+        x, y, w = odometry(x, y, 0.0, FORWARD_VEL, 0.0, 0.0, dt)
+        distance = math.sqrt(x*x+y*y)
+        time.sleep(1.0e-06)         # problems with very small time slices -> little delay (if you have a bad angle calculation on your pc try to change this value)
+        end = time.time()
+        dt = end-start
+
+    # stop moving
+    for i in range(0, 4):
+        vrep.simxSetJointTargetVelocity(clientID, wheelJoints[i], 0, vrep.simx_opmode_oneshot)
+
+
+
+def rotate(degree, clientID):
+    # set velocety to 0
+    wheelJoints = getWheelJoints(clientID)
+    for i in range(0, 4):
+        vrep.simxSetJointTargetVelocity(clientID, wheelJoints[i], 0, vrep.simx_opmode_oneshot)
+
+    # start moving
+    vrep.simxPauseCommunication(clientID, True)
+    for i in range(0, 4):
+        vrep.simxSetJointTargetVelocity(clientID, wheelJoints[i], wheelVel(0.0, 0.0, ROTATE_VEL)[i],
+                                        vrep.simx_opmode_oneshot)
+    vrep.simxPauseCommunication(clientID, False)
+
+    # continuously check traveled distance
+    w = 0.0
+    dt = 0.0
+    while w <= degree:
+        start = time.time()
+        x, y, w = odometry(0.0, 0.0, w, 0.0, 0.0, ROTATE_VEL, dt)
+        time.sleep(1.0e-06)         # problems with very small time slices -> little delay (if you have a bad angle calculation on your pc try to change this value)
         end = time.time()
         dt = end - start
 
+    # stop moving
     for i in range(0, 4):
         vrep.simxSetJointTargetVelocity(clientID, wheelJoints[i], 0, vrep.simx_opmode_oneshot)
-    #print ("End forward at ")
-    #printPos(clientID)
-
-
-def rotateDegrees(degrees, clientID, rotateSpeed):
-    rad = degrees * math.pi / 180.0
-    tempTime = rad / rotateSpeed
-    print(tempTime)
-    wheelVelocities=calcVelocitiesForRotation(rotateSpeed)
-    startMovement(tempTime, clientID, wheelVelocities)
-
-
-def calcVelocitiesForRotation(rotateSpeed):
-    #what C and D is, have a look at YouBotDetailedSpecifiations
-
-    R = 50.0 #radius of one wheel
-    L1 = 150.23 # D/2
-    L2 = 235.5 # C/2
-    vx = 0 #speedForXandY
-    vy = 0 #speedForXandY
-
-    vel = [0.0]*4
-    vel[0] = 1 / R * (1 * vx + 1 * vy - (L1 + L2) * rotateSpeed) # front left
-    vel[1] = 1 / R * (1 * vx - 1 * vy + (L1 + L2) * rotateSpeed) # front right
-    vel[2] = 1 / R * (1 * vx - 1 * vy - (L1 + L2) * rotateSpeed) # rear left
-    vel[3] = 1 / R * (1 * vx + 1 * vy + (L1 + L2) * rotateSpeed) # rear right
-    print (vel)
-    return vel
-
-
-def startMovement(time_arg, clientID, wheelVelocities):
-    # initialize robot
-    wheelJoints = getWheelJoints(clientID)
-
-    # set wheel velocity to 0
-    for i in range(0, 4):
-        vrep.simxSetJointTargetVelocity(clientID, wheelJoints[i], 0, vrep.simx_opmode_oneshot)
-
-    vrep.simxPauseCommunication(clientID, True)
-    for i in range(0, 4):
-        vrep.simxSetJointTargetVelocity(clientID, wheelJoints[i], wheelVelocities[i], vrep.simx_opmode_oneshot)
-    vrep.simxPauseCommunication(clientID, False)
-    time.sleep(time_arg)
-
-    # set wheel velocity to 0
-    for i in range(0, 4):
-        vrep.simxSetJointTargetVelocity(clientID, wheelJoints[i], 0, vrep.simx_opmode_oneshot)
+    return
 
 
 def printPos(clientID):
@@ -108,6 +94,7 @@ def printPos(clientID):
 
     print ("Position: ", base_pos[1])
     print ("Orientation: alpha: {}, beta: {}, gamma: {}".format(base_orient[1][0]*180.0/math.pi, base_orient[1][1]*180.0/math.pi, base_orient[1][2]*180.0/math.pi))
+
 
 def getPos(clientID):
     res, base = vrep.simxGetObjectHandle(clientID, 'youBot_center', vrep.simx_opmode_oneshot_wait)
@@ -142,8 +129,8 @@ def odometry(x, y, w, forwBackVel, leftRightVel, rotVel, dt):
 
 # This function formats the spin of every wheel to a forward-, leftRightvelocety and an angle
 def formatVel(forwBackVel, leftRightVel, rotVel):
-    vf = forwBackVel * B/2.0
-    vr = leftRightVel * B/2.0
-    w0 = 2.0/(C+D) * rotVel * B/2.0
+    vf = forwBackVel * (B/2.0)
+    vr = leftRightVel * (B/2.0)
+    w0 = (2.0/(C+D)) * rotVel*(180/math.pi) * (B/2.0)       # format rotVel (radiant) to degree
 
     return vf, vr, w0
