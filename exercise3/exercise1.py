@@ -57,10 +57,10 @@ def main():
         base_pos = vrep.simxGetObjectPosition(clientID, base, -1, vrep.simx_opmode_oneshot_wait)
         print(base_pos)
         '''
-        #move.rotate(90, clientID, True)
-        move.forward(3, clientID)
 
-        #headTowardsModel(clientID, "conferenceChair")
+        #move.forward(2.26, clientID)
+
+        headTowardsModel(clientID, "conferenceChair")
 
         # Stop simulation:
         vrep.simxStopSimulation(clientID,vrep.simx_opmode_oneshot_wait)
@@ -81,20 +81,26 @@ def headTowardsModel(clientID, modelName):
     targetPosition = vrep.simxGetObjectPosition(clientID, objHandle, -1, vrep.simx_opmode_oneshot_wait)
     xTarget = targetPosition[1][0]
     yTarget = targetPosition[1][1]
-    print ("%s: x= %f, y= %f" ,modelName,xTarget,yTarget)
+    print ("{}: x= {}, y= {}" .format(modelName,xTarget,yTarget))
     pos, ori = move.getPos(clientID)
-    angle = calcAngleToTarget(clientID, pos[0], pos[1], xTarget, yTarget)
+    '''
+    angle = calcAngleToTarget(clientID, pos[0], pos[1], xTarget, yTarget) % 360
     print("Angle: ", angle)
     if angle>0:
         move.rotate(angle, clientID, True)
     else:
         move.rotate(angle, clientID, False)
+    
+    '''
+    print(pos[0], " ", pos[1])
     dist = calcDistanceToTarget(pos[0], pos[1], xTarget, yTarget)
+    move.forward(dist, clientID)
 
-    move.forward(4, dist, clientID)
-
+# calculates distance between 2 x,y coordinates
 def calcDistanceToTarget(xStart, yStart, xEnd, yEnd):
-    return math.sqrt((xEnd-xStart)*(xEnd-xStart)-(yEnd-yStart)*(yEnd-yStart))
+    distanceToTarget = math.sqrt((xEnd-xStart)*(xEnd-xStart)+(yEnd-yStart)*(yEnd-yStart))
+    print(distanceToTarget)
+    return distanceToTarget
 
 def calcAngleToTarget(clientID, xStart, yStart, xEnd, yEnd):
     GK = float(yEnd-yStart)
@@ -107,9 +113,9 @@ def calcAngleToTarget(clientID, xStart, yStart, xEnd, yEnd):
         angle = math.tan(GK / AK) * 180.0 / math.pi
         if yEnd<yStart:
             if move.getOrientation(clientID)<0:
-                angle=180.0-abs(move.getOrientation(clientID))+angle
+                angle=90.0+angle+move.getOrientation(clientID)
             else:
-                angle = 180.0-move.getOrientation(clientID)-angle
+                angle = 180.0-move.getOrientation(clientID)+90.0+angle
         if yEnd>yStart:
             print()
     # case 2:
