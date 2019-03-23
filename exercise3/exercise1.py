@@ -9,14 +9,12 @@ import math
 import movementFunctions as move
 import rangeSensorFunctions as range
 
-clientID=vrep.simxStart('127.0.0.1',19997,True,True, 2000,5)
-
 def main():
     print ('Program started')
     vrep.simxFinish(-1) # just in case, close all opened connections
+    clientID = vrep.simxStart('127.0.0.1', 19997, True, True, 2000, 5)
 
-    
-    removeModel(clientID, "youBot2")    
+    removeModel(clientID, "youBot2")
 
     if clientID!=-1:
         print ('Connected to remote API server')
@@ -59,8 +57,8 @@ def main():
         base_pos = vrep.simxGetObjectPosition(clientID, base, -1, vrep.simx_opmode_oneshot_wait)
         print(base_pos)
         '''
-        move.rotate(90, clientID, True)
-        #move.forward(3, clientID)
+        #move.rotate(90, clientID, True)
+        move.forward(3, clientID)
 
         #headTowardsModel(clientID, "conferenceChair")
 
@@ -85,7 +83,7 @@ def headTowardsModel(clientID, modelName):
     yTarget = targetPosition[1][1]
     print ("%s: x= %f, y= %f" ,modelName,xTarget,yTarget)
     pos, ori = move.getPos(clientID)
-    angle = calcAngleToTarget(pos[0], pos[1], xTarget, yTarget)
+    angle = calcAngleToTarget(clientID, pos[0], pos[1], xTarget, yTarget)
     print("Angle: ", angle)
     if angle>0:
         move.rotate(angle, clientID, True)
@@ -98,7 +96,7 @@ def headTowardsModel(clientID, modelName):
 def calcDistanceToTarget(xStart, yStart, xEnd, yEnd):
     return math.sqrt((xEnd-xStart)*(xEnd-xStart)-(yEnd-yStart)*(yEnd-yStart))
 
-def calcAngleToTarget(xStart, yStart, xEnd, yEnd):
+def calcAngleToTarget(clientID, xStart, yStart, xEnd, yEnd):
     GK = float(yEnd-yStart)
     AK = float(xEnd-xStart)
 
