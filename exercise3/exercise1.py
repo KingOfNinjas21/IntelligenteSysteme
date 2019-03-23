@@ -59,11 +59,10 @@ def main():
         base_pos = vrep.simxGetObjectPosition(clientID, base, -1, vrep.simx_opmode_oneshot_wait)
         print(base_pos)
         '''
-        #move.rotateDegrees(90.0, clientID, 0.25)
-        #move.forward(3.0, 0.5, clientID)
-        #move.printPos(clientID)
+        move.rotate(90, clientID, True)
+        #move.forward(3, clientID)
 
-        headTowardsModel(clientID, "conferenceChair")
+        #headTowardsModel(clientID, "conferenceChair")
 
         # Stop simulation:
         vrep.simxStopSimulation(clientID,vrep.simx_opmode_oneshot_wait)
@@ -89,9 +88,9 @@ def headTowardsModel(clientID, modelName):
     angle = calcAngleToTarget(pos[0], pos[1], xTarget, yTarget)
     print("Angle: ", angle)
     if angle>0:
-        move.rotateDegrees(angle, clientID, 0.25)
+        move.rotate(angle, clientID, True)
     else:
-        move.rotateDegrees(angle, clientID, -0.25)
+        move.rotate(angle, clientID, False)
     dist = calcDistanceToTarget(pos[0], pos[1], xTarget, yTarget)
 
     move.forward(4, dist, clientID)
@@ -100,13 +99,14 @@ def calcDistanceToTarget(xStart, yStart, xEnd, yEnd):
     return math.sqrt((xEnd-xStart)*(xEnd-xStart)-(yEnd-yStart)*(yEnd-yStart))
 
 def calcAngleToTarget(xStart, yStart, xEnd, yEnd):
-    GK=abs(float(yEnd-yStart))
-    AK=abs(float(xEnd-xStart))
-    angle = math.tan(GK/AK)*180.0/math.pi
-    # 4 cases where the target is
+    GK = float(yEnd-yStart)
+    AK = float(xEnd-xStart)
 
+    # 4 cases where the target is
+    angle=0
     # case 1
     if xEnd<xStart:
+        angle = math.tan(GK / AK) * 180.0 / math.pi
         if yEnd<yStart:
             if move.getOrientation(clientID)<0:
                 angle=180.0-abs(move.getOrientation(clientID))+angle
@@ -116,9 +116,11 @@ def calcAngleToTarget(xStart, yStart, xEnd, yEnd):
             print()
     # case 2:
     elif xEnd>xStart:
+        angle = math.tan(GK / AK) * 180.0 / math.pi
         print()
     # case 3:
     else:
+        #angle = math.tan(GK / AK) * 180.0 / math.pi
         print()
 
 
