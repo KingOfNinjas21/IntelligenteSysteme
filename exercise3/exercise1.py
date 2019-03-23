@@ -32,8 +32,6 @@ def main():
         res,wheelJoints[2]=vrep.simxGetObjectHandle(clientID,'rollingJoint_fr',vrep.simx_opmode_oneshot_wait)
         res,wheelJoints[3]=vrep.simxGetObjectHandle(clientID,'rollingJoint_rr',vrep.simx_opmode_oneshot_wait)
 
-        '''
-        move.printPos(clientID)
 
         # initialize sensor
         range.initializeSensor(clientID)
@@ -41,11 +39,6 @@ def main():
         # Get sensor handle:
         hokuyo = range.getSensorHandles(clientID)
 
-        # get range sensor data as list of x,y,z,distance
-        rangeData = range.getSensorData(clientID, hokuyo[1])
-
-        print rangeData
-        '''
         '''
         #move.forward(3, 0.5, clientID)
         res, base = vrep.simxGetObjectHandle(clientID, 'rollingJoint_rr', vrep.simx_opmode_oneshot_wait)
@@ -58,9 +51,9 @@ def main():
         print(base_pos)
         '''
 
-        #move.forward(2.26, clientID)
-
-        headTowardsModel(clientID, "conferenceChair")
+        move.forwardUntilObstacle(3, clientID, hokuyo[0])
+        move.rotate(90,clientID, True)
+        #headTowardsModel(clientID, "conferenceChair", hokuyo[0])
 
         # Stop simulation:
         vrep.simxStopSimulation(clientID,vrep.simx_opmode_oneshot_wait)
@@ -74,15 +67,15 @@ def main():
 
 
 
-def headTowardsModel(clientID, modelName):
+def headTowardsModel(clientID, modelName, rangeSensorHandle):
     res, objHandle = vrep.simxGetObjectHandle(clientID, modelName, vrep.simx_opmode_oneshot_wait)
-
 
     targetPosition = vrep.simxGetObjectPosition(clientID, objHandle, -1, vrep.simx_opmode_oneshot_wait)
     xTarget = targetPosition[1][0]
     yTarget = targetPosition[1][1]
     print ("{}: x= {}, y= {}" .format(modelName,xTarget,yTarget))
     pos, ori = move.getPos(clientID)
+
     '''
     angle = calcAngleToTarget(clientID, pos[0], pos[1], xTarget, yTarget) % 360
     print("Angle: ", angle)
@@ -94,7 +87,7 @@ def headTowardsModel(clientID, modelName):
     '''
     print(pos[0], " ", pos[1])
     dist = calcDistanceToTarget(pos[0], pos[1], xTarget, yTarget)
-    move.forward(dist, clientID)
+    move.forwardUntilObstacle(dist, clientID, rangeSensorHandle)
 
 # calculates distance between 2 x,y coordinates
 def calcDistanceToTarget(xStart, yStart, xEnd, yEnd):
