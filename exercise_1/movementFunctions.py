@@ -57,7 +57,11 @@ def forward(meter, clientID):
 
 
 
-def rotate(degree, clientID):
+def rotate(degree, rotRight, clientID):
+    rotationVel = ROTATE_VEL
+    if not rotRight:
+        rotationVel *= -1
+
     # set velocety to 0
     wheelJoints = getWheelJoints(clientID)
     for i in range(0, 4):
@@ -66,7 +70,7 @@ def rotate(degree, clientID):
     # start moving
     vrep.simxPauseCommunication(clientID, True)
     for i in range(0, 4):
-        vrep.simxSetJointTargetVelocity(clientID, wheelJoints[i], wheelVel(0.0, 0.0, ROTATE_VEL)[i],
+        vrep.simxSetJointTargetVelocity(clientID, wheelJoints[i], wheelVel(0.0, 0.0, rotationVel)[i],
                                         vrep.simx_opmode_oneshot)
     vrep.simxPauseCommunication(clientID, False)
 
@@ -75,7 +79,7 @@ def rotate(degree, clientID):
     dt = 0.0
     while w <= degree:
         start = time.time()
-        x, y, w = odometry(0.0, 0.0, w, 0.0, 0.0, ROTATE_VEL, dt)
+        x, y, w = odometry(0.0, 0.0, w, 0.0, 0.0, rotationVel, dt)
         time.sleep(1.0e-06)         # problems with very small time slices -> little delay (if you have a bad angle calculation on your pc try to change this value)
         end = time.time()
         dt = end - start
