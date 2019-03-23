@@ -26,7 +26,7 @@ def main():
         print("startPos:")
         move.printPos(clientID)
 
-        #move.forward(2, clientID)
+        move.forward(2, clientID)
         move.rotate(90, clientID)
         #move.printPos(clientID)
 
