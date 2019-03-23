@@ -9,7 +9,7 @@ B = 0.1
 C = 0.471
 D = 0.30046
 
-FORWARD_VEL =  2.0
+FORWARD_VEL =  -2.0
 SIDEWARD_VEL =  2.0
 ROTATE_VEL =  2.0
 
@@ -56,7 +56,7 @@ def forward(meter, clientID):
         vrep.simxSetJointTargetVelocity(clientID, wheelJoints[i], 0, vrep.simx_opmode_oneshot)
 
 
-
+# rotate degree degrees to the right if rotRight is True, otherwise (rotRight=False) rotate to the left
 def rotate(degree, clientID, rotRight):
     rotationVel = ROTATE_VEL
     if not rotRight:
