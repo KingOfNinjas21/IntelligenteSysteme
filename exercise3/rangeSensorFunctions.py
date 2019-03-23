@@ -15,8 +15,8 @@ def initializeSensor(clientID):
     hokuyo = getSensorHandles(clientID)
 
     # initialize sensor to retrieve data
+    initializeSensorData(clientID, hokuyo[0])
     initializeSensorData(clientID, hokuyo[1])
-
 
 def startHokuyoSensor(clientID):
     res = vrep.simxSetIntegerSignal(clientID, 'handle_xy_sensor', 2, vrep.simx_opmode_oneshot);
