@@ -72,6 +72,25 @@ def main():
     print ('Program ended')
 
 
+def followBoundary(clientID):
+	# initialize sensor
+    range.initializeSensor(clientID)
+    # Get sensor handle:
+    hokuyo = range.getSensorHandles(clientID)
+    
+    #eighter go left or right
+	
+	while (not detectClearPath(clientID)):
+		rangeData = range.getSensorData(clientID, hokuyo[1])
+		# calculate diraction to move
+			# Two closest sensor values to the robot estimate the closest wall
+		
+		# follow boundary
+	
+def detectClearPath(clientID):
+	# todo: realize clear path
+	
+	return null
 
 
 def headTowardsModel(clientID, modelName):
