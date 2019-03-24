@@ -9,9 +9,9 @@ B = 0.1
 C = 0.471
 D = 0.30046
 
-FORWARD_VEL =  -2.0
-SIDEWARD_VEL =  2.0
-ROTATE_VEL =  2.0
+FORWARD_VEL = 2.0
+SIDEWARD_VEL = 2.0
+ROTATE_VEL = 2.0
 
 def getWheelJoints(clientID):
     # Retrieve wheel joint handles:
@@ -56,12 +56,8 @@ def forward(meter, clientID):
         vrep.simxSetJointTargetVelocity(clientID, wheelJoints[i], 0, vrep.simx_opmode_oneshot)
 
 
-# rotate degree degrees to the right if rotRight is True, otherwise (rotRight=False) rotate to the left
-def rotate(degree, clientID, rotRight):
-    rotationVel = ROTATE_VEL
-    if not rotRight:
-        rotationVel *= -1
 
+def rotate(degree, clientID):
     # set velocety to 0
     wheelJoints = getWheelJoints(clientID)
     for i in range(0, 4):
@@ -70,7 +66,7 @@ def rotate(degree, clientID, rotRight):
     # start moving
     vrep.simxPauseCommunication(clientID, True)
     for i in range(0, 4):
-        vrep.simxSetJointTargetVelocity(clientID, wheelJoints[i], wheelVel(0.0, 0.0, rotationVel)[i],
+        vrep.simxSetJointTargetVelocity(clientID, wheelJoints[i], wheelVel(0.0, 0.0, ROTATE_VEL)[i],
                                         vrep.simx_opmode_oneshot)
     vrep.simxPauseCommunication(clientID, False)
 
@@ -79,7 +75,7 @@ def rotate(degree, clientID, rotRight):
     dt = 0.0
     while w <= degree:
         start = time.time()
-        x, y, w = odometry(0.0, 0.0, w, 0.0, 0.0, rotationVel, dt)
+        x, y, w = odometry(0.0, 0.0, w, 0.0, 0.0, ROTATE_VEL, dt)
         time.sleep(1.0e-06)         # problems with very small time slices -> little delay (if you have a bad angle calculation on your pc try to change this value)
         end = time.time()
         dt = end - start
@@ -96,21 +92,14 @@ def printPos(clientID):
     base_orient = vrep.simxGetObjectOrientation(clientID, base, -1, vrep.simx_opmode_oneshot_wait)
     vrep.simxGetPingTime(clientID)  # make sure that all streaming data has reached the client at least once
 
-    print ("Position: ", base_pos[1])
-    print ("Orientation: alpha: {}, beta: {}, gamma: {}".format(base_orient[1][0]*180.0/math.pi, base_orient[1][1]*180.0/math.pi, base_orient[1][2]*180.0/math.pi))
-
+    print("Position: ", base_pos[1])
+    print("Orientation: ", base_orient[1])
 
 def getPos(clientID):
     res, base = vrep.simxGetObjectHandle(clientID, 'youBot_center', vrep.simx_opmode_oneshot_wait)
     base_pos = vrep.simxGetObjectPosition(clientID, base, -1, vrep.simx_opmode_oneshot_wait)
     base_orient = vrep.simxGetObjectOrientation(clientID, base, -1, vrep.simx_opmode_oneshot_wait)
     return base_pos[1], base_orient[1]
-
-# returns the youbot orientation in degree
-def getOrientation(clientID):
-    res, base = vrep.simxGetObjectHandle(clientID, 'youBot_center', vrep.simx_opmode_oneshot_wait)
-    base_orient = vrep.simxGetObjectOrientation(clientID, base, -1, vrep.simx_opmode_oneshot_wait)
-    return base_orient[1][2]*180.0/math.pi
 
 def wheelVel(forwBackVel, leftRightVel, rotVel):
     return np.array([-forwBackVel-leftRightVel-rotVel, -forwBackVel+leftRightVel-rotVel, -forwBackVel+leftRightVel+rotVel, -forwBackVel-leftRightVel+rotVel])
