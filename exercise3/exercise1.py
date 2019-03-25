@@ -51,9 +51,10 @@ def main():
         print(base_pos)
         '''
 
-        move.forwardUntilObstacle(3, clientID, hokuyo[0])
-        move.rotate(90,clientID, True)
-        #headTowardsModel(clientID, "conferenceChair", hokuyo[0])
+        #move.forwardUntilObstacle(3, clientID, hokuyo[0])
+        #move.rotate(90,clientID, True)
+        #move.printPos(clientID)
+        headTowardsModel(clientID, "Goal", hokuyo[0])
 
         # Stop simulation:
         vrep.simxStopSimulation(clientID,vrep.simx_opmode_oneshot_wait)
@@ -78,18 +79,9 @@ def headTowardsModel(clientID, modelName, rangeSensorHandle):
 
     targetOrientation = calcTargetOrient(clientID, pos[0], pos[1], xTarget, yTarget)
     print("Orientation of target: ", targetOrientation)
-    if True:
-        print()
-    move.rotateUntilOrientation(clientID, angle, True)
-    '''
-    angle = calcAngleToTarget(clientID, pos[0], pos[1], xTarget, yTarget) % 360
-    print("Angle: ", angle)
-    if angle>0:
-        move.rotate(angle, clientID, True)
-    else:
-        move.rotate(angle, clientID, False)
-    
-    '''
+
+    move.rotateUntilOrientation(clientID, targetOrientation)
+
     print(pos[0], " ", pos[1])
     dist = calcDistanceToTarget(pos[0], pos[1], xTarget, yTarget)
     move.forwardUntilObstacle(dist, clientID, rangeSensorHandle)
@@ -100,60 +92,35 @@ def calcDistanceToTarget(xStart, yStart, xEnd, yEnd):
     print(distanceToTarget)
     return distanceToTarget
 
-def calcAngleToTarget(clientID, xStart, yStart, xEnd, yEnd):
-    GK = float(yEnd-yStart)
-    AK = float(xEnd-xStart)
-
-    # 4 cases where the target is
-    angle=0
-    # case 1
-    if xEnd<xStart:
-        angle = math.tan(GK / AK) * 180.0 / math.pi
-        if yEnd<yStart:
-            if move.getOrientation(clientID)<0:
-                angle=90.0+angle+move.getOrientation(clientID)
-            else:
-                angle = 180.0-move.getOrientation(clientID)+90.0+angle
-        if yEnd>yStart:
-            print()
-    # case 2:
-    elif xEnd>xStart:
-        angle = math.tan(GK / AK) * 180.0 / math.pi
-        print()
-    # case 3:
-    else:
-        #angle = math.tan(GK / AK) * 180.0 / math.pi
-        print()
-
-
-    return angle
-
 def calcTargetOrient(clientID, xStart, yStart, xEnd, yEnd):
-    GK = float(yEnd-yStart)
-    AK = float(xEnd-xStart)
-
+    GK = abs(float(yEnd-yStart))
+    AK = abs(float(xEnd-xStart))
+    print("Angle: {}".format(math.tan(GK / AK) * 180.0 / math.pi))
+    print("xEnd: {}, xStart: {}, yEnd: {}, yStart: {}".format(xEnd, xStart, yEnd, yStart))
     # 4 cases where the target is
-    angle=0
+    angle= abs(math.tan(GK / AK) * 180.0 / math.pi)
     # case 1
     if xEnd<xStart:
-        angle = math.tan(GK / AK) * 180.0 / math.pi
+
         if yEnd<yStart:
-            targetOrient = 90.0 + angle
-        if yEnd>yStart:
-            targetOrient = 90.0 - angle
-    elif xEnd>xStart:
-        angle = math.tan(GK / AK) * 180.0 / math.pi
-        if yEnd < yStart:
-            targetOrient = - 90.0 - angle
-        if yEnd > yStart:
+            print("AAAAAAAAAAAAAAAA")
             targetOrient = - 90.0 + angle
+        if yEnd>yStart:
+            targetOrient = - 90.0 - angle
+    elif xEnd>xStart:
+
+        if yEnd < yStart:
+
+            targetOrient = 90.0 - angle
+        if yEnd > yStart:
+            targetOrient = 90.0 + angle
     # case 3:
     else:
         #angle = math.tan(GK / AK) * 180.0 / math.pi
         print()
 
 
-    return angle
+    return targetOrient
 
 
 def removeModel(clientID, name):

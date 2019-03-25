@@ -127,11 +127,51 @@ def rotate(degree, clientID, rotRight):
         vrep.simxSetJointTargetVelocity(clientID, wheelJoints[i], 0, vrep.simx_opmode_oneshot)
     return
 
-def rotateUntilOrientation(clientID, targetOrient, rotRight):
+def rotateUntilOrientation(clientID, targetOrient):
     rotationVel = ROTATE_VEL
-    if not rotRight:
-        rotationVel *= -1
+    wheelJoints = getWheelJoints(clientID)
+    currentOrient = getOrientation(clientID)
+    print("Current Orientation: {} , Target Orientation: {}" .format(currentOrient, targetOrient))
+    if currentOrient>0:
+        if targetOrient>currentOrient:
+            rotationVel *= -1
+            startRotating(clientID, rotationVel)
+            while targetOrient > currentOrient:
+                time.sleep(0.05)
+                currentOrient = getOrientation(clientID)
+                print(currentOrient)
 
+        elif targetOrient<currentOrient:
+            rotationVel *= 1
+            startRotating(clientID, rotationVel)
+            while targetOrient < currentOrient:
+                time.sleep(0.05)
+                currentOrient = getOrientation(clientID)
+                print(currentOrient)
+
+    elif currentOrient<0:
+        if targetOrient < currentOrient:
+            rotationVel *= 1
+            startRotating(clientID, rotationVel)
+            while targetOrient < currentOrient:
+                time.sleep(0.05)
+                currentOrient = getOrientation(clientID)
+                print(currentOrient)
+
+        elif targetOrient > currentOrient:
+            rotationVel *= -1
+            startRotating(clientID, rotationVel)
+            while targetOrient > currentOrient:
+                time.sleep(0.05)
+                currentOrient = getOrientation(clientID)
+                print(currentOrient)
+
+    # stop moving
+    for i in range(0, 4):
+        vrep.simxSetJointTargetVelocity(clientID, wheelJoints[i], 0, vrep.simx_opmode_oneshot)
+    return
+
+def startRotating(clientID, rotationVel):
     # set velocety to 0
     wheelJoints = getWheelJoints(clientID)
     for i in range(0, 4):
@@ -144,21 +184,6 @@ def rotateUntilOrientation(clientID, targetOrient, rotRight):
                                         vrep.simx_opmode_oneshot)
     vrep.simxPauseCommunication(clientID, False)
 
-    # continuously check traveled distance
-    w = 0.0
-    dt = 0.0
-    currentOrient = getOrientation(clientID)
-    while  True:
-
-        currentOrient = getOrientation(clientID)
-
-    if rotRight :
-
-
-    # stop moving
-    for i in range(0, 4):
-        vrep.simxSetJointTargetVelocity(clientID, wheelJoints[i], 0, vrep.simx_opmode_oneshot)
-    return
 
 
 def printPos(clientID):
