@@ -7,7 +7,7 @@ import numpy as np
 import time
 import math
 import movementFunctions as move
-import rangeSensorFunctions as range
+import rangeSensorFunctions as rangeSen
 
 def main():
     print ('Program started')
@@ -34,11 +34,11 @@ def main():
 
 
         # initialize sensor
-        range.initializeSensor(clientID)
+        rangeSen.initializeSensor(clientID)
 
         # Get sensor handle:
-        hokuyo = range.getSensorHandles(clientID)
-
+        hokuyo = rangeSen.getSensorHandles(clientID)
+        move.forward(0.001, clientID)
         '''
         #move.forward(3, 0.5, clientID)
         res, base = vrep.simxGetObjectHandle(clientID, 'rollingJoint_rr', vrep.simx_opmode_oneshot_wait)
@@ -51,9 +51,12 @@ def main():
         print(base_pos)
         '''
 
-        move.forwardUntilObstacle(3, clientID, hokuyo[0])
-        move.rotate(90,clientID, True)
+        #move.forwardUntilObstacle(3, clientID, hokuyo[0])
+        #move.rotate(90,clientID, True)
         #headTowardsModel(clientID, "conferenceChair", hokuyo[0])
+        result = rangeSen.getSensorData(clientID, hokuyo[1])
+
+        print(result)
 
         # Stop simulation:
         vrep.simxStopSimulation(clientID,vrep.simx_opmode_oneshot_wait)
@@ -67,18 +70,18 @@ def main():
 
 def followBoundary(clientID):
 	# initialize sensor
-    range.initializeSensor(clientID)
+    rangeSen.initializeSensor(clientID)
     # Get sensor handle:
-    hokuyo = range.getSensorHandles(clientID)
+    hokuyo = rangeSen.getSensorHandles(clientID)
     
     #eighter go left or right
 	
-	while (not detectClearPath(clientID)):
-		rangeData = range.getSensorData(clientID, hokuyo[1])
-		# calculate diraction to move
-			# Two closest sensor values to the robot estimate the closest wall
-		
-		# follow boundary
+    while (not detectClearPath(clientID)):
+        rangeData = rangeSen.getSensorData(clientID, hokuyo[1])
+        # calculate diraction to move
+        # Two closest sensor values to the robot estimate the closest wall
+
+        # follow boundary
 	
 def detectClearPath(clientID):
 	# todo: realize clear path
