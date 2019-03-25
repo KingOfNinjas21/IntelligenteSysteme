@@ -32,8 +32,6 @@ def main():
         res,wheelJoints[2]=vrep.simxGetObjectHandle(clientID,'rollingJoint_fr',vrep.simx_opmode_oneshot_wait)
         res,wheelJoints[3]=vrep.simxGetObjectHandle(clientID,'rollingJoint_rr',vrep.simx_opmode_oneshot_wait)
 
-        '''
-        move.printPos(clientID)
 
         # initialize sensor
         range.initializeSensor(clientID)
@@ -41,11 +39,6 @@ def main():
         # Get sensor handle:
         hokuyo = range.getSensorHandles(clientID)
 
-        # get range sensor data as list of x,y,z,distance
-        rangeData = range.getSensorData(clientID, hokuyo[1])
-
-        print rangeData
-        '''
         '''
         #move.forward(3, 0.5, clientID)
         res, base = vrep.simxGetObjectHandle(clientID, 'rollingJoint_rr', vrep.simx_opmode_oneshot_wait)
@@ -57,10 +50,10 @@ def main():
         base_pos = vrep.simxGetObjectPosition(clientID, base, -1, vrep.simx_opmode_oneshot_wait)
         print(base_pos)
         '''
-        #move.rotate(90, clientID, True)
-        move.forward(3, clientID)
 
-        #headTowardsModel(clientID, "conferenceChair")
+        move.forwardUntilObstacle(3, clientID, hokuyo[0])
+        move.rotate(90,clientID, True)
+        #headTowardsModel(clientID, "conferenceChair", hokuyo[0])
 
         # Stop simulation:
         vrep.simxStopSimulation(clientID,vrep.simx_opmode_oneshot_wait)
@@ -93,27 +86,38 @@ def detectClearPath(clientID):
 	return null
 
 
-def headTowardsModel(clientID, modelName):
+def headTowardsModel(clientID, modelName, rangeSensorHandle):
     res, objHandle = vrep.simxGetObjectHandle(clientID, modelName, vrep.simx_opmode_oneshot_wait)
-
 
     targetPosition = vrep.simxGetObjectPosition(clientID, objHandle, -1, vrep.simx_opmode_oneshot_wait)
     xTarget = targetPosition[1][0]
     yTarget = targetPosition[1][1]
-    print ("%s: x= %f, y= %f" ,modelName,xTarget,yTarget)
+    print ("{}: x= {}, y= {}" .format(modelName,xTarget,yTarget))
     pos, ori = move.getPos(clientID)
-    angle = calcAngleToTarget(clientID, pos[0], pos[1], xTarget, yTarget)
+
+    targetOrientation = calcTargetOrient(clientID, pos[0], pos[1], xTarget, yTarget)
+    print("Orientation of target: ", targetOrientation)
+    if True:
+        print()
+    move.rotateUntilOrientation(clientID, angle, True)
+    '''
+    angle = calcAngleToTarget(clientID, pos[0], pos[1], xTarget, yTarget) % 360
     print("Angle: ", angle)
     if angle>0:
         move.rotate(angle, clientID, True)
     else:
         move.rotate(angle, clientID, False)
+    
+    '''
+    print(pos[0], " ", pos[1])
     dist = calcDistanceToTarget(pos[0], pos[1], xTarget, yTarget)
+    move.forwardUntilObstacle(dist, clientID, rangeSensorHandle)
 
-    move.forward(4, dist, clientID)
-
+# calculates distance between 2 x,y coordinates
 def calcDistanceToTarget(xStart, yStart, xEnd, yEnd):
-    return math.sqrt((xEnd-xStart)*(xEnd-xStart)-(yEnd-yStart)*(yEnd-yStart))
+    distanceToTarget = math.sqrt((xEnd-xStart)*(xEnd-xStart)+(yEnd-yStart)*(yEnd-yStart))
+    print(distanceToTarget)
+    return distanceToTarget
 
 def calcAngleToTarget(clientID, xStart, yStart, xEnd, yEnd):
     GK = float(yEnd-yStart)
@@ -126,9 +130,9 @@ def calcAngleToTarget(clientID, xStart, yStart, xEnd, yEnd):
         angle = math.tan(GK / AK) * 180.0 / math.pi
         if yEnd<yStart:
             if move.getOrientation(clientID)<0:
-                angle=180.0-abs(move.getOrientation(clientID))+angle
+                angle=90.0+angle+move.getOrientation(clientID)
             else:
-                angle = 180.0-move.getOrientation(clientID)-angle
+                angle = 180.0-move.getOrientation(clientID)+90.0+angle
         if yEnd>yStart:
             print()
     # case 2:
@@ -142,6 +146,34 @@ def calcAngleToTarget(clientID, xStart, yStart, xEnd, yEnd):
 
 
     return angle
+
+def calcTargetOrient(clientID, xStart, yStart, xEnd, yEnd):
+    GK = float(yEnd-yStart)
+    AK = float(xEnd-xStart)
+
+    # 4 cases where the target is
+    angle=0
+    # case 1
+    if xEnd<xStart:
+        angle = math.tan(GK / AK) * 180.0 / math.pi
+        if yEnd<yStart:
+            targetOrient = 90.0 + angle
+        if yEnd>yStart:
+            targetOrient = 90.0 - angle
+    elif xEnd>xStart:
+        angle = math.tan(GK / AK) * 180.0 / math.pi
+        if yEnd < yStart:
+            targetOrient = - 90.0 - angle
+        if yEnd > yStart:
+            targetOrient = - 90.0 + angle
+    # case 3:
+    else:
+        #angle = math.tan(GK / AK) * 180.0 / math.pi
+        print()
+
+
+    return angle
+
 
 def removeModel(clientID, name):
     res,toRemove=vrep.simxGetObjectHandle(clientID, name, vrep.simx_opmode_blocking)
