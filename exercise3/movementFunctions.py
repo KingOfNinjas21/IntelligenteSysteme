@@ -152,7 +152,7 @@ def rotateUntilOrientation(clientID, targetOrient, rotRight):
 
         currentOrient = getOrientation(clientID)
 
-    if rotRight :
+    #if rotRight :
 
 
     # stop moving
