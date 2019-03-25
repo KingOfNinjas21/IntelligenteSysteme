@@ -76,6 +76,11 @@ def headTowardsModel(clientID, modelName, rangeSensorHandle):
     print ("{}: x= {}, y= {}" .format(modelName,xTarget,yTarget))
     pos, ori = move.getPos(clientID)
 
+    targetOrientation = calcTargetOrient(clientID, pos[0], pos[1], xTarget, yTarget)
+    print("Orientation of target: ", targetOrientation)
+    if True:
+        print()
+    move.rotateUntilOrientation(clientID, angle, True)
     '''
     angle = calcAngleToTarget(clientID, pos[0], pos[1], xTarget, yTarget) % 360
     print("Angle: ", angle)
@@ -122,6 +127,34 @@ def calcAngleToTarget(clientID, xStart, yStart, xEnd, yEnd):
 
 
     return angle
+
+def calcTargetOrient(clientID, xStart, yStart, xEnd, yEnd):
+    GK = float(yEnd-yStart)
+    AK = float(xEnd-xStart)
+
+    # 4 cases where the target is
+    angle=0
+    # case 1
+    if xEnd<xStart:
+        angle = math.tan(GK / AK) * 180.0 / math.pi
+        if yEnd<yStart:
+            targetOrient = 90.0 + angle
+        if yEnd>yStart:
+            targetOrient = 90.0 - angle
+    elif xEnd>xStart:
+        angle = math.tan(GK / AK) * 180.0 / math.pi
+        if yEnd < yStart:
+            targetOrient = - 90.0 - angle
+        if yEnd > yStart:
+            targetOrient = - 90.0 + angle
+    # case 3:
+    else:
+        #angle = math.tan(GK / AK) * 180.0 / math.pi
+        print()
+
+
+    return angle
+
 
 def removeModel(clientID, name):
     res,toRemove=vrep.simxGetObjectHandle(clientID, name, vrep.simx_opmode_blocking)
