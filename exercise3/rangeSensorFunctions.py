@@ -41,15 +41,15 @@ def transformInMatrix(auxD):
 
     width =  int(auxD[1][0])
 
-    result = [[0,0,0,0]]*(length*width)
+    result = [[0]*4 for i in range(length*width)]
     #print result
     k=2
 
     #every entry in result represents x,y,z,distance of every point detected of the range sensor
-    for i in range(length*width) :
+    for idx in range(length*width) :
         for j in range(0,4) :
             print(k, auxD[1][k])
-            result[i][j] = auxD[1][k]
+            result[idx][j] = auxD[1][k]
         k+=4
     return result
 
