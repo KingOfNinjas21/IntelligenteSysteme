@@ -32,13 +32,13 @@ def getSensorHandles(clientID):
 def getSensorData(clientID, sensorHandles):
     res, aux, auxD = vrep.simxReadVisionSensor(clientID, sensorHandles[0], vrep.simx_opmode_buffer)
     result1 = transformInMatrix(auxD)
-    #result1 = convertTransformedDataSensor1(clientID, sensorHandles[0], result1)
+    result1 = convertTransformedDataSensor1(clientID, sensorHandles[0], result1)
 
-    #res, aux, auxD = vrep.simxReadVisionSensor(clientID, sensorHandles[1], vrep.simx_opmode_buffer)
-    #result2 = transformInMatrix(auxD)
-    #result2 = convertTransformedDataSensor1(clientID, sensorHandles[1], result2)
+    res, aux, auxD = vrep.simxReadVisionSensor(clientID, sensorHandles[1], vrep.simx_opmode_buffer)
+    result2 = transformInMatrix(auxD)
+    result2 = convertTransformedDataSensor1(clientID, sensorHandles[1], result2)
 
-    return result1
+    return result1+result2
 
 def transformInMatrix(auxD):
     if not auxD :

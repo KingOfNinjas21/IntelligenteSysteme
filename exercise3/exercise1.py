@@ -55,7 +55,8 @@ def main():
         #move.rotate(90,clientID, True)
         #headTowardsModel(clientID, "conferenceChair", hokuyo[0])
         result = rangeSen.getSensorData(clientID, hokuyo)
-        
+        for i in range(len(result)):
+            print(result[i])
         #for i in range(len(result)):
         #     print(result[i][0])
         #print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
