@@ -41,16 +41,10 @@ def forward(meter, clientID):
 
     # continuously check traveled distance
     distance = 0.0
-    dt = 0.0
-    x = 0.0
-    y = 0.0
+    startX, startY, startW = sysOdometry(0.0, 0.0, 0.0, clientID)
     while distance <= meter:
-        start = time.time()
-        x, y, w = odometry(x, y, 0.0, FORWARD_VEL, 0.0, 0.0, dt)
+        x, y, w = sysOdometry(startX, startY, startW, clientID)
         distance = math.sqrt(x*x+y*y)
-        time.sleep(1.0e-06)         # problems with very small time slices -> little delay (if you have a bad angle calculation on your pc try to change this value)
-        end = time.time()
-        dt = end-start
 
     # stop moving
     for i in range(0, 4):
@@ -71,12 +65,9 @@ def forwardUntilObstacle(meter, clientID, rangeSensorHandle):
 
     # continuously check traveled distance
     distance = 0.0
-    dt = 0.0
-    x = 0.0
-    y = 0.0
+    startX, startY, startW = sysOdometry(0.0, 0.0, 0.0, clientID)
     stop = False
     while distance <= meter and stop!=True:
-        start = time.time()
         # get range sensor data as list of x,y,z,distance
         rangeData = rangeSensor.getSensorData(clientID, rangeSensorHandle)
         for value in rangeData:
@@ -84,11 +75,8 @@ def forwardUntilObstacle(meter, clientID, rangeSensorHandle):
                 stop=True
                 break
 
-        x, y, w = odometry(x, y, 0.0, FORWARD_VEL, 0.0, 0.0, dt)
+        x, y, w = sysOdometry(startX, startY, startW, clientID)
         distance = math.sqrt(x*x+y*y)
-        time.sleep(1.0e-06)         # problems with very small time slices -> little delay (if you have a bad angle calculation on your pc try to change this value)
-        end = time.time()
-        dt = end-start
 
     # stop moving
     for i in range(0, 4):
@@ -114,13 +102,11 @@ def rotate(degree, clientID, rotRight):
 
     # continuously check traveled distance
     w = 0.0
-    dt = 0.0
+    startX, startY, startW = sysOdometry(0.0, 0.0, 0.0, clientID)
     while w <= degree:
-        start = time.time()
-        x, y, w = odometry(0.0, 0.0, w, 0.0, 0.0, rotationVel, dt)
-        time.sleep(1.0e-06)         # problems with very small time slices -> little delay (if you have a bad angle calculation on your pc try to change this value)
-        end = time.time()
-        dt = end - start
+        x, y, w = sysOdometry(startX, startY, startW, clientID)
+        w = math.fabs(w)
+        print(w)
 
     # stop moving
     for i in range(0, 4):
@@ -212,6 +198,26 @@ def wheelVel(forwBackVel, leftRightVel, rotVel):
     return np.array([-forwBackVel-leftRightVel-rotVel, -forwBackVel+leftRightVel-rotVel, -forwBackVel+leftRightVel+rotVel, -forwBackVel-leftRightVel+rotVel])
 
 
+# This function returns the current x,y,w of the robot. x,y in meter, w in degree
+# To get the Odometry relativ to the start position of the robot, set startX, startY, startW (startW in degree to the start position of the robot
+def sysOdometry(startX, startY, startW, clientID):
+    res, base = vrep.simxGetObjectHandle(clientID, 'youBot_center', vrep.simx_opmode_oneshot_wait)
+    base_pos = vrep.simxGetObjectPosition(clientID, base, -1, vrep.simx_opmode_oneshot_wait)
+    base_orient = vrep.simxGetObjectOrientation(clientID, base, -1, vrep.simx_opmode_oneshot_wait)
+
+    x = base_pos[1][0] - startX
+    y = base_pos[1][1] - startY
+    w = base_orient[1][2] * (180 / math.pi) - startW
+
+    # setting bounds of w to +/-180
+    if w < -180:
+        w = 180 - (w % 180)
+    elif w > 180:
+        w = -180 + (w % 180)
+
+    return x, y, w
+
+
 # this function calculates the new position of the robot based on the old position and the speed of every wheel and the time difference
 def odometry(x, y, w, forwBackVel, leftRightVel, rotVel, dt):
     vf, vr, w0 = formatVel(forwBackVel, leftRightVel, rotVel)
@@ -226,12 +232,6 @@ def odometry(x, y, w, forwBackVel, leftRightVel, rotVel, dt):
 
     return x, y, w
 
-# this function returns the current x,y,w of the robot. x,y in meter, w in degree
-def sysOdometry(clientID):
-    res, base = vrep.simxGetObjectHandle(clientID, 'youBot_center', vrep.simx_opmode_oneshot_wait)
-    base_pos = vrep.simxGetObjectPosition(clientID, base, -1, vrep.simx_opmode_oneshot_wait)
-    base_orient = vrep.simxGetObjectOrientation(clientID, base, -1, vrep.simx_opmode_oneshot_wait)
-    return base_pos[1][0], base_pos[1][1], base_orient[1][2]
 
 # This function formats the spin of every wheel to a forward-, leftRightvelocety and an angle
 def formatVel(forwBackVel, leftRightVel, rotVel):
