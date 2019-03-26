@@ -32,7 +32,7 @@ def getSensorHandles(clientID):
 def getSensorData(clientID, sensorHandle):
     res, aux, auxD = vrep.simxReadVisionSensor(clientID, sensorHandle, vrep.simx_opmode_buffer)
     result = transformInMatrix(auxD)
-    #result = convertTransformedDataSensor1(clientID, sensorHandle, result)
+    result = convertTransformedDataSensor1(clientID, sensorHandle, result)
 
     return result
 
