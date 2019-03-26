@@ -226,6 +226,12 @@ def odometry(x, y, w, forwBackVel, leftRightVel, rotVel, dt):
 
     return x, y, w
 
+# this function returns the current x,y,w of the robot. x,y in meter, w in degree
+def sysOdometry(clientID):
+    res, base = vrep.simxGetObjectHandle(clientID, 'youBot_center', vrep.simx_opmode_oneshot_wait)
+    base_pos = vrep.simxGetObjectPosition(clientID, base, -1, vrep.simx_opmode_oneshot_wait)
+    base_orient = vrep.simxGetObjectOrientation(clientID, base, -1, vrep.simx_opmode_oneshot_wait)
+    return base_pos[1][0], base_pos[1][1], base_orient[1][2]
 
 # This function formats the spin of every wheel to a forward-, leftRightvelocety and an angle
 def formatVel(forwBackVel, leftRightVel, rotVel):
