@@ -12,7 +12,7 @@ D = 0.30046
 
 FORWARD_VEL =  -2.0
 SIDEWARD_VEL =  2.0
-ROTATE_VEL =  2.0
+ROTATE_VEL =  1.0
 
 def getWheelJoints(clientID):
     # Retrieve wheel joint handles:
@@ -106,7 +106,8 @@ def rotate(degree, clientID, rotRight):
     while w <= degree:
         x, y, w = sysOdometry(startX, startY, startW, clientID)
         w = math.fabs(w)
-        print(w)
+
+    print(w)
 
     # stop moving
     for i in range(0, 4):
