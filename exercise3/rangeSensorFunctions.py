@@ -29,12 +29,16 @@ def getSensorHandles(clientID):
     return hokuyo1, hokuyo2
 
 # only use this function if sensor data was initialized via initializeSensorData
-def getSensorData(clientID, sensorHandle):
-    res, aux, auxD = vrep.simxReadVisionSensor(clientID, sensorHandle, vrep.simx_opmode_buffer)
-    result = transformInMatrix(auxD)
-    result = convertTransformedDataSensor1(clientID, sensorHandle, result)
+def getSensorData(clientID, sensorHandles):
+    res, aux, auxD = vrep.simxReadVisionSensor(clientID, sensorHandles[0], vrep.simx_opmode_buffer)
+    result1 = transformInMatrix(auxD)
+    #result1 = convertTransformedDataSensor1(clientID, sensorHandles[0], result1)
 
-    return result
+    #res, aux, auxD = vrep.simxReadVisionSensor(clientID, sensorHandles[1], vrep.simx_opmode_buffer)
+    #result2 = transformInMatrix(auxD)
+    #result2 = convertTransformedDataSensor1(clientID, sensorHandles[1], result2)
+
+    return result1
 
 def transformInMatrix(auxD):
     if not auxD :
@@ -75,7 +79,7 @@ def convertTransformedDataSensor1(clientID, sensorHandle, dataMatrix):
     resultTemp = multiplyMatrices(Rx, Ry)
     resultTemp = multiplyMatrices(resultTemp, Rz)
 
-    result = [0]*len(dataMatrix)
+    result = [[0]*4 for i in range(len(dataMatrix))]
     for i in range(len(dataMatrix)):
         result[i] = multiplyMatrixVector(resultTemp, dataMatrix[i])
     return result
@@ -89,8 +93,8 @@ def multiplyMatrixVector(matrix, vector):
     return result
 
 def multiplyMatrices(m1, m2):
-    result = [[0]*len(m1)]*len(m2[0])
-
+    #result = [[0]*len(m1)]*len(m2[0])
+    result = np.zeros((len(m1), len(m2)))
     for i in range(len(m1)):
         # iterate through columns of Y
         for j in range(len(m2[0])):

@@ -38,7 +38,7 @@ def main():
 
         # Get sensor handle:
         hokuyo = rangeSen.getSensorHandles(clientID)
-        move.forward(0.001, clientID)
+        #move.forward(0.1, clientID)
         '''
         #move.forward(3, 0.5, clientID)
         res, base = vrep.simxGetObjectHandle(clientID, 'rollingJoint_rr', vrep.simx_opmode_oneshot_wait)
@@ -54,8 +54,23 @@ def main():
         #move.forwardUntilObstacle(3, clientID, hokuyo[0])
         #move.rotate(90,clientID, True)
         #headTowardsModel(clientID, "conferenceChair", hokuyo[0])
-        result = rangeSen.getSensorData(clientID, hokuyo[1])
+        result = rangeSen.getSensorData(clientID, hokuyo)
+        
+        #for i in range(len(result)):
+        #     print(result[i][0])
+        #print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
 
+        #for i in range(len(result)):
+        #    print(result[i][1])
+        #print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+
+        #for i in range(len(result)):
+        #    print(result[i][2])
+        #print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+
+        #for i in range(len(result)):
+        #    print(result[i][3])
+        #print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
 
 
         # Stop simulation:
