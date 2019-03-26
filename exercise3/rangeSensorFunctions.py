@@ -50,7 +50,7 @@ def transformInMatrix(auxD):
     #pdb.set_trace()
 
     #every entry in result represents x,y,z,distance of every point detected of the range sensor
-    for i in range(length*width) :
+    for idx in range(length*width) :
         for j in range(0,4) :
             result[i][j] = auxD[1][k]
             k+=1
