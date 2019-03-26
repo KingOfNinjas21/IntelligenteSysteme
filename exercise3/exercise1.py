@@ -56,7 +56,7 @@ def main():
         #headTowardsModel(clientID, "conferenceChair", hokuyo[0])
         result = rangeSen.getSensorData(clientID, hokuyo[1])
 
-        print(result)
+
 
         # Stop simulation:
         vrep.simxStopSimulation(clientID,vrep.simx_opmode_oneshot_wait)

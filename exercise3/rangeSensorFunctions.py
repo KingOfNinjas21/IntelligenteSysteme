@@ -4,6 +4,7 @@ import numpy as np
 import time
 import math
 import movementFunctions as move
+import pdb
 
 def initializeSensor(clientID):
     # start Hokuyo sensor
@@ -32,6 +33,7 @@ def getSensorData(clientID, sensorHandle):
     res, aux, auxD = vrep.simxReadVisionSensor(clientID, sensorHandle, vrep.simx_opmode_buffer)
     result = transformInMatrix(auxD)
     #result = convertTransformedDataSensor1(clientID, sensorHandle, result)
+
     return result
 
 def transformInMatrix(auxD):
@@ -41,16 +43,18 @@ def transformInMatrix(auxD):
 
     width =  int(auxD[1][0])
 
-    result = [[0,0,0,0]]*(length*width)
-    #print result
+    result = np.zeros((length* width, 4))
+
     k=2
+
+    #pdb.set_trace()
 
     #every entry in result represents x,y,z,distance of every point detected of the range sensor
     for i in range(length*width) :
         for j in range(0,4) :
-            print(k, auxD[1][k])
             result[i][j] = auxD[1][k]
-        k+=4
+            k+=1
+
     return result
 
 def convertTransformedDataSensor1(clientID, sensorHandle, dataMatrix):
