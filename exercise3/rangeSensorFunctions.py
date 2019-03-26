@@ -50,7 +50,7 @@ def transformInMatrix(auxD):
         for j in range(0,4) :
             print(k, auxD[1][k])
             result[idx][j] = auxD[1][k]
-        k+=4
+            k+=1
     return result
 
 def convertTransformedDataSensor1(clientID, sensorHandle, dataMatrix):
