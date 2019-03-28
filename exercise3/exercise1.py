@@ -54,9 +54,14 @@ def main():
         #move.forwardUntilObstacle(3, clientID, hokuyo[0])
         #move.rotate(90,clientID, True)
         #headTowardsModel(clientID, "conferenceChair", hokuyo[0])
-        result = rangeSen.getSensorData(clientID, hokuyo)
-        for i in range(len(result)):
-            print(result[i])
+        res, aux, auxD = vrep.simxReadVisionSensor(clientID, hokuyo[0], vrep.simx_opmode_streaming)
+        res, aux, auxD = vrep.simxReadVisionSensor(clientID, hokuyo[1], vrep.simx_opmode_streaming)        
+        #move.forward(0.2, clientID)
+        #result = rangeSen.getSensorData(clientID, hokuyo)
+        #print(result)
+
+        #for i in range(len(result)):
+        #    print(result[i])
         #for i in range(len(result)):
         #     print(result[i][0])
         #print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
@@ -76,7 +81,7 @@ def main():
 
         # Stop simulation:
         vrep.simxStopSimulation(clientID,vrep.simx_opmode_oneshot_wait)
-
+        headTowardsModel(clientID, "Goal", hokuyo[0])
         # Now close the connection to V-REP:
         vrep.simxFinish(clientID)
     else:
@@ -116,11 +121,11 @@ def headTowardsModel(clientID, modelName, rangeSensorHandle):
 
     targetOrientation = calcTargetOrient(clientID, pos[0], pos[1], xTarget, yTarget)
     print("Orientation of target: ", targetOrientation)
-    if True:
-        print()
-    move.rotateUntilOrientation(clientID, angle, True)
+
+    move.rotateUntilOrientation(clientID, targetOrientation, True)
+    print("moved")
     '''
-    angle = calcAngleToTarget(clientID, pos[0], pos[1], xTarget, yTarget) % 360
+    
     print("Angle: ", angle)
     if angle>0:
         move.rotate(angle, clientID, True)
@@ -174,7 +179,7 @@ def calcTargetOrient(clientID, xStart, yStart, xEnd, yEnd):
     angle=0
     # case 1
     if xEnd<xStart:
-        angle = math.tan(GK / AK) * 180.0 / math.pi
+        angle = math.atan2(GK, AK) * 180.0 / math.pi
         if yEnd<yStart:
             targetOrient = 90.0 + angle
         if yEnd>yStart:
