@@ -35,7 +35,7 @@ def drive(wheelVelocities, t, clientID,wheelJoints):
 def aimGoal(robot, goal, ori):
         ak = goal[0] - robot[0]
         gk = goal[1] - robot[1]      
-        a = math.atan2(gk,ak) - ori[2] + math.pi
+        a = math.atan2(gk,ak) - ori[2] #+ math.pi
         print("ak=",ak,"\ngk=",gk,"\na=",a)
         
         return [0,0,a]

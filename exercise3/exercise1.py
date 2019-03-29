@@ -98,13 +98,11 @@ def calcTargetOrient(clientID, xStart, yStart, xEnd, yEnd):
     print("Angle: {}".format(math.tan(GK / AK) * 180.0 / math.pi))
     print("xEnd: {}, xStart: {}, yEnd: {}, yStart: {}".format(xEnd, xStart, yEnd, yStart))
     # 4 cases where the target is
-    angle= abs(math.tan(GK / AK) * 180.0 / math.pi)
+    angle= abs(math.atan2(GK, AK) * 180.0 / math.pi)
 
-    #TODO: Wie die richtige Orientierung des targets berechnet werden soll, steht noch aus bzw. irgendwas stimmt noch nicht beim tangens
     if xEnd<xStart:
 
         if yEnd<yStart:
-            print("AAAAAAAAAAAAAAAA")
             targetOrient = - 90.0 + angle
         if yEnd>yStart:
             targetOrient = - 90.0 - angle
