@@ -21,6 +21,8 @@ def initializeSensor(clientID):
     res, aux, auxD = vrep.simxReadVisionSensor(clientID, hokuyo[0], vrep.simx_opmode_streaming)
     res, aux, auxD = vrep.simxReadVisionSensor(clientID, hokuyo[1], vrep.simx_opmode_streaming)
 
+    return hokuyo
+
 def getSensorHandles(clientID):
     # Get sensor handle:
     res, hokuyo1 = vrep.simxGetObjectHandle(clientID, 'fastHokuyo_sensor1', vrep.simx_opmode_oneshot_wait)
