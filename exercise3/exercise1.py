@@ -51,24 +51,26 @@ def main():
         print(base_pos)
         '''
 
-        #move.forwardUntilObstacle(3, clientID, hokuyo[0])
+        #move.forwardUntilObstacleFront(3, clientID, hokuyo)
+        move.forwardUntilObstacleFront(3, clientID, hokuyo)
         #move.rotate(90,clientID, True)
         #headTowardsModel(clientID, "conferenceChair", hokuyo[0])
         res, aux, auxD = vrep.simxReadVisionSensor(clientID, hokuyo[0], vrep.simx_opmode_streaming)
         res, aux, auxD = vrep.simxReadVisionSensor(clientID, hokuyo[1], vrep.simx_opmode_streaming)        
         #move.forward(0.2, clientID)
         result = rangeSen.getSensorData(clientID, hokuyo)
+        #time.sleep(3)
         #print(result)
-
+        #move.forwardUntilObstacleAnywhere(1, clientID, hokuyo)
         #for i in range(len(result)):
         #    print(result[i])
-        for i in range(len(result)):
-             print(result[i][0])
-        print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+        #for i in range(len(result)):
+        #     print(result[i][0])
+        #print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
 
-        for i in range(len(result)):
-            print(result[i][2])
-        print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+        #for i in range(len(result)):
+        #    print(result[i][1])
+        #print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
 
         #for i in range(len(result)):
         #    print(result[i][2])
@@ -109,7 +111,7 @@ def detectClearPath(clientID):
 	
 	return False
 
-
+# returns false if the bot succesfully reached the target and true if the bot encountered an obstacle
 def headTowardsModel(clientID, modelName, rangeSensorHandles):
     res, objHandle = vrep.simxGetObjectHandle(clientID, modelName, vrep.simx_opmode_oneshot_wait)
 
@@ -126,7 +128,9 @@ def headTowardsModel(clientID, modelName, rangeSensorHandles):
 
     print(pos[0], " ", pos[1])
     dist = calcDistanceToTarget(pos[0], pos[1], xTarget, yTarget)
-    move.forwardUntilObstacle(dist, clientID, rangeSensorHandles)
+    case = move.forwardUntilObstacleAnywhere(dist, clientID, rangeSensorHandles)
+
+    return case
 
 # calculates distance between 2 x,y coordinates
 def calcDistanceToTarget(xStart, yStart, xEnd, yEnd):
