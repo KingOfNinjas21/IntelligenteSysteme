@@ -2,6 +2,7 @@ import vrep
 import numpy as np
 import time
 import math
+import rangeSensorFunctions as rangeSensor
 
 # global variables for the youBot
 # B,C,D in meters
@@ -55,6 +56,43 @@ def forward(meter, clientID):
     for i in range(0, 4):
         vrep.simxSetJointTargetVelocity(clientID, wheelJoints[i], 0, vrep.simx_opmode_oneshot)
 
+def forwardUntilObstacle(meter, clientID, rangeSensorHandle):
+    # set velocety to 0
+    wheelJoints = getWheelJoints(clientID)
+    for i in range(0, 4):
+        vrep.simxSetJointTargetVelocity(clientID, wheelJoints[i], 0, vrep.simx_opmode_oneshot)
+
+    # start moving
+    vrep.simxPauseCommunication(clientID, True)
+    for i in range(0, 4):
+        vrep.simxSetJointTargetVelocity(clientID, wheelJoints[i], wheelVel(FORWARD_VEL, 0.0, 0.0)[i],
+                                        vrep.simx_opmode_oneshot)
+    vrep.simxPauseCommunication(clientID, False)
+
+    # continuously check traveled distance
+    distance = 0.0
+    dt = 0.0
+    x = 0.0
+    y = 0.0
+    stop = False
+    while distance <= meter and stop!=True:
+        start = time.time()
+        # get range sensor data as list of x,y,z,distance
+        rangeData = rangeSensor.getSensorData(clientID, rangeSensorHandle)
+        for value in rangeData:
+            if value[3]<=0.2:
+                stop=True
+                break
+
+        x, y, w = odometry(x, y, 0.0, FORWARD_VEL, 0.0, 0.0, dt)
+        distance = math.sqrt(x*x+y*y)
+        time.sleep(1.0e-06)         # problems with very small time slices -> little delay (if you have a bad angle calculation on your pc try to change this value)
+        end = time.time()
+        dt = end-start
+
+    # stop moving
+    for i in range(0, 4):
+        vrep.simxSetJointTargetVelocity(clientID, wheelJoints[i], 0, vrep.simx_opmode_oneshot)
 
 # rotate degree degrees to the right if rotRight is True, otherwise (rotRight=False) rotate to the left
 def rotate(degree, clientID, rotRight):
@@ -88,6 +126,64 @@ def rotate(degree, clientID, rotRight):
     for i in range(0, 4):
         vrep.simxSetJointTargetVelocity(clientID, wheelJoints[i], 0, vrep.simx_opmode_oneshot)
     return
+
+def rotateUntilOrientation(clientID, targetOrient):
+    rotationVel = ROTATE_VEL
+    wheelJoints = getWheelJoints(clientID)
+    currentOrient = getOrientation(clientID)
+    print("Current Orientation: {} , Target Orientation: {}" .format(currentOrient, targetOrient))
+    if currentOrient>0:
+        if targetOrient>currentOrient:
+            rotationVel *= -1
+            startRotating(clientID, rotationVel)
+            while targetOrient > currentOrient:
+                time.sleep(0.05)
+                currentOrient = getOrientation(clientID)
+                print(currentOrient)
+
+        elif targetOrient<currentOrient:
+            rotationVel *= 1
+            startRotating(clientID, rotationVel)
+            while targetOrient < currentOrient:
+                time.sleep(0.05)
+                currentOrient = getOrientation(clientID)
+                print(currentOrient)
+
+    elif currentOrient<0:
+        if targetOrient < currentOrient:
+            rotationVel *= 1
+            startRotating(clientID, rotationVel)
+            while targetOrient < currentOrient:
+                time.sleep(0.05)
+                currentOrient = getOrientation(clientID)
+                print(currentOrient)
+
+        elif targetOrient > currentOrient:
+            rotationVel *= -1
+            startRotating(clientID, rotationVel)
+            while targetOrient > currentOrient:
+                time.sleep(0.05)
+                currentOrient = getOrientation(clientID)
+                print(currentOrient)
+
+    # stop moving
+    for i in range(0, 4):
+        vrep.simxSetJointTargetVelocity(clientID, wheelJoints[i], 0, vrep.simx_opmode_oneshot)
+    return
+
+def startRotating(clientID, rotationVel):
+    # set velocety to 0
+    wheelJoints = getWheelJoints(clientID)
+    for i in range(0, 4):
+        vrep.simxSetJointTargetVelocity(clientID, wheelJoints[i], 0, vrep.simx_opmode_oneshot)
+
+    # start moving
+    vrep.simxPauseCommunication(clientID, True)
+    for i in range(0, 4):
+        vrep.simxSetJointTargetVelocity(clientID, wheelJoints[i], wheelVel(0.0, 0.0, rotationVel)[i],
+                                        vrep.simx_opmode_oneshot)
+    vrep.simxPauseCommunication(clientID, False)
+
 
 
 def printPos(clientID):
