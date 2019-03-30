@@ -7,7 +7,7 @@ import numpy as np
 import time
 import math
 import movementFunctions as move
-import rangeSensorFunctions as range
+import rangeSensorFunctions as rangeSen
 
 def main():
     print ('Program started')
@@ -33,28 +33,13 @@ def main():
         res,wheelJoints[3]=vrep.simxGetObjectHandle(clientID,'rollingJoint_rr',vrep.simx_opmode_oneshot_wait)
 
 
-        # initialize sensor
-        range.initializeSensor(clientID)
+        # initialize sensor and get sensor handles:
+        hokuyo = rangeSen.initializeSensor(clientID)
 
-        # Get sensor handle:
-        hokuyo = range.getSensorHandles(clientID)
+        move.headTowardsModel(clientID, "Goal", hokuyo)
+        res, aux, auxD = vrep.simxReadVisionSensor(clientID, hokuyo[0], vrep.simx_opmode_streaming)
+        res, aux, auxD = vrep.simxReadVisionSensor(clientID, hokuyo[1], vrep.simx_opmode_streaming)        
 
-        '''
-        #move.forward(3, 0.5, clientID)
-        res, base = vrep.simxGetObjectHandle(clientID, 'rollingJoint_rr', vrep.simx_opmode_oneshot_wait)
-        base_pos = vrep.simxGetObjectPosition(clientID, base, -1, vrep.simx_opmode_oneshot_wait)
-        base_orient = vrep.simxGetObjectOrientation(clientID, base, -1, vrep.simx_opmode_oneshot_wait)
-        print(base_pos)
-
-        res, base = vrep.simxGetObjectHandle(clientID, 'rollingJoint_rl', vrep.simx_opmode_oneshot_wait)
-        base_pos = vrep.simxGetObjectPosition(clientID, base, -1, vrep.simx_opmode_oneshot_wait)
-        print(base_pos)
-        '''
-
-        #move.forwardUntilObstacle(3, clientID, hokuyo[0])
-        #move.rotate(90,clientID, True)
-        #move.printPos(clientID)
-        headTowardsModel(clientID, "Goal", hokuyo[0])
 
         # Stop simulation:
         vrep.simxStopSimulation(clientID,vrep.simx_opmode_oneshot_wait)
@@ -70,7 +55,7 @@ def followBoundary(clientID):
     # initialize sensor
     range.initializeSensor(clientID)
     # Get sensor handle:
-    hokuyo = range.getSensorHandles(clientID)
+    hokuyo = rangeSen.getSensorHandles(clientID)
     
     #eighter go left or right
 	
@@ -85,58 +70,6 @@ def detectClearPath(clientID):
     # todo: realize clear path
 	
 	return False
-
-
-def headTowardsModel(clientID, modelName, rangeSensorHandle):
-    res, objHandle = vrep.simxGetObjectHandle(clientID, modelName, vrep.simx_opmode_oneshot_wait)
-
-    targetPosition = vrep.simxGetObjectPosition(clientID, objHandle, -1, vrep.simx_opmode_oneshot_wait)
-    xTarget = targetPosition[1][0]
-    yTarget = targetPosition[1][1]
-    print ("{}: x= {}, y= {}" .format(modelName,xTarget,yTarget))
-    pos, ori = move.getPos(clientID)
-
-    targetOrientation = calcTargetOrient(clientID, pos[0], pos[1], xTarget, yTarget)
-    print("Orientation of target: ", targetOrientation)
-
-    move.rotateUntilOrientation(clientID, targetOrientation)
-
-    print(pos[0], " ", pos[1])
-    dist = calcDistanceToTarget(pos[0], pos[1], xTarget, yTarget)
-    move.forwardUntilObstacle(dist, clientID, rangeSensorHandle)
-
-# calculates distance between 2 x,y coordinates
-def calcDistanceToTarget(xStart, yStart, xEnd, yEnd):
-    distanceToTarget = math.sqrt((xEnd-xStart)*(xEnd-xStart)+(yEnd-yStart)*(yEnd-yStart))
-    print(distanceToTarget)
-    return distanceToTarget
-
-def calcTargetOrient(clientID, xStart, yStart, xEnd, yEnd):
-    GK = abs(float(yEnd-yStart))
-    AK = abs(float(xEnd-xStart))
-    print("Angle: {}".format(math.tan(GK / AK) * 180.0 / math.pi))
-    print("xEnd: {}, xStart: {}, yEnd: {}, yStart: {}".format(xEnd, xStart, yEnd, yStart))
-    # 4 cases where the target is
-    angle= abs(math.atan2(GK, AK) * 180.0 / math.pi)
-
-    if xEnd<xStart:
-
-        if yEnd<yStart:
-            targetOrient = - 90.0 + angle
-        if yEnd>yStart:
-            targetOrient = - 90.0 - angle
-    elif xEnd>xStart:
-
-        if yEnd < yStart:
-
-            targetOrient = 90.0 - angle
-        if yEnd > yStart:
-            targetOrient = 90.0 + angle
-    else:
-        targetOrient = 0
-
-
-    return targetOrient
 
 
 def removeModel(clientID, name):

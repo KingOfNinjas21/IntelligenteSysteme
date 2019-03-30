@@ -56,19 +56,28 @@ def forward(meter, clientID):
     for i in range(0, 4):
         vrep.simxSetJointTargetVelocity(clientID, wheelJoints[i], 0, vrep.simx_opmode_oneshot)
 
-def forwardUntilObstacle(meter, clientID, rangeSensorHandle):
-    # set velocety to 0
+
+def setWheelVelocity(clientID, velocity):
     wheelJoints = getWheelJoints(clientID)
     for i in range(0, 4):
-        vrep.simxSetJointTargetVelocity(clientID, wheelJoints[i], 0, vrep.simx_opmode_oneshot)
+        vrep.simxSetJointTargetVelocity(clientID, wheelJoints[i], velocity, vrep.simx_opmode_oneshot)
 
-    # start moving
+def startMoving(clientID):
+    wheelJoints = getWheelJoints(clientID)
     vrep.simxPauseCommunication(clientID, True)
     for i in range(0, 4):
         vrep.simxSetJointTargetVelocity(clientID, wheelJoints[i], wheelVel(FORWARD_VEL, 0.0, 0.0)[i],
                                         vrep.simx_opmode_oneshot)
     vrep.simxPauseCommunication(clientID, False)
 
+# drives forwards for meter meters as long as there is no obstacle around the bot within the distance of 0.3
+# around the bot means ca +90 and -90 degrees(from the front)
+# returns true if the bot encounterd an obstacle, and false if the bot drove for meter meters
+def forwardUntilObstacleAnywhere(meter, clientID, rangeSensorHandles):
+    # set velocety to 0
+    setWheelVelocity(clientID, 0)
+    # start moving
+    startMoving(clientID)
     # continuously check traveled distance
     distance = 0.0
     dt = 0.0
@@ -78,9 +87,10 @@ def forwardUntilObstacle(meter, clientID, rangeSensorHandle):
     while distance <= meter and stop!=True:
         start = time.time()
         # get range sensor data as list of x,y,z,distance
-        rangeData = rangeSensor.getSensorData(clientID, rangeSensorHandle)
-        for value in rangeData:
-            if value[3]<=0.2:
+        rangeData = rangeSensor.getSensorData(clientID, rangeSensorHandles)
+        # range sensor angle is estimated for about 250 degrees
+        for i in range(95, 588): #95 and 588 are estimated values for data from range sensor which are between -90 and 90 degrees (0 is front)
+            if rangeData[i][3]<=0.3:
                 stop=True
                 break
 
@@ -91,8 +101,41 @@ def forwardUntilObstacle(meter, clientID, rangeSensorHandle):
         dt = end-start
 
     # stop moving
-    for i in range(0, 4):
-        vrep.simxSetJointTargetVelocity(clientID, wheelJoints[i], 0, vrep.simx_opmode_oneshot)
+    setWheelVelocity(clientID, 0)
+
+    return(stop)
+
+# drives forwards for meter meters as long as there is no obstacle in front, only 2 laser ranges are used here
+# returns true if the bot encounterd an obstacle, and false if the bot drove for meter meters
+def forwardUntilObstacleFront(meter, clientID, rangeSensorHandles):
+    # set velocety to 0
+    setWheelVelocity(clientID, 0)
+    # start moving
+    startMoving(clientID)
+    # continuously check traveled distance
+    distance = 0.0
+    dt = 0.0
+    x = 0.0
+    y = 0.0
+    stop = False
+    while distance <= meter and stop!=True:
+        start = time.time()
+        # get range sensor data as list of x,y,z,distance
+        rangeData = rangeSensor.getSensorData(clientID, rangeSensorHandles)
+        if rangeData[342][3] <= 0.3 and rangeData[343][3] <= 0.3:
+            stop=True
+            break
+
+        x, y, w = odometry(x, y, 0.0, FORWARD_VEL, 0.0, 0.0, dt)
+        distance = math.sqrt(x*x+y*y)
+        time.sleep(1.0e-06)         # problems with very small time slices -> little delay (if you have a bad angle calculation on your pc try to change this value)
+        end = time.time()
+        dt = end-start
+
+    # stop moving
+    setWheelVelocity(clientID, 0)
+
+    return(stop)
 
 # rotate degree degrees to the right if rotRight is True, otherwise (rotRight=False) rotate to the left
 def rotate(degree, clientID, rotRight):
@@ -139,7 +182,6 @@ def rotateUntilOrientation(clientID, targetOrient):
             while targetOrient > currentOrient:
                 time.sleep(0.05)
                 currentOrient = getOrientation(clientID)
-                print(currentOrient)
 
         elif targetOrient<currentOrient:
             rotationVel *= 1
@@ -147,7 +189,6 @@ def rotateUntilOrientation(clientID, targetOrient):
             while targetOrient < currentOrient:
                 time.sleep(0.05)
                 currentOrient = getOrientation(clientID)
-                print(currentOrient)
 
     elif currentOrient<0:
         if targetOrient < currentOrient:
@@ -156,7 +197,6 @@ def rotateUntilOrientation(clientID, targetOrient):
             while targetOrient < currentOrient:
                 time.sleep(0.05)
                 currentOrient = getOrientation(clientID)
-                print(currentOrient)
 
         elif targetOrient > currentOrient:
             rotationVel *= -1
@@ -164,7 +204,6 @@ def rotateUntilOrientation(clientID, targetOrient):
             while targetOrient > currentOrient:
                 time.sleep(0.05)
                 currentOrient = getOrientation(clientID)
-                print(currentOrient)
 
     # stop moving
     for i in range(0, 4):
@@ -234,3 +273,58 @@ def formatVel(forwBackVel, leftRightVel, rotVel):
     w0 = (2.0/(C+D)) * rotVel*(180/math.pi) * (B/2.0)       # format rotVel (radiant) to degree
 
     return vf, vr, w0
+
+# returns false if the bot succesfully reached the target and true if the bot encountered an obstacle
+def headTowardsModel(clientID, modelName, rangeSensorHandles):
+    print("headTowardsModel begin")
+    res, objHandle = vrep.simxGetObjectHandle(clientID, modelName, vrep.simx_opmode_oneshot_wait)
+
+    targetPosition = vrep.simxGetObjectPosition(clientID, objHandle, -1, vrep.simx_opmode_oneshot_wait)
+    xTarget = targetPosition[1][0]
+    yTarget = targetPosition[1][1]
+    print ("{}: x= {}, y= {}" .format(modelName,xTarget,yTarget))
+    pos, ori = getPos(clientID)
+
+    targetOrientation = calcTargetOrient(clientID, pos[0], pos[1], xTarget, yTarget)
+    print("Orientation of target: {}".format(targetOrientation))
+
+    rotateUntilOrientation(clientID, targetOrientation)
+    
+    dist = calcDistanceToTarget(pos[0], pos[1], xTarget, yTarget)
+    case = forwardUntilObstacleAnywhere(dist, clientID, rangeSensorHandles)
+    print("headTowardsModel end with {}".format(case))
+    return case
+
+# calculates distance between 2 x,y coordinates
+def calcDistanceToTarget(xStart, yStart, xEnd, yEnd):
+    distanceToTarget = math.sqrt((xEnd-xStart)*(xEnd-xStart)+(yEnd-yStart)*(yEnd-yStart))
+    #print(distanceToTarget)
+    return distanceToTarget
+
+def calcTargetOrient(clientID, xStart, yStart, xEnd, yEnd):
+    GK = abs(float(yEnd-yStart))
+    AK = abs(float(xEnd-xStart))
+    #print("Angle: {}".format(math.tan(GK / AK) * 180.0 / math.pi))
+    #print("xEnd: {}, xStart: {}, yEnd: {}, yStart: {}".format(xEnd, xStart, yEnd, yStart))
+
+    angle= abs(math.atan2(GK, AK) * 180.0 / math.pi)
+
+    # 4 cases where the target is
+    if xEnd<xStart:
+
+        if yEnd<yStart:
+            targetOrient = - 90.0 + angle
+        if yEnd>yStart:
+            targetOrient = - 90.0 - angle
+    elif xEnd>xStart:
+
+        if yEnd < yStart:
+
+            targetOrient = 90.0 - angle
+        if yEnd > yStart:
+            targetOrient = 90.0 + angle
+    else:
+        targetOrient = 0
+
+
+    return targetOrient
