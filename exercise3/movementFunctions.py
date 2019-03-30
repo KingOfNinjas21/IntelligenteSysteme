@@ -56,7 +56,7 @@ def forward(meter, clientID):
     for i in range(0, 4):
         vrep.simxSetJointTargetVelocity(clientID, wheelJoints[i], 0, vrep.simx_opmode_oneshot)
 
-def forwardUntilObstacle(meter, clientID, rangeSensorHandle):
+def forwardUntilObstacle(meter, clientID, rangeSensorHandles):
     # set velocety to 0
     wheelJoints = getWheelJoints(clientID)
     for i in range(0, 4):
@@ -78,7 +78,7 @@ def forwardUntilObstacle(meter, clientID, rangeSensorHandle):
     while distance <= meter and stop!=True:
         start = time.time()
         # get range sensor data as list of x,y,z,distance
-        rangeData = rangeSensor.getSensorData(clientID, rangeSensorHandle)
+        rangeData = rangeSensor.getSensorData(clientID, rangeSensorHandles)
         for value in rangeData:
             if value[3]<=0.2:
                 stop=True

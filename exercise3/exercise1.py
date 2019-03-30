@@ -78,10 +78,10 @@ def main():
         #    print(result[i][3])
         #print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
 
-
+        headTowardsModel(clientID, "Goal", hokuyo)
         # Stop simulation:
         vrep.simxStopSimulation(clientID,vrep.simx_opmode_oneshot_wait)
-        headTowardsModel(clientID, "Goal", hokuyo[0])
+
         # Now close the connection to V-REP:
         vrep.simxFinish(clientID)
     else:
@@ -110,7 +110,7 @@ def detectClearPath(clientID):
 	return False
 
 
-def headTowardsModel(clientID, modelName, rangeSensorHandle):
+def headTowardsModel(clientID, modelName, rangeSensorHandles):
     res, objHandle = vrep.simxGetObjectHandle(clientID, modelName, vrep.simx_opmode_oneshot_wait)
 
     targetPosition = vrep.simxGetObjectPosition(clientID, objHandle, -1, vrep.simx_opmode_oneshot_wait)
@@ -126,7 +126,7 @@ def headTowardsModel(clientID, modelName, rangeSensorHandle):
 
     print(pos[0], " ", pos[1])
     dist = calcDistanceToTarget(pos[0], pos[1], xTarget, yTarget)
-    move.forwardUntilObstacle(dist, clientID, rangeSensorHandle)
+    move.forwardUntilObstacle(dist, clientID, rangeSensorHandles)
 
 # calculates distance between 2 x,y coordinates
 def calcDistanceToTarget(xStart, yStart, xEnd, yEnd):
