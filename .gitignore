@@ -8,3 +8,5 @@ exercise3/vrep\.pyc
 exercise3/vrepConst\.py
 
 exercise3/vrepConst\.pyc
+
+*.pyc
