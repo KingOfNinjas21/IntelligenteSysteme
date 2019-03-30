@@ -32,11 +32,11 @@ def getSensorHandles(clientID):
 def getSensorData(clientID, sensorHandles):
     res, aux, auxD = vrep.simxReadVisionSensor(clientID, sensorHandles[0], vrep.simx_opmode_buffer)
     result1 = transformInMatrix(auxD)
-    #result1 = convertTransformedDataSensor1(clientID, sensorHandles[0], result1)
+    result1 = convertTransformedDataSensor1(clientID, sensorHandles[0], result1)
 
     res, aux, auxD = vrep.simxReadVisionSensor(clientID, sensorHandles[1], vrep.simx_opmode_buffer)
     result2 = transformInMatrix(auxD)
-    #result2 = convertTransformedDataSensor1(clientID, sensorHandles[1], result2)
+    result2 = convertTransformedDataSensor1(clientID, sensorHandles[1], result2)
 
     return result1+result2
 
@@ -62,26 +62,33 @@ def transformInMatrix(auxD):
     return result
 
 def convertTransformedDataSensor1(clientID, sensorHandle, dataMatrix):
-    base_orient = vrep.simxGetObjectOrientation(clientID, sensorHandle, -1, vrep.simx_opmode_oneshot_wait)
-    sensorAngle = base_orient[1][2]
+    sensor_orient = vrep.simxGetObjectOrientation(clientID, sensorHandle, -1, vrep.simx_opmode_oneshot_wait)
+    sensor_pos = vrep.simxGetObjectPosition(clientID, sensorHandle, -1, vrep.simx_opmode_oneshot_wait)
+    alpha = sensor_orient[1][0]
+    beta= sensor_orient[1][1]
+    gamma= sensor_orient[1][2]
 
     Rx = [[1, 0, 0],
-          [0, math.cos(sensorAngle), -math.sin(sensorAngle)],
-          [0, math.sin(sensorAngle), math.cos(sensorAngle)]]
+          [0, math.cos(alpha), -math.sin(alpha)],
+          [0, math.sin(alpha), math.cos(alpha)]]
 
-    Ry = [[math.cos(sensorAngle), 0, math.sin(sensorAngle)],
+    Ry = [[math.cos(beta), 0, math.sin(beta)],
           [0, 1, 0],
-          [-math.sin(sensorAngle), 0, math.cos(sensorAngle)]]
+          [-math.sin(beta), 0, math.cos(beta)]]
 
-    Rz = [[math.cos(sensorAngle), -math.sin(sensorAngle), 0],
-          [math.sin(sensorAngle), math.cos(sensorAngle), 0],
+    Rz = [[math.cos(gamma), -math.sin(gamma), 0],
+          [math.sin(gamma), math.cos(gamma), 0],
           [0, 0, 1]]
-    resultTemp = multiplyMatrices(Rx, Ry)
-    resultTemp = multiplyMatrices(resultTemp, Rz)
+    R = multiplyMatrices(Rx, Ry)
+    R = multiplyMatrices(R, Rz)
 
     result = [[0]*4 for i in range(len(dataMatrix))]
     for i in range(len(dataMatrix)):
-        result[i] = multiplyMatrixVector(resultTemp, dataMatrix[i])
+        result[i] = multiplyMatrixVector(R, dataMatrix[i])
+        result[i][0] += sensor_pos[1][0]
+        result[i][1] += sensor_pos[1][1]
+        result[i][2] += sensor_pos[1][2]
+    #pdb.set_trace()
     return result
 
 def multiplyMatrixVector(matrix, vector):

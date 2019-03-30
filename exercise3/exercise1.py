@@ -57,18 +57,18 @@ def main():
         res, aux, auxD = vrep.simxReadVisionSensor(clientID, hokuyo[0], vrep.simx_opmode_streaming)
         res, aux, auxD = vrep.simxReadVisionSensor(clientID, hokuyo[1], vrep.simx_opmode_streaming)        
         #move.forward(0.2, clientID)
-        #result = rangeSen.getSensorData(clientID, hokuyo)
+        result = rangeSen.getSensorData(clientID, hokuyo)
         #print(result)
 
         #for i in range(len(result)):
         #    print(result[i])
-        #for i in range(len(result)):
-        #     print(result[i][0])
-        #print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+        for i in range(len(result)):
+             print(result[i][0])
+        print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
 
-        #for i in range(len(result)):
-        #    print(result[i][1])
-        #print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+        for i in range(len(result)):
+            print(result[i][2])
+        print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
 
         #for i in range(len(result)):
         #    print(result[i][2])
@@ -78,7 +78,7 @@ def main():
         #    print(result[i][3])
         #print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
 
-        headTowardsModel(clientID, "Goal", hokuyo)
+        #headTowardsModel(clientID, "Goal", hokuyo)
         # Stop simulation:
         vrep.simxStopSimulation(clientID,vrep.simx_opmode_oneshot_wait)
 
