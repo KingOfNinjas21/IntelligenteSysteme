@@ -38,6 +38,20 @@ def main():
         hokuyo = rangeSen.getSensorHandles(clientID)
         res, rayHit = move.headTowardsModel(clientID, "Goal", hokuyo)
         move.wallOrient(clientID,hokuyo, rayHit)
+
+        while(True):
+            moving = True
+            while moving:
+                move.forward(0.1, clientID)     # move in small steps
+                rangeData = rangeSen.getSensorData(clientID, hokuyo)
+                for i in range (595, 618):      # mesure range to wall. Stop moving if range is greater then 0.5
+                    if(rangeData[i][3] >= 0.5):
+                        print("rangeData at %d is %f" % (i, rangeData[i][3]))
+                        moving = False
+
+            reached, rayHit = move.headTowardsModel(clientID, "Goal", hokuyo)   # drive to the goal (untill you hit the wall)
+            move.wallOrient(clientID, hokuyo, rayHit)                           # reorient to wall
+
         res, aux, auxD = vrep.simxReadVisionSensor(clientID, hokuyo[0], vrep.simx_opmode_streaming)
         res, aux, auxD = vrep.simxReadVisionSensor(clientID, hokuyo[1], vrep.simx_opmode_streaming)        
 
