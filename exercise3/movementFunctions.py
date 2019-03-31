@@ -344,13 +344,18 @@ def wallOrient(clientID, rangeSensorHandles, rayHit):
 
     rotateUntilOrientation(clientID, a)
     
-def detectCorner(clientID, rangeSensorHandles, rayHit):
+def detectCorner(clientID, rangeSensorHandles, rayHit, isRight):
     rangeData = rangeSensor.getSensorData(clientID, rangeSensorHandles)
 
     x1 = rangeData[rayHit][0]
     y1 = rangeData[rayHit][1]
-    x2 = rangeData[rayHit+15][0]
-    y2 = rangeData[rayHit+15][1]
+    if(isRight):
+        x2 = rangeData[rayHit+15][0]
+        y2 = rangeData[rayHit+15][1]
+
+    else:
+        x2 = rangeData[rayHit-15][0]
+        y2 = rangeData[rayHit-15][1]
 
     print("x1:",x1,"x2:",x2,"y1:",y1,"y2:",y2)
 
@@ -383,19 +388,14 @@ def forwardUntilCorner(clientID, rangeSensorHandles, isRight):
         time.sleep(1.0e-06)         # problems with very small time slices -> little delay (if you have a bad angle calculation on your pc try to change this value)
         end = time.time()
         dt = end-start
-        if(not isRight):
-            corner = detectCorner(clientID,rangeSensorHandles,665)
+        if(isRight):
+            corner = detectCorner(clientID,rangeSensorHandles,665,isRight)
             print("1")
         else:
             print("r")
-            corner = detectCorner(clientID, rangeSensorHandles,0)
+            corner = detectCorner(clientID, rangeSensorHandles,15,isRight)
 
     # stop moving
     setWheelVelocity(clientID, 0)
 
     return(stop)
-
-
-
-
-
