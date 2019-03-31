@@ -92,6 +92,7 @@ def forwardUntilObstacleAnywhere(meter, clientID, rangeSensorHandles):
         for i in range(95, 588): #95 and 588 are estimated values for data from range sensor which are between -90 and 90 degrees (0 is front)
             if rangeData[i][3]<=0.3:
                 stop=True
+                hit = i
                 break
 
         x, y, w = odometry(x, y, 0.0, FORWARD_VEL, 0.0, 0.0, dt)
@@ -103,7 +104,7 @@ def forwardUntilObstacleAnywhere(meter, clientID, rangeSensorHandles):
     # stop moving
     setWheelVelocity(clientID, 0)
 
-    return(stop)
+    return(stop, hit)
 
 # drives forwards for meter meters as long as there is no obstacle in front, only 2 laser ranges are used here
 # returns true if the bot encounterd an obstacle, and false if the bot drove for meter meters
@@ -291,9 +292,9 @@ def headTowardsModel(clientID, modelName, rangeSensorHandles):
     rotateUntilOrientation(clientID, targetOrientation)
     
     dist = calcDistanceToTarget(pos[0], pos[1], xTarget, yTarget)
-    case = forwardUntilObstacleAnywhere(dist, clientID, rangeSensorHandles)
+    case, hit  = forwardUntilObstacleAnywhere(dist, clientID, rangeSensorHandles)
     print("headTowardsModel end with {}".format(case))
-    return case
+    return case, hit
 
 # calculates distance between 2 x,y coordinates
 def calcDistanceToTarget(xStart, yStart, xEnd, yEnd):
@@ -328,3 +329,19 @@ def calcTargetOrient(clientID, xStart, yStart, xEnd, yEnd):
 
 
     return targetOrient
+
+def wallOrient(clientID, rangeSensorHandles, rayHit):
+    rangeData = rangeSensor.getSensorData(clientID, rangeSensorHandles)
+
+    x1 = rangeData[rayHit][0]
+    y1 = rangeData[rayHit][1]
+    x2 = rangeData[rayHit+10][0]
+    y2 = rangeData[rayHit+10][1]
+    if(y2 > y1):
+        a = calcTargetOrient(clientID, x2,y2,x1,y1)
+    else:
+        a = calcTargetOrient(clientID, x1,y1,x2,y2)
+
+    rotateUntilOrientation(clientID, a)
+
+

@@ -36,7 +36,8 @@ def main():
         # initialize sensor and get sensor handles:
         hokuyo = rangeSen.initializeSensor(clientID)
 
-        move.headTowardsModel(clientID, "Goal", hokuyo)
+        res, rayHit = move.headTowardsModel(clientID, "Goal", hokuyo)
+        move.wallOrient(clientID,hokuyo, rayHit)
         res, aux, auxD = vrep.simxReadVisionSensor(clientID, hokuyo[0], vrep.simx_opmode_streaming)
         res, aux, auxD = vrep.simxReadVisionSensor(clientID, hokuyo[1], vrep.simx_opmode_streaming)        
 
