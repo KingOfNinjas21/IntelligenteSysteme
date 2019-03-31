@@ -343,5 +343,59 @@ def wallOrient(clientID, rangeSensorHandles, rayHit):
         a = calcTargetOrient(clientID, x1,y1,x2,y2)
 
     rotateUntilOrientation(clientID, a)
+    
+def detectCorner(clientID, rangeSensorHandles, rayHit):
+    rangeData = rangeSensor.getSensorData(clientID, rangeSensorHandles)
+
+    x1 = rangeData[rayHit][0]
+    y1 = rangeData[rayHit][1]
+    x2 = rangeData[rayHit+15][0]
+    y2 = rangeData[rayHit+15][1]
+
+    print("x1:",x1,"x2:",x2,"y1:",y1,"y2:",y2)
+
+    if(abs(x1) < abs(x2) - 1):
+        return True
+    if(abs(y1) < abs(y2) - 1):
+        return True
+
+    return False
+
+def forwardUntilCorner(clientID, rangeSensorHandles, isRight):
+    # set velocety to 0
+    setWheelVelocity(clientID, 0)
+    # start moving
+    startMoving(clientID)
+    # continuously check traveled distance
+    distance = 0.0
+    dt = 0.0
+    x = 0.0
+    y = 0.0
+    stop = False
+    corner = False
+    while not corner:
+        start = time.time()
+        # get range sensor data as list of x,y,z,distance
+        rangeData = rangeSensor.getSensorData(clientID, rangeSensorHandles)
+
+        x, y, w = odometry(x, y, 0.0, FORWARD_VEL, 0.0, 0.0, dt)
+        distance = math.sqrt(x*x+y*y)
+        time.sleep(1.0e-06)         # problems with very small time slices -> little delay (if you have a bad angle calculation on your pc try to change this value)
+        end = time.time()
+        dt = end-start
+        if(not isRight):
+            corner = detectCorner(clientID,rangeSensorHandles,665)
+            print("1")
+        else:
+            print("r")
+            corner = detectCorner(clientID, rangeSensorHandles,0)
+
+    # stop moving
+    setWheelVelocity(clientID, 0)
+
+    return(stop)
+
+
+
 
 
