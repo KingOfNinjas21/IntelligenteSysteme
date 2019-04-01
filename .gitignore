@@ -10,3 +10,11 @@ exercise3/vrepConst\.py
 exercise3/vrepConst\.pyc
 
 *.pyc
+
+exercise3/.idea/
+
+exercise3/venv/
+
+exercise3/venvNew/
+
+exercise3/venvNewNew/
