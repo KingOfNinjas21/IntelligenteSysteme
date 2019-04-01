@@ -408,9 +408,9 @@ def forwardUntilCorner(clientID, rangeSensorHandles, isRight):
 # distNextObstacle - The distance to another obstacle arount the robot (not the obstacle the robot is following) (max value if no obstacle around)
 # returns True if the leaving condtion holds, falls otherwise and the new minDist
 def calcLeavingConditin(minDist, distNextObstacle, clientID):
-	leave = False
+    leave = False
 	
-	# calc current dist. to target
+    # calc current dist. to target
     targetPosition = vrep.simxGetObjectPosition(clientID, objHandle, -1, vrep.simx_opmode_oneshot_wait)
     xTarget = targetPosition[1][0]
     yTarget = targetPosition[1][1]
@@ -422,15 +422,15 @@ def calcLeavingConditin(minDist, distNextObstacle, clientID):
     
     # calc leaving condition
     if dist - distNextObstacle <= minDist - STEP:
-		leave = True
+        leave = True
     
     
     # set minDist if neccesary
     if dist < minDist:
-		mindist = dist
+        mindist = dist
 		
 		
-	return leave, minDist
+    return leave, minDist
 
     
 	
@@ -440,9 +440,6 @@ def calcLeavingConditin(minDist, distNextObstacle, clientID):
 def followBoundary():
     # starts following
     return 0
-
-def paddFunc():
-    return False;
 
 def freespaceCondition(clientID, hitPoint):
     sensorData = rangeSensor.getSensorData(clientID, rangeSensor.getSensorHandles(clientID))
@@ -467,11 +464,11 @@ def distBug(clientID, goalName):
         isGoal, ray = headTowardsModel(clientID, goalName)
         if isGoal:
             followBoudary()
-            while distToTarget-freespaceToTarget>0 or paddyFunc() or completedLoop(): # Hier die Abbruchbedingungen
+            while  not freepspaceCond or  not leavingCondition or completedLoop():
                 currentPos = getPos()
                 newDistToTarget = calcDistanceToTarget(currentPos[0],currentPos[1],xTarget, yTarget)
-                distToTarget = min(distToTarget, newDistToTarget)
                 freepspaceCond = freespaceCondition(clientID, ray)
+                leavingCondition = calcLeavingConditin(distToTarget, distNextObstacle, clientID)
             stopFollowBoudary()
 
         else:
