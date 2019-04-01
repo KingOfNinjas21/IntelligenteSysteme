@@ -14,6 +14,8 @@ FORWARD_VEL =  -2.0
 SIDEWARD_VEL =  2.0
 ROTATE_VEL =  2.0
 
+STEP = 2.0	# constant for the leaving condition
+
 def getWheelJoints(clientID):
     # Retrieve wheel joint handles:
     wheelJoints = np.empty(4, dtype=np.int)
@@ -399,3 +401,37 @@ def forwardUntilCorner(clientID, rangeSensorHandles, isRight):
     setWheelVelocity(clientID, 0)
 
     return(stop)
+    
+    
+# This function calculates the leaving condition for the DistBug algorithm.
+# For the calculation the minimum distance to the target needs to be tracked (it will be updated in this function).
+# distNextObstacle - The distance to another obstacle arount the robot (not the obstacle the robot is following) (max value if no obstacle around)
+# returns True if the leaving condtion holds, falls otherwise and the new minDist
+def calcLeavingConditin(minDist, distNextObstacle, clientID):
+	leave = False
+	
+	# calc current dist. to target
+    targetPosition = vrep.simxGetObjectPosition(clientID, objHandle, -1, vrep.simx_opmode_oneshot_wait)
+    xTarget = targetPosition[1][0]
+    yTarget = targetPosition[1][1]
+
+    pos, ori = getPos(clientID)
+    
+    dist = calcDistanceToTarget(pos[0], pos[1], xTarget, yTarget)
+    
+    
+    # calc leaving condition
+    if dist - distNextObstacle <= minDist - STEP:
+		leave = True
+    
+    
+    # set minDist if neccesary
+    if dist < minDist:
+		mindist = dist
+		
+		
+	return leave, minDist
+
+    
+	
+	
