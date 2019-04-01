@@ -399,3 +399,44 @@ def forwardUntilCorner(clientID, rangeSensorHandles, isRight):
     setWheelVelocity(clientID, 0)
 
     return(stop)
+
+def followBoundary():
+    # starts following
+    return 0
+
+def paddFunc():
+    return False;
+
+def freespaceCondition(clientID, hitPoint):
+    sensorData = rangeSensor.getSensorData(clientID, rangeSensor.getSensorHandles(clientID))
+    freespaceToNextObstacle = sensorData[hitPoint][3]
+    freespaceToNextObstacle = min(freespaceToNextObstacle, 5)  # is the max sensor distance detected
+
+    return False;
+
+def completedLoop():
+    return False;
+
+def distBug(clientID, goalName):
+    res, objHandle = vrep.simxGetObjectHandle(clientID, goalName, vrep.simx_opmode_oneshot_wait)
+    targetPosition = vrep.simxGetObjectPosition(clientID, objHandle, -1, vrep.simx_opmode_oneshot_wait)
+    xTarget = targetPosition[1][0]
+    yTarget = targetPosition[1][1]
+    currentPos = getPos(clientID)
+    distToTarget = calcDistanceToTarget(currentPos[0],currentPos[1],xTarget, yTarget)
+
+    isGoal = True;
+    while isGoal:
+        isGoal, ray = headTowardsModel(clientID, goalName)
+        if isGoal:
+            followBoudary()
+            while distToTarget-freespaceToTarget>0 or paddyFunc() or completedLoop(): # Hier die Abbruchbedingungen
+                currentPos = getPos()
+                newDistToTarget = calcDistanceToTarget(currentPos[0],currentPos[1],xTarget, yTarget)
+                distToTarget = min(distToTarget, newDistToTarget)
+                freepspaceCond = freespaceCondition(clientID, ray)
+            stopFollowBoudary()
+
+        else:
+            break;
+
