@@ -408,7 +408,7 @@ def forwardUntilCorner(clientID, rangeSensorHandles, isRight):
 # distNextObstacle - The distance to another obstacle arount the robot (not the obstacle the robot is following) (max value if no obstacle around)
 # returns True if the leaving condtion holds, falls otherwise and the new minDist
 def calcLeavingConditin(minDist, distNextObstacle, clientID):
-	leave = False
+    leave = False
 	
 	# calc current dist. to target
     targetPosition = vrep.simxGetObjectPosition(clientID, objHandle, -1, vrep.simx_opmode_oneshot_wait)
@@ -422,15 +422,15 @@ def calcLeavingConditin(minDist, distNextObstacle, clientID):
     
     # calc leaving condition
     if dist - distNextObstacle <= minDist - STEP:
-		leave = True
+        leave = True
     
     
     # set minDist if neccesary
     if dist < minDist:
-		mindist = dist
+        mindist = dist
 		
 		
-	return leave, minDist
+    return leave, minDist
 
     
 	
