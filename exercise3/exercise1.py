@@ -36,10 +36,11 @@ def main():
         # initialize sensor and get sensor handles:
         rangeSen.initializeSensor(clientID)
         hokuyo = rangeSen.getSensorHandles(clientID)
-        res, rayHit = move.headTowardsModel(clientID, "Goal", hokuyo)
-        move.wallOrient(clientID,hokuyo, rayHit)
-        res, aux, auxD = vrep.simxReadVisionSensor(clientID, hokuyo[0], vrep.simx_opmode_streaming)
-        res, aux, auxD = vrep.simxReadVisionSensor(clientID, hokuyo[1], vrep.simx_opmode_streaming)        
+        #res, rayHit = move.headTowardsModel(clientID, "Goal", hokuyo)
+        #move.wallOrient(clientID,hokuyo, rayHit)
+
+        followBoundary(clientID, hokuyo)
+        #move.rotate(90, clientID, False)
 
 
         # Stop simulation:
@@ -52,21 +53,31 @@ def main():
     print ('Program ended')
 
 
-def followBoundary(clientID):
-    # initialize sensor
-    range.initializeSensor(clientID)
-    # Get sensor handle:
-    hokuyo = rangeSen.getSensorHandles(clientID)
-    
-    #eighter go left or right
-	
-	#while (not detectClearPath(clientID)):
-    #    rangeData = range.getSensorData(clientID, hokuyo[1])
-    # calculate diraction to move
-	# Two closest sensor values to the robot estimate the closest wall
-		
-	# follow boundary
-	
+def followBoundary(clientID, sensorHandles):
+    # 603 und 82
+
+    minRange = 0.5
+    maxRange = 0.6
+    rotateAngle = 1.0;
+    rangeToWallOld = rangeSen.getSensorData(clientID, sensorHandles)[603][3]
+    while True:
+        move.startMoving(clientID)
+        time.sleep(2)
+        rangeData = rangeSen.getSensorData(clientID, sensorHandles)
+        rangeToWallNew = rangeData[603][3]
+        print(rangeToWallNew)
+        if abs(rangeToWallNew-rangeToWallOld) > 1.0 :
+            rotateAngle = 90
+        if rangeToWallNew<minRange:
+            move.rotate(rotateAngle, clientID, True)
+        elif rangeToWallNew>maxRange:
+            move.rotate(rotateAngle, clientID, False)
+        rangeToWallOld = rangeToWallNew
+
+
+
+
+
 def detectClearPath(clientID):
     # todo: realize clear path
 	

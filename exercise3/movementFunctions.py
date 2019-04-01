@@ -161,7 +161,7 @@ def rotate(degree, clientID, rotRight):
     # continuously check traveled distance
     w = 0.0
     dt = 0.0
-    while w <= degree:
+    while abs(w) <= degree:
         start = time.time()
         x, y, w = odometry(0.0, 0.0, w, 0.0, 0.0, rotationVel, dt)
         time.sleep(1.0e-06)         # problems with very small time slices -> little delay (if you have a bad angle calculation on your pc try to change this value)
@@ -465,12 +465,10 @@ def distBug(clientID, goalName):
         if isGoal:
             followBoudary()
             while  not freepspaceCond or  not leavingCondition or completedLoop():
-                currentPos = getPos()
-                newDistToTarget = calcDistanceToTarget(currentPos[0],currentPos[1],xTarget, yTarget)
-                freepspaceCond = freespaceCondition(clientID, ray)
-                leavingCondition = calcLeavingConditin(distToTarget, distNextObstacle, clientID)
+                freepspaceCond, distToNextTarget = freespaceCondition(clientID, ray)
+                leavingCondition, distToTarget = calcLeavingConditin(distToTarget, distNextObstacle, clientID)
             stopFollowBoudary()
 
         else:
-            break;
+            break
 
