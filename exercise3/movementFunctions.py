@@ -332,39 +332,34 @@ def calcTargetOrient(clientID, xStart, yStart, xEnd, yEnd):
 
     return targetOrient
 
+
 def wallOrient(clientID, rangeSensorHandles, rayHit):
+    print("start wallOrient ")
     rangeData = rangeSensor.getSensorData(clientID, rangeSensorHandles)
 
     x1 = rangeData[rayHit][0]
     y1 = rangeData[rayHit][1]
     x2 = rangeData[rayHit+10][0]
     y2 = rangeData[rayHit+10][1]
+
     if(y2 > y1):
         a = calcTargetOrient(clientID, x2,y2,x1,y1)
+        isRight= True
+    
     else:
         a = calcTargetOrient(clientID, x1,y1,x2,y2)
-
-    rotateUntilOrientation(clientID, a)
+        isRight= False
     
+    rotateUntilOrientation(clientID, a)
+    print("ends wallOrient ")
+    return isRight
+
 def detectCorner(clientID, rangeSensorHandles, rayHit, isRight):
     rangeData = rangeSensor.getSensorData(clientID, rangeSensorHandles)
 
-    x1 = rangeData[rayHit][0]
-    y1 = rangeData[rayHit][1]
-    if(isRight):
-        x2 = rangeData[rayHit+15][0]
-        y2 = rangeData[rayHit+15][1]
-
-    else:
-        x2 = rangeData[rayHit-15][0]
-        y2 = rangeData[rayHit-15][1]
-
-    print("x1:",x1,"x2:",x2,"y1:",y1,"y2:",y2)
-
-    if(abs(x1) < abs(x2) - 1):
-        return True
-    if(abs(y1) < abs(y2) - 1):
-        return True
+    for i in range(rayHit, rayHit+15):
+        if(rangeData[i][3] < rangeData[i+5][3] - 1 or rangeData[i][3]-1 > rangeData[i+5][3]):
+            return True 
 
     return False
 
