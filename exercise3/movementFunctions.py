@@ -410,7 +410,7 @@ def forwardUntilCorner(clientID, rangeSensorHandles, isRight):
 def calcLeavingConditin(minDist, distNextObstacle, clientID):
     leave = False
 	
-	# calc current dist. to target
+    # calc current dist. to target
     res, objHandle = vrep.simxGetObjectHandle(clientID, "Goal", vrep.simx_opmode_oneshot_wait)
     targetPosition = vrep.simxGetObjectPosition(clientID, objHandle, -1, vrep.simx_opmode_oneshot_wait)
     xTarget = targetPosition[1][0]
@@ -434,10 +434,9 @@ def calcLeavingConditin(minDist, distNextObstacle, clientID):
     return leave, minDist
 
 
-# This function gets the angle from the robot to the goal and returns the 
-# index of the ray pointing to the goal
+# This function returns the index of the ray pointing to the goal
 # Some small tests show that this function has an anomaly by +-4°
-def getRayBasedOnAngle(angle, clientID):
+def getRayToTarget(clientID):
     # calculate angle to target
     targetOrientation = calcOrientationToTarget(clientID, "Goal")
     robotOrientation = getOrientation(clientID)
