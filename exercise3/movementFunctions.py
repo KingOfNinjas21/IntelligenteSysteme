@@ -411,6 +411,7 @@ def calcLeavingConditin(minDist, distNextObstacle, clientID):
     leave = False
 	
 	# calc current dist. to target
+    res, objHandle = vrep.simxGetObjectHandle(clientID, "Goal", vrep.simx_opmode_oneshot_wait)
     targetPosition = vrep.simxGetObjectPosition(clientID, objHandle, -1, vrep.simx_opmode_oneshot_wait)
     xTarget = targetPosition[1][0]
     yTarget = targetPosition[1][1]
@@ -435,8 +436,53 @@ def calcLeavingConditin(minDist, distNextObstacle, clientID):
 
 # This function gets the angle from the robot to the goal and returns the 
 # index of the ray pointing to the goal
-def getRayBasedOnAngle(angle):
-	return null
+def getRayBasedOnAngle(angle, clientID):
+    ray = 0
+
+    # calculate angle to target
+    targetOrientation = calcOrientationToTarget(clientID, "Goal")
+    robotOrientation = getOrientation(clientID)
+
+    angleToTarget = substractOrientation(targetOrientation, robotOrientation)
+
+
+    # choose between left and right sensor and
+    # calculate ray pointing to target
+    if angleToTarget > 0:   # left sensor
+        calcRay = math.fabs(angleToTarget) / 0.351      # calculate ray as float
+        calcRay = round(calcRay)                        # round to int
+        ray = calcRay + 342                            # add first idx of left sensor
+    else:                   # right sensor
+        calcRay = (120 - math.fabs(angleToTarget)) / 0.351
+        ray = round(calcRay)
+
+    return ray
+
+
+def calcOrientationToTarget(clientID, targetName):
+    res, objHandle = vrep.simxGetObjectHandle(clientID, targetName, vrep.simx_opmode_oneshot_wait)
+
+    targetPosition = vrep.simxGetObjectPosition(clientID, objHandle, -1, vrep.simx_opmode_oneshot_wait)
+    xTarget = targetPosition[1][0]
+    yTarget = targetPosition[1][1]
+    pos, ori = getPos(clientID)
+
+    targetOrientation = calcTargetOrient(clientID, pos[0], pos[1], xTarget, yTarget)
+
+    return targetOrientation
+
+
+
+# This function substracts two orientation. It returns the substracted orientation in a range (-180,+180].
+def substractOrientation(orientationA, orientationB):
+    newOrientation = orientationA - orientationB
+
+    if newOrientation <= -180:               # new orientation changed from negative to positive
+        newOrientation = 180 + (newOrientation + 180)
+    elif newOrientation > 180:              # new orientation changed from positive to negative
+        newOrientation = -180 + (newOrientation - 180)
+
+    return newOrientation
     
 	
 	
