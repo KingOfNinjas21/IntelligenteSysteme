@@ -26,19 +26,19 @@ def main():
         print("startPos:")
         move.printPos(clientID)
 
-        move.forward(2, clientID)
+        move.forward(5, clientID)
         move.rotate(90, True, clientID)
         move.printPos(clientID)
 
-        move.forward(2, clientID)
+        move.forward(5, clientID)
         move.rotate(90, True, clientID)
         move.printPos(clientID)
 
-        move.forward(2, clientID)
+        move.forward(5, clientID)
         move.rotate(90, True, clientID)
         move.printPos(clientID)
 
-        move.forward(2, clientID)
+        move.forward(5, clientID)
         move.rotate(90, True, clientID)
         move.printPos(clientID)
 
