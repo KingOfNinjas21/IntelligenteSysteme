@@ -436,9 +436,8 @@ def calcLeavingConditin(minDist, distNextObstacle, clientID):
 
 # This function gets the angle from the robot to the goal and returns the 
 # index of the ray pointing to the goal
+# Some small tests show that this function has an anomaly by +-4°
 def getRayBasedOnAngle(angle, clientID):
-    ray = 0
-
     # calculate angle to target
     targetOrientation = calcOrientationToTarget(clientID, "Goal")
     robotOrientation = getOrientation(clientID)
@@ -449,12 +448,12 @@ def getRayBasedOnAngle(angle, clientID):
     # choose between left and right sensor and
     # calculate ray pointing to target
     if angleToTarget > 0:   # left sensor
-        calcRay = math.fabs(angleToTarget) / 0.351      # calculate ray as float
-        calcRay = round(calcRay)                        # round to int
-        ray = calcRay + 342                            # add first idx of left sensor
+        ray = math.fabs(angleToTarget) / 0.351      # calculate ray as float
+        ray = round(ray)                            # round to int
+        ray += 342                                  # add first idx of left sensor
     else:                   # right sensor
-        calcRay = (120 - math.fabs(angleToTarget)) / 0.351
-        ray = round(calcRay)
+        ray = (120 - math.fabs(angleToTarget)) / 0.351
+        ray = round(ray)
 
     return ray
 
