@@ -39,7 +39,10 @@ def main():
         #res, rayHit = move.headTowardsModel(clientID, "Goal", hokuyo)
         #move.wallOrient(clientID,hokuyo, rayHit)
 
-        followBoundary(clientID, hokuyo)
+        reason, rayHit = move.headTowardsModel(clientID, "Goal", hokuyo)
+        side = move.wallOrient(clientID, hokuyo, rayHit)
+        print("Wall orient returned: ", side)
+        followBoundary(clientID, hokuyo, side)
         #move.rotate(90, clientID, False)
 
 
@@ -53,29 +56,55 @@ def main():
     print ('Program ended')
 
 
-def followBoundary(clientID, sensorHandles):
+def followBoundary(clientID, sensorHandles, rightSide):
     # 603 und 82
-
-    minRange = 0.5
-    maxRange = 0.6
+    if rightSide:
+        rayHit = 603
+    else:
+        rayHit = 82
     rotateAngle = 1.0;
-    rangeToWallOld = rangeSen.getSensorData(clientID, sensorHandles)[603][3]
+    rangeToWallOld = rangeSen.getSensorData(clientID, sensorHandles)[rayHit][3]
+    minRange = rangeToWallOld-0.1
+    maxRange = rangeToWallOld+0.1
+    counter = 0
     while True:
-        move.startMoving(clientID)
-        time.sleep(2)
-        rangeData = rangeSen.getSensorData(clientID, sensorHandles)
-        rangeToWallNew = rangeData[603][3]
-        print(rangeToWallNew)
-        if abs(rangeToWallNew-rangeToWallOld) > 1.0 :
-            rotateAngle = 90
-        if rangeToWallNew<minRange:
-            move.rotate(rotateAngle, clientID, True)
-        elif rangeToWallNew>maxRange:
-            move.rotate(rotateAngle, clientID, False)
-        rangeToWallOld = rangeToWallNew
+        while not move.detectCorner(clientID, sensorHandles, rayHit, rightSide):
+            rangeData = rangeSen.getSensorData(clientID, sensorHandles)
+            if rangeData[307][3]<0.5 or rangeData[378][3] < 0.5:
+                move.wallOrient(clientID, sensorHandles, 307)
 
 
 
+            move.startMoving(clientID)
+            if counter % 5 == 0:
+
+                rangeToWallNew = rangeData[rayHit][3]
+                print(rangeToWallNew)
+                if rangeToWallNew<minRange:
+                    move.rotate(rotateAngle, clientID, True)
+                elif rangeToWallNew>maxRange:
+                    move.rotate(rotateAngle, clientID, False)
+
+                #else:
+                #    move.wallOrient(clientID, sensorHandles, 603)
+                rangeToWallOld = rangeToWallNew
+
+            counter+=1
+        move.forward(0.8, clientID)
+        move.rotate(90, clientID, not rightSide)
+        move.forward(0.8, clientID)
+        while True:
+            move.forward(0.2, clientID)
+            rangeData = rangeSen.getSensorData(clientID, sensorHandles)
+            countRays = 0
+            for i in range(rayHit-80, rayHit+80):
+                if rangeData[i][3] < 0.8:
+                    countRays+=1
+            if countRays<5:
+                break
+        move.rotate(90, clientID, not rightSide)
+        move.forward(1.0, clientID)
+        move.wallOrient(clientID, sensorHandles, rayHit)
 
 
 def detectClearPath(clientID):
