@@ -14,7 +14,7 @@ FORWARD_VEL =  -2.0
 SIDEWARD_VEL =  2.0
 ROTATE_VEL =  2.0
 
-STEP = 3.0	# constant for the leaving condition
+STEP = 3.5	# constant for the leaving condition
 RAY_ANGLE = 120.0/342.0
 
 
@@ -409,7 +409,7 @@ def forwardUntilCorner(clientID, rangeSensorHandles, isRight):
 # returns True if the leaving condtion holds, falls otherwise and the new minDist
 def calcLeavingConditin(minDist, distNextObstacle, clientID):
     leave = False
-	
+
     # calc current dist. to target
     res, objHandle = vrep.simxGetObjectHandle(clientID, "Goal", vrep.simx_opmode_oneshot_wait)
     targetPosition = vrep.simxGetObjectPosition(clientID, objHandle, -1, vrep.simx_opmode_oneshot_wait)
@@ -419,18 +419,22 @@ def calcLeavingConditin(minDist, distNextObstacle, clientID):
     pos, ori = getPos(clientID)
     
     dist = calcDistanceToTarget(pos[0], pos[1], xTarget, yTarget)
+
+    if minDist == -1.0:     # init minDist
+        minDist = dist
     
     
     # calc leaving condition
     if dist - distNextObstacle <= minDist - STEP:
+        print("dist: %f | distNextObstacle: %f | minDist: %f" % (dist, distNextObstacle, minDist))
         leave = True
     
     
     # set minDist if neccesary
     if dist < minDist:
-        mindist = dist
-		
-		
+        minDist = dist
+
+
     return leave, minDist
 
 # calculates the freespace distance to the goal
@@ -506,10 +510,10 @@ def freespaceCondition(clientID, hitPoint):
     freespaceToNextObstacle = sensorData[hitPoint][3]
     freespaceToNextObstacle = min(freespaceToNextObstacle, 5)  # is the max sensor distance detected
 
-    return False;
+    return False
 
 def completedLoop():
-    return False;
+    return False
 
 def distBug(clientID, goalName):
     res, objHandle = vrep.simxGetObjectHandle(clientID, goalName, vrep.simx_opmode_oneshot_wait)
@@ -519,15 +523,15 @@ def distBug(clientID, goalName):
     currentPos = getPos(clientID)
     distToTarget = calcDistanceToTarget(currentPos[0],currentPos[1],xTarget, yTarget)
 
-    isGoal = True;
+    isGoal = True
     while isGoal:
         isGoal, ray = headTowardsModel(clientID, goalName)
         if isGoal:
-            followBoudary()
+            followBoundary()
             while  not freepspaceCond or  not leavingCondition or completedLoop():
                 freepspaceCond, distToNextTarget = freespaceCondition(clientID, ray)
                 leavingCondition, distToTarget = calcLeavingConditin(distToTarget, distNextObstacle, clientID)
-            stopFollowBoudary()
+            stopFollowBoundary()
 
         else:
             break

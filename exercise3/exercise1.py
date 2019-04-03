@@ -70,7 +70,7 @@ def followBoundary(clientID, sensorHandles, rightSide):
     maxRange = rangeToWallOld+0.1
     counter = 0
 
-    minDistToTarget = sys.float_info.max
+    minDistToTarget = -1.0
 
 
     while True:
@@ -97,14 +97,18 @@ def followBoundary(clientID, sensorHandles, rightSide):
 
             counter+=1
 
+            # calc stuff for leaving condition
+            freespace = move.calcFreeSpace(clientID, sensorHandles)
+            print("freespace to goal: %f" % freespace)
+            leavingCondition, minDistToTarget = move.calcLeavingConditin(minDistToTarget, freespace, clientID)
+            print("min dist: %f" % minDistToTarget)
 
-        # calc stuff for leaving condition
-        leavingCondition, minDistToTarget = move.calcLeavingConditin(minDistToTarget, move.calcFreeSpace(clientID, sensorHandles), clientID)
+            if leavingCondition:
+                print("leaving cause of leaving condition")
+                return
 
 
-        if leavingCondition:
-            return
-
+        print("drive around corner")
 
         move.forward(0.8, clientID)
         move.rotate(90, clientID, not rightSide)
