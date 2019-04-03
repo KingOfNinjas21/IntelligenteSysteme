@@ -64,7 +64,7 @@ def followBoundary(clientID, sensorHandles, rightSide):
         rayHit = 603
     else:
         rayHit = 82
-    rotateAngle = 1.0;
+    rotateAngle = 1.0
     rangeToWallOld = rangeSen.getSensorData(clientID, sensorHandles)[rayHit][3]
     minRange = rangeToWallOld-0.1
     maxRange = rangeToWallOld+0.1
@@ -99,9 +99,7 @@ def followBoundary(clientID, sensorHandles, rightSide):
 
             # calc stuff for leaving condition
             freespace = move.calcFreeSpace(clientID, sensorHandles)
-            print("freespace to goal: %f" % freespace)
             leavingCondition, minDistToTarget = move.calcLeavingConditin(minDistToTarget, freespace, clientID)
-            print("min dist: %f" % minDistToTarget)
 
             if leavingCondition:
                 print("leaving cause of leaving condition")

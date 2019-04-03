@@ -426,7 +426,6 @@ def calcLeavingConditin(minDist, distNextObstacle, clientID):
     
     # calc leaving condition
     if dist - distNextObstacle <= minDist - STEP:
-        print("dist: %f | distNextObstacle: %f | minDist: %f" % (dist, distNextObstacle, minDist))
         leave = True
     
     
