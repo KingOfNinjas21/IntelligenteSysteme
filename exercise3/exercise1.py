@@ -8,6 +8,7 @@ import time
 import math
 import movementFunctions as move
 import rangeSensorFunctions as rangeSen
+import sys
 
 def main():
     print ('Program started')
@@ -36,13 +37,14 @@ def main():
         # initialize sensor and get sensor handles:
         rangeSen.initializeSensor(clientID)
         hokuyo = rangeSen.getSensorHandles(clientID)
-        #res, rayHit = move.headTowardsModel(clientID, "Goal", hokuyo)
+        res, rayHit = move.headTowardsModel(clientID, "Goal", hokuyo)
         #move.wallOrient(clientID,hokuyo, rayHit)
 
-        reason, rayHit = move.headTowardsModel(clientID, "Goal", hokuyo)
+        #reason, rayHit = move.headTowardsModel(clientID, "Goal", hokuyo)
         side = move.wallOrient(clientID, hokuyo, rayHit)
-        print("Wall orient returned: ", side)
+        #print("Wall orient returned: ", side)
         followBoundary(clientID, hokuyo, side)
+        move.headTowardsModel(clientID, "Goal", hokuyo)
         #move.rotate(90, clientID, False)
 
 
@@ -67,6 +69,10 @@ def followBoundary(clientID, sensorHandles, rightSide):
     minRange = rangeToWallOld-0.1
     maxRange = rangeToWallOld+0.1
     counter = 0
+
+    minDistToTarget = sys.float_info.max
+
+
     while True:
         while not move.detectCorner(clientID, sensorHandles, rayHit, rightSide):
             rangeData = rangeSen.getSensorData(clientID, sensorHandles)
@@ -90,6 +96,16 @@ def followBoundary(clientID, sensorHandles, rightSide):
                 rangeToWallOld = rangeToWallNew
 
             counter+=1
+
+
+        # calc stuff for leaving condition
+        leavingCondition, minDistToTarget = move.calcLeavingConditin(minDistToTarget, move.calcFreeSpace(clientID, sensorHandles), clientID)
+
+
+        if leavingCondition:
+            return
+
+
         move.forward(0.8, clientID)
         move.rotate(90, clientID, not rightSide)
         move.forward(0.8, clientID)

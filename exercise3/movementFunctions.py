@@ -14,7 +14,9 @@ FORWARD_VEL =  -2.0
 SIDEWARD_VEL =  2.0
 ROTATE_VEL =  2.0
 
-STEP = 2.0	# constant for the leaving condition
+STEP = 3.0	# constant for the leaving condition
+RAY_ANGLE = 120.0/342.0
+
 
 def getWheelJoints(clientID):
     # Retrieve wheel joint handles:
@@ -431,9 +433,20 @@ def calcLeavingConditin(minDist, distNextObstacle, clientID):
 		
     return leave, minDist
 
+# calculates the freespace distance to the goal
+def calcFreeSpace(clientID, sensorHandles):
+    rangeData = rangeSensor.getSensorData(clientID, sensorHandles)
+    ray = getRayToTarget(clientID)
+
+    minDist = rangeData[ray][3]
+    for i in range(ray-20, ray+20):
+        if rangeData[i][3] < minDist:
+            minDist = rangeData[i][3]
+
+    return minDist
 
 # This function returns the index of the ray pointing to the goal
-# Some small tests show that this function has an anomaly by +-4°
+# Some small tests show that this function has an anomaly by +-4 degrees
 def getRayToTarget(clientID):
     # calculate angle to target
     targetOrientation = calcOrientationToTarget(clientID, "Goal")
@@ -445,14 +458,14 @@ def getRayToTarget(clientID):
     # choose between left and right sensor and
     # calculate ray pointing to target
     if angleToTarget > 0:   # left sensor
-        ray = math.fabs(angleToTarget) / 0.351      # calculate ray as float
+        ray = math.fabs(angleToTarget) / RAY_ANGLE      # calculate ray as float
         ray = round(ray)                            # round to int
         ray += 342                                  # add first idx of left sensor
     else:                   # right sensor
-        ray = (120 - math.fabs(angleToTarget)) / 0.351
+        ray = (120 - math.fabs(angleToTarget)) / RAY_ANGLE
         ray = round(ray)
 
-    return ray
+    return int(ray)
 
 
 def calcOrientationToTarget(clientID, targetName):
