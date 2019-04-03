@@ -12,6 +12,8 @@ import sys
 
 def main():
     print ('Program started')
+    emptybuf = bytearray()
+
     vrep.simxFinish(-1) # just in case, close all opened connections
     clientID = vrep.simxStart('127.0.0.1', 19997, True, True, 2000, 5)
 
@@ -19,36 +21,31 @@ def main():
 
     if clientID!=-1:
         print ('Connected to remote API server')
-    
-        emptyBuff = bytearray()
-    
+
+
         # Start the simulation:
         vrep.simxStartSimulation(clientID,vrep.simx_opmode_oneshot_wait)
-    
-        # initialize robot
-        # Retrieve wheel joint handles:
-        wheelJoints=np.empty(4, dtype=np.int); wheelJoints.fill(-1) #front left, rear left, rear right, front right
-        res,wheelJoints[0]=vrep.simxGetObjectHandle(clientID,'rollingJoint_fl',vrep.simx_opmode_oneshot_wait)
-        res,wheelJoints[1]=vrep.simxGetObjectHandle(clientID,'rollingJoint_rl',vrep.simx_opmode_oneshot_wait)
-        res,wheelJoints[2]=vrep.simxGetObjectHandle(clientID,'rollingJoint_fr',vrep.simx_opmode_oneshot_wait)
-        res,wheelJoints[3]=vrep.simxGetObjectHandle(clientID,'rollingJoint_rr',vrep.simx_opmode_oneshot_wait)
 
+        wheelJoints = np.empty(4, dtype=np.int)
+        wheelJoints.fill(-1)  # front left, rear left, rear right, front right
+        res, wheelJoints[0] = vrep.simxGetObjectHandle(clientID, 'rollingJoint_fl', vrep.simx_opmode_oneshot_wait)
+        res, wheelJoints[1] = vrep.simxGetObjectHandle(clientID, 'rollingJoint_rl', vrep.simx_opmode_oneshot_wait)
+        res, wheelJoints[2] = vrep.simxGetObjectHandle(clientID, 'rollingJoint_fr', vrep.simx_opmode_oneshot_wait)
+        res, wheelJoints[3] = vrep.simxGetObjectHandle(clientID, 'rollingJoint_rr', vrep.simx_opmode_oneshot_wait)
+
+        # programable space --------------------------------------------------------------------------------------------
 
         # initialize sensor and get sensor handles:
         rangeSen.initializeSensor(clientID)
         hokuyo = rangeSen.getSensorHandles(clientID)
         res, rayHit = move.headTowardsModel(clientID, "Goal", hokuyo)
-        #move.wallOrient(clientID,hokuyo, rayHit)
 
-        #reason, rayHit = move.headTowardsModel(clientID, "Goal", hokuyo)
         side = move.wallOrient(clientID, hokuyo, rayHit)
-        #print("Wall orient returned: ", side)
         followBoundary(clientID, hokuyo, side)
         move.headTowardsModel(clientID, "Goal", hokuyo)
-        #move.rotate(90, clientID, False)
 
 
-        # Stop simulation:
+        # Stop simulation ----------------------------------------------------------------------------------------------
         vrep.simxStopSimulation(clientID,vrep.simx_opmode_oneshot_wait)
 
         # Now close the connection to V-REP:
@@ -127,7 +124,7 @@ def followBoundary(clientID, sensorHandles, rightSide):
 
 def detectClearPath(clientID):
     # todo: realize clear path
-	
+
 	return False
 
 

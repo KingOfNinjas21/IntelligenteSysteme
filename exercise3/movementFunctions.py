@@ -17,6 +17,9 @@ ROTATE_VEL =  2.0
 STEP = 3.5	# constant for the leaving condition
 RAY_ANGLE = 120.0/342.0
 
+FRONT_SEN_START = 322
+FRONT_SEN_END = 357
+
 
 def getWheelJoints(clientID):
     # Retrieve wheel joint handles:
@@ -110,7 +113,7 @@ def forwardUntilObstacleAnywhere(meter, clientID, rangeSensorHandles):
 
     return(stop, hit)
 
-# drives forwards for meter meters as long as there is no obstacle in front, only 2 laser ranges are used here
+# drives forwards for meter meters as long as there is no obstacle in front. A pool of lasers is used here.
 # returns true if the bot encounterd an obstacle, and false if the bot drove for meter meters
 def forwardUntilObstacleFront(meter, clientID, rangeSensorHandles):
     # set velocety to 0
@@ -127,9 +130,10 @@ def forwardUntilObstacleFront(meter, clientID, rangeSensorHandles):
         start = time.time()
         # get range sensor data as list of x,y,z,distance
         rangeData = rangeSensor.getSensorData(clientID, rangeSensorHandles)
-        if rangeData[342][3] <= 0.3 and rangeData[343][3] <= 0.3:
-            stop=True
-            break
+        for i in range(FRONT_SEN_START,FRONT_SEN_END):          # check for a pool of front sensors if there is an obstacle
+            if rangeData[i][3] <= 0.3:
+                stop=True
+                break
 
         x, y, w = odometry(x, y, 0.0, FORWARD_VEL, 0.0, 0.0, dt)
         distance = math.sqrt(x*x+y*y)
