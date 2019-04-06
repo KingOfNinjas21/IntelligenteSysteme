@@ -40,7 +40,12 @@ def main():
         # initialize sensor and get sensor handles:
         rangeSen.initializeSensor(clientID)
         hokuyo = rangeSen.getSensorHandles(clientID)
-        distB(clientID, hokuyo)
+
+
+        #distB(clientID, hokuyo)
+        followBoundary(clientID, hokuyo, True)
+
+
         """
         res, rayHit = move.headTowardsModel(clientID, goalName, hokuyo)
 
@@ -79,7 +84,6 @@ def followBoundary(clientID, sensorHandles, rightSide):
     while True:
         move.startMoving(clientID)
         while not move.detectCorner(clientID,sensorHandles, rayHit, (minRange+maxRange)/2.0): #not abs(oldDis - newDis)>1
-            print(not move.detectCorner(clientID,sensorHandles, rayHit, rightSide))
             oldDis = newDis
             rangeData = rangeSen.getSensorData(clientID, sensorHandles)
             if rangeData[307][3]<0.5 or rangeData[378][3] < 0.5:

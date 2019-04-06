@@ -297,7 +297,7 @@ def rotateUntilOrientation(clientID, targetOrient):
                 break
 
 
-    elif(currentOrient < 0 and targetOrient > 0 and abs(targetOrientation-currentOrient)>180):
+    elif(currentOrient < 0 and targetOrient > 0 and abs(targetOrient-currentOrient)>180):
         rotationVel *= 1
         startRotating(clientID, rotationVel)
         if(targetOrient - 1) < -180:
@@ -461,12 +461,13 @@ def wallOrient(clientID, rangeSensorHandles, rayHit):
 
     # start calc index of x2, y2
     indexOfSndOrientPoint = rayHit + 10
-    for i in range(rayHit+5, rayHit + 20):
+    for i in range(rayHit+10, rayHit + 50):
         if((rangeData[i][3]-rangeData[rayHit][3])<0.5):
             indexOfSndOrientPoint = i
+            break
     # end calc index
 
-    print("Index of snd orientPoint: ", indexOfSndOrientPoint)
+    print("First orientPoint: {}, Snd orientPoint: {}".format(rayHit, indexOfSndOrientPoint))
     x1 = rangeData[rayHit][0]
     y1 = rangeData[rayHit][1]
     x2 = rangeData[indexOfSndOrientPoint][0]
@@ -474,7 +475,7 @@ def wallOrient(clientID, rangeSensorHandles, rayHit):
 
     a1 = calcTargetOrient(clientID, x2, y2, x1, y1)
     a2 = calcTargetOrient(clientID, x1,y1,x2,y2)
-    if abs(botOrient-a1)<abs(botOrient-a2):
+    if abs(botOrient-a1)<abs(botOrient-a2) and :
         rotateUntilOrientation(clientID, a1)
         isRight= True
         
