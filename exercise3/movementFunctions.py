@@ -489,8 +489,10 @@ def wallOrient(clientID, rangeSensorHandles, rayHit, isInOrientState):
         else:
             rotateUntilOrientation(clientID, a2)
             isRight= False
+
     else:
         print("Turn because of a corner")
+
         #TODO:
         if(rangeData[LEFT_RAY_NINETY][3]<3):
             rotate(90.0, clientID, True)
