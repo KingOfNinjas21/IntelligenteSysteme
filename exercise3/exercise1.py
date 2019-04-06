@@ -101,11 +101,13 @@ def followBoundary(clientID, sensorHandles, rightSide):
                     move.setWheelVelocity(clientID, 0)
                     move.sideway(minRange -rangeToWallNew ,clientID,rightSide)
                     move.startMoving(clientID)
+                    move.wallOrient(clientID, sensorHandles, rayHit, False)
                     #move.rotate(rotateAngle, clientID, True)
                 elif rangeToWallNew>maxRange:
                     move.setWheelVelocity(clientID, 0)
                     move.sideway(rangeToWallNew - maxRange ,clientID, not rightSide)
                     move.startMoving(clientID)
+                    move.wallOrient(clientID, sensorHandles, rayHit, False)
                     #move.rotate(rotateAngle, clientID, False)
 
                 #else:
@@ -125,9 +127,20 @@ def followBoundary(clientID, sensorHandles, rightSide):
             newDis = rangeData[rayHit][3]
 
 
+
         print("drive around corner")
 
         goAroundCorner(clientID, sensorHandles, rightSide, rayHit)
+
+        #TODO: check leaving conditions here
+        leavingCondition, minDistToTarget = move.calcLeavingConditin(minDistToTarget, freespace, clientID)
+
+        #if leavingCondition:
+        #    print("leaving cause of leaving condition")
+        #    return
+        #elif(True):
+            # condition target is visible holds
+
 
 
 def goAroundCorner(clientID, sensorHandles, rightSide, rayHit):
@@ -155,11 +168,15 @@ def goAroundCorner(clientID, sensorHandles, rightSide, rayHit):
 
 def normalBorder(clientID, sensorHandles, rayHit):
     rangeData = rangeSen.getSensorData(clientID, sensorHandles)
-    for i in range(rayHit-15, rayHit+15):
-        for j in range(i+5, i+30):
-            if(abs(rangeData[i][3] - rangeData[j][3]) > 0.2):
-                return False
-    return True
+    #for i in range(rayHit-15, rayHit+15):
+    #    for j in range(i+5, i+30):
+    #        if(abs(rangeData[i][3] - rangeData[j][3]) > 0.2):
+    #            return False
+    for i in range(rayHit+10, rayHit + 50):
+        if((rangeData[i][3]-rangeData[rayHit][3])<0.5):
+            return True
+
+    return False
 
 def distB(clientID, sensorHandles):
     isGoal, hitRay = move.headTowardsModel(clientID, goalName, sensorHandles)
