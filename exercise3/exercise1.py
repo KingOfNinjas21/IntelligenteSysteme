@@ -40,9 +40,9 @@ def main():
         # initialize sensor and get sensor handles:
         rangeSen.initializeSensor(clientID)
         hokuyo = rangeSen.getSensorHandles(clientID)
-        move.rotateUntilOrientation(clientID, -135.0)
+        #move.rotateUntilOrientation(clientID, -135.0)
 
-        #distB(clientID, hokuyo)
+        distB(clientID, hokuyo)
         #followBoundary(clientID, hokuyo, True)
 
 

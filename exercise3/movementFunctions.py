@@ -306,7 +306,7 @@ def rotateUntilOrientation(clientID, targetOrient):
         startRotating(clientID, rotationVel)
         if(targetOrient - 1) < -180:
             safty = True
-        while targetOrient + 5.0 < currentOrient and targetOrient - 5.0 > currentOrient: #fails at 0
+        while not (targetOrient + 5.0 > currentOrient and targetOrient - 5.0 < currentOrient): #fails at 0
             time.sleep(0.05)
             currentOrient = getOrientation(clientID)
             if(currentOrient > 175) and safty == True:
