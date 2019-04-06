@@ -479,6 +479,7 @@ def wallOrient(clientID, rangeSensorHandles, rayHit, isInOrientState):
     a1 = calcTargetOrient(clientID, x2, y2, x1, y1)
     a2 = calcTargetOrient(clientID, x1,y1,x2,y2)
     if(not isInOrientState):
+        print("Orient to nearest wall")
         if abs(botOrient-a1)<abs(botOrient-a2):
             rotateUntilOrientation(clientID, a1)
             isRight= True
@@ -489,8 +490,13 @@ def wallOrient(clientID, rangeSensorHandles, rayHit, isInOrientState):
             isRight= False
 
     else:
+        print("Turn because of a corner")
         #TODO:
-
+        if(rangeData[LEFT_RAY_NINETY][3]<3):
+            rotate(90.0, clientID, True)
+        elif(rangeData[RIGHT_RAY_NINETY][3]<3):
+            rotate(90.0, clientID, False)
+        isRight = True # set isRight only because the return wants it
 
     print("ends wallOrient ", isRight)
     return isRight
