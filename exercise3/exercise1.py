@@ -88,8 +88,8 @@ def followBoundary(clientID, sensorHandles, rightSide):
             rangeData = rangeSen.getSensorData(clientID, sensorHandles)
 
             for i in range(move.FRONT_SEN_START,move.FRONT_SEN_END):          # check for a pool of front sensors if there is an obstacle
-                if rangeData[i][3] <= 0.3:
-                    stop=True
+                if rangeData[i][3] <= 0.5:
+                    move.wallOrient(clientID, sensorHandles, rayHit, True)
                     break
 
             move.startMoving(clientID)
@@ -157,7 +157,7 @@ def normalBorder(clientID, sensorHandles, rayHit):
     rangeData = rangeSen.getSensorData(clientID, sensorHandles)
     for i in range(rayHit-15, rayHit+15):
         for j in range(i+5, i+30):
-            if(abs(rangeData[i][3] - rangeData[j][3]) > 0.2):
+            if(abs(rangeData[i][3] - rangeData[j][3]) < 0.2):
                 return False
     return True
 
