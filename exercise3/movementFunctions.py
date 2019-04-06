@@ -475,7 +475,7 @@ def wallOrient(clientID, rangeSensorHandles, rayHit):
 
     a1 = calcTargetOrient(clientID, x2, y2, x1, y1)
     a2 = calcTargetOrient(clientID, x1,y1,x2,y2)
-    if abs(botOrient-a1)<abs(botOrient-a2) and :
+    if abs(botOrient-a1)<abs(botOrient-a2):         # decide rotation based on angle to wall
         rotateUntilOrientation(clientID, a1)
         isRight= True
         
@@ -540,6 +540,10 @@ def forwardUntilCorner(clientID, rangeSensorHandles, isRight):
 def calcLeavingConditin(minDist, distNextObstacle, clientID):
     leave = False
 
+    if distNextObstacle == -1.0:      # non trackable distance
+        print("Freespace not Trackable")
+        return leave, minDist
+
     # calc current dist. to target
     res, objHandle = vrep.simxGetObjectHandle(clientID, "Goal", vrep.simx_opmode_oneshot_wait)
     targetPosition = vrep.simxGetObjectPosition(clientID, objHandle, -1, vrep.simx_opmode_oneshot_wait)
@@ -571,17 +575,17 @@ def calcFreeSpace(clientID, sensorHandles):
     rangeData = rangeSensor.getSensorData(clientID, sensorHandles)
     ray = getRayToTarget(clientID)
 
-    minDist = rangeData[ray][3]
-    if(ray < 30):
-        ray = 30
+    if ray < 30 or ray > 650:             # non trackable distance
+        # return false value
+        return -1.0
 
-    if(ray > 650):
-        ray = 650
+    minDistToObstacle = rangeData[ray][3]
+
     for i in range(ray-20, ray+20):
-        if rangeData[i][3] < minDist:
-            minDist = rangeData[i][3]
+        if rangeData[i][3] < minDistToObstacle:
+            minDistToObstacle = rangeData[i][3]
 
-    return minDist
+    return minDistToObstacle
 
 # This function returns the index of the ray pointing to the goal
 # Some small tests show that this function has an anomaly by +-4 degrees
@@ -648,25 +652,3 @@ def freespaceCondition(clientID, hitPoint):
 
 def completedLoop():
     return False
-
-def distBug(clientID, goalName):
-    res, objHandle = vrep.simxGetObjectHandle(clientID, goalName, vrep.simx_opmode_oneshot_wait)
-    targetPosition = vrep.simxGetObjectPosition(clientID, objHandle, -1, vrep.simx_opmode_oneshot_wait)
-    xTarget = targetPosition[1][0]
-    yTarget = targetPosition[1][1]
-    currentPos = getPos(clientID)
-    distToTarget = calcDistanceToTarget(currentPos[0],currentPos[1],xTarget, yTarget)
-
-    isGoal = True
-    while isGoal:
-        isGoal, ray = headTowardsModel(clientID, goalName)
-        if isGoal:
-            followBoundary()
-            while  not freepspaceCond or  not leavingCondition or completedLoop():
-                freepspaceCond, distToNextTarget = freespaceCondition(clientID, ray)
-                leavingCondition, distToTarget = calcLeavingConditin(distToTarget, distNextObstacle, clientID)
-            stopFollowBoundary()
-
-        else:
-            break
-
