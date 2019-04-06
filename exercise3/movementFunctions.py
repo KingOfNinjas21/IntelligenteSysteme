@@ -680,7 +680,21 @@ def rotateSys(degree, clientID):
     rotateUntilOrientation(clientID, goalOrient)
 
 def driveAroundChair(clientID):
-    rotate(90.0, clientID, True)
+    rotate(45.0, clientID, True)
     forward(1.8, clientID)
-    rotate(90.0, clientID, False)
+    rotate(45.0, clientID, False)
     forward(1.8, clientID)
+
+
+def isChairInFront(sensorData):
+    sum = 0
+    for i in range(FRONT_SEN_START , FRONT_SEN_END):
+        sum += sensorData[i][3]
+
+    avg = sum / (FRONT_SEN_END - FRONT_SEN_START)
+
+    print("chair detection avg: {}".format(avg))
+    if avg >= 1.5:
+        return True
+    else:
+        return False
