@@ -121,27 +121,45 @@ def followBoundary(clientID, sensorHandles, rightSide):
 
         print("drive around corner")
 
-        move.forward(0.8, clientID)
-        move.rotate(90, clientID, not rightSide)
-        move.forward(0.8, clientID)
+        goAroundCorner(clientID, sensorHandles, rightSide, rayHit)
+
+
+def goAroundCorner(clientID, sensorHandles, rightSide, rayHit):
+    print("start going around corner")
+    move.forward(0.8, clientID)
+    move.rotate(90, clientID, not rightSide)
+    move.forward(0.8, clientID)
+    if(normalBorder(clientID, sensorHandles, rightSide)):
+        print("just a corner")
+    else:
+        print("U-Turn")
         while True:
             move.forward(0.2, clientID)
             rangeData = rangeSen.getSensorData(clientID, sensorHandles)
             countRays = 0
-            for i in range(rayHit-80, rayHit+80):
+            for i in range(rayHit - 80, rayHit + 80):
                 if rangeData[i][3] < 0.8:
-                    countRays+=1
-            if countRays<5:
+                    countRays += 1
+            if countRays < 5:
                 break
         move.rotate(90, clientID, not rightSide)
         move.forward(1.0, clientID)
         move.wallOrient(clientID, sensorHandles, rayHit)
+    print("end going around corner")
 
+def normalBorder(clientID, sensorHandles, rightSide):
+    rangeData = rangeSen.getSensorData(clientID, sensorHandles)
+    if(rightSide):
+        for i in range(603-15, 603+15):
+            if( not (abs(rangeData[i][3] - rangeData[i+2][3]) < 0.2)):
+                return False
+    else:
+        for i in range(82-15, 82+15):
+            if( not (abs(rangeData[i][3] - rangeData[i+2][3]) < 0.2)):
+                return False
 
-def detectClearPath(clientID):
-    # todo: realize clear path
+    return True
 
-	return False
 def distB(clientID, sensorHandles):
     isGoal, hitRay = move.headTowardsModel(clientID, goalName, sensorHandles)
     while (isGoal):
