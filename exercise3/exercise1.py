@@ -185,7 +185,9 @@ def distB(clientID, sensorHandles):
     isGoal, hitRay = move.headTowardsModel(clientID, goalName, sensorHandles)
     while (isGoal):
         isGoal, hitRay = move.headTowardsModel(clientID, goalName, sensorHandles)
-
+        if(not isGoal):
+            print("FINISHED")
+            return
         rangeData = rangeSen.getSensorData(clientID, sensorHandles)
         if(move.isChairInFront(rangeData)):
             move.driveAroundChair(clientID)

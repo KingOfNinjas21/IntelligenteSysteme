@@ -600,13 +600,13 @@ def calcFreeSpace(clientID, sensorHandles):
     rangeData = rangeSensor.getSensorData(clientID, sensorHandles)
     ray = getRayToTarget(clientID)
 
-    if ray < 30 or ray > 650:             # non trackable distance
+    if ray < 50 or ray > 633:             # non trackable distance
         # return false value
         return -1.0
 
     minDistToObstacle = rangeData[ray][3]
 
-    for i in range(ray-30, ray+30):
+    for i in range(ray-50, ray+50):
         if rangeData[i][3] < minDistToObstacle:
             minDistToObstacle = rangeData[i][3]
 
