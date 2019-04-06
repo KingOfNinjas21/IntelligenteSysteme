@@ -699,7 +699,7 @@ def isChairInFront(sensorData):
     for i in range(startRay , endRay):
         sum += sensorData[i][3]
 
-    avg = sum / (startRay - endRay)
+    avg = sum / (endRay - startRay)
 
     print("chair detection avg: {}".format(avg))
     if avg >= 1.5:
