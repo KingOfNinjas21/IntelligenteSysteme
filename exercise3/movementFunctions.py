@@ -459,10 +459,18 @@ def wallOrient(clientID, rangeSensorHandles, rayHit):
     rangeData = rangeSensor.getSensorData(clientID, rangeSensorHandles)
     botOrient = getOrientation(clientID)
 
+    # start calc index of x2, y2
+    indexOfSndOrientPoint = rayHit + 10
+    for i in range(rayHit+5, rayHit + 20):
+        if((rangeData[i][3]-rangeData[rayHit][3])<0.5):
+            indexOfSndOrientPoint = i
+    # end calc index
+
+    print("Index of snd orientPoint: ", indexOfSndOrientPoint)
     x1 = rangeData[rayHit][0]
     y1 = rangeData[rayHit][1]
-    x2 = rangeData[rayHit+10][0]
-    y2 = rangeData[rayHit+10][1]
+    x2 = rangeData[indexOfSndOrientPoint][0]
+    y2 = rangeData[indexOfSndOrientPoint][1]
 
     a1 = calcTargetOrient(clientID, x2, y2, x1, y1)
     a2 = calcTargetOrient(clientID, x1,y1,x2,y2)

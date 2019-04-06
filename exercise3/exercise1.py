@@ -77,15 +77,13 @@ def followBoundary(clientID, sensorHandles, rightSide):
     newDis = rangeData[rayHit][3]
 
     while True:
+        move.startMoving(clientID)
         while not move.detectCorner(clientID,sensorHandles, rayHit, (minRange+maxRange)/2.0): #not abs(oldDis - newDis)>1
             print(not move.detectCorner(clientID,sensorHandles, rayHit, rightSide))
             oldDis = newDis
             rangeData = rangeSen.getSensorData(clientID, sensorHandles)
             if rangeData[307][3]<0.5 or rangeData[378][3] < 0.5:
                 move.wallOrient(clientID, sensorHandles, 307)
-
-
-
             move.startMoving(clientID)
             if counter % 5 == 0:
 
@@ -147,17 +145,12 @@ def goAroundCorner(clientID, sensorHandles, rightSide, rayHit):
         move.wallOrient(clientID, sensorHandles, rayHit)
     print("end going around corner")
 
-def normalBorder(clientID, sensorHandles, rightSide):
+def normalBorder(clientID, sensorHandles, rayHit):
     rangeData = rangeSen.getSensorData(clientID, sensorHandles)
-    if(rightSide):
-        for i in range(603-15, 603+15):
-            if( not (abs(rangeData[i][3] - rangeData[i+2][3]) < 0.2)):
+    for i in range(rayHit-15, rayHit+15):
+        for j in range(i+5, i+30):
+            if(abs(rangeData[i][3] - rangeData[j][3]) > 0.2):
                 return False
-    else:
-        for i in range(82-15, 82+15):
-            if( not (abs(rangeData[i][3] - rangeData[i+2][3]) < 0.2)):
-                return False
-
     return True
 
 def distB(clientID, sensorHandles):
