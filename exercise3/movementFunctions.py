@@ -485,7 +485,6 @@ def wallOrient(clientID, rangeSensorHandles, rayHit, isInOrientState):
             rotateUntilOrientation(clientID, a1)
             isRight= True
 
-
         else:
             rotateUntilOrientation(clientID, a2)
             isRight= False
@@ -494,9 +493,9 @@ def wallOrient(clientID, rangeSensorHandles, rayHit, isInOrientState):
         print("Turn because of a corner")
 
         #TODO:
-        if(rangeData[LEFT_RAY_NINETY][3]<3):
+        if(rangeData[LEFT_RAY_NINETY][3]<2):
             rotate(90.0, clientID, True)
-        elif(rangeData[RIGHT_RAY_NINETY][3]<3):
+        elif(rangeData[RIGHT_RAY_NINETY][3]<2):
             rotate(90.0, clientID, False)
         isRight = True # set isRight only because the return wants it
         wallOrient(clientID, rangeSensorHandles, rayHit, False) # make wall orient after going around corner
