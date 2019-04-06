@@ -169,17 +169,6 @@ def goAroundCorner(clientID, sensorHandles, rightSide, rayHit):
         move.wallOrient(clientID, sensorHandles, rayHit, False)
     print("end going around corner")
 
-def isChair(clientID, sensorHandles, rayHit):
-    counter = 0
-    rangeData = rangeSen.getSensorData(clientID, sensorHandles)
-    for i in range(rayHit-15, rayHit+15):
-        for j in range(i+5, i+30):
-            if(abs(rangeData[i][3] - rangeData[j][3]) < 0.7):
-                counter += 1
-    if counter > 4 and counter < 12:
-        return False
-    return True
-
 def normalBorder(clientID, sensorHandles, rayHit):
     rangeData = rangeSen.getSensorData(clientID, sensorHandles)
     for i in range(rayHit-15, rayHit+15):
@@ -196,8 +185,13 @@ def distB(clientID, sensorHandles):
     isGoal, hitRay = move.headTowardsModel(clientID, goalName, sensorHandles)
     while (isGoal):
         isGoal, hitRay = move.headTowardsModel(clientID, goalName, sensorHandles)
-        isRight = move.wallOrient(clientID, sensorHandles, hitRay, False)
-        followBoundary(clientID, sensorHandles, isRight)
+
+        rangeData = rangeSen.getSensorData(clientID, sensorHandles)
+        if(move.isChairInFront(rangeData)):
+            move.driveAroundChair(clientID)
+        else:
+            isRight = move.wallOrient(clientID, sensorHandles, hitRay, False)
+            followBoundary(clientID, sensorHandles, isRight)
         print("is goal:", isGoal)
 
 def removeModel(clientID, name):

@@ -687,13 +687,14 @@ def driveAroundChair(clientID):
     rotate(45.0, clientID, False)
     forward(1.8, clientID)
 
-
 def isChairInFront(sensorData):
+    startRay = FRONT_SEN_START - 50
+    endRay = FRONT_SEN_END + 50
     sum = 0
-    for i in range(FRONT_SEN_START , FRONT_SEN_END):
+    for i in range(startRay , endRay):
         sum += sensorData[i][3]
 
-    avg = sum / (FRONT_SEN_END - FRONT_SEN_START)
+    avg = sum / (startRay - endRay)
 
     print("chair detection avg: {}".format(avg))
     if avg >= 1.5:
