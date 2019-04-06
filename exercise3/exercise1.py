@@ -86,10 +86,15 @@ def followBoundary(clientID, sensorHandles, rightSide):
         while not move.detectCorner(clientID,sensorHandles, rayHit, (minRange+maxRange)/2.0): #not abs(oldDis - newDis)>1
             oldDis = newDis
             rangeData = rangeSen.getSensorData(clientID, sensorHandles)
+<<<<<<< HEAD
             for i in range(move.FRONT_SEN_START,move.FRONT_SEN_END):          # check for a pool of front sensors if there is an obstacle
                 if rangeData[i][3] <= 0.3:
                     stop=True
                     break
+=======
+            if rangeData[307][3]<0.5 or rangeData[378][3] < 0.5: # check if there is an obstacle in front of the bot
+                move.wallOrient(clientID, sensorHandles, 307, True)
+>>>>>>> ee5406b15ca5deba7ed7d24bf342529913958662
             move.startMoving(clientID)
             if counter % 5 == 0:
 
@@ -148,7 +153,7 @@ def goAroundCorner(clientID, sensorHandles, rightSide, rayHit):
                 break
         move.rotate(90, clientID, not rightSide)
         move.forward(1.0, clientID)
-        move.wallOrient(clientID, sensorHandles, rayHit)
+        move.wallOrient(clientID, sensorHandles, rayHit, False)
     print("end going around corner")
 
 def normalBorder(clientID, sensorHandles, rayHit):
