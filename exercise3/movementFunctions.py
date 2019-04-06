@@ -488,7 +488,6 @@ def wallOrient(clientID, rangeSensorHandles, rayHit, isInOrientState):
             rotateUntilOrientation(clientID, a1)
             isRight= True
 
-
         else:
             rotateUntilOrientation(clientID, a2)
             isRight= False
@@ -497,9 +496,9 @@ def wallOrient(clientID, rangeSensorHandles, rayHit, isInOrientState):
         print("Turn because of a corner")
 
         #TODO:
-        if(rangeData[LEFT_RAY_NINETY][3]<3):
+        if(rangeData[LEFT_RAY_NINETY][3]<2):
             rotate(90.0, clientID, True)
-        elif(rangeData[RIGHT_RAY_NINETY][3]<3):
+        elif(rangeData[RIGHT_RAY_NINETY][3]<2):
             rotate(90.0, clientID, False)
         isRight = True # set isRight only because the return wants it
         wallOrient(clientID, rangeSensorHandles, rayHit, False) # make wall orient after going around corner
@@ -678,3 +677,31 @@ def freespaceCondition(clientID, hitPoint):
 
 def completedLoop():
     return False
+
+# rotate degree degrees to the right if degree is positive, otherwise (degree negative) rotate to the left
+def rotateSys(degree, clientID):
+    startOrient = getOrientation(clientID)
+    goalOrient = substractOrientation(startOrient, -degree)
+
+    # start rotation
+    rotateUntilOrientation(clientID, goalOrient)
+
+def driveAroundChair(clientID):
+    rotate(45.0, clientID, True)
+    forward(1.8, clientID)
+    rotate(45.0, clientID, False)
+    forward(1.8, clientID)
+
+
+def isChairInFront(sensorData):
+    sum = 0
+    for i in range(FRONT_SEN_START , FRONT_SEN_END):
+        sum += sensorData[i][3]
+
+    avg = sum / (FRONT_SEN_END - FRONT_SEN_START)
+
+    print("chair detection avg: {}".format(avg))
+    if avg >= 1.5:
+        return True
+    else:
+        return False
