@@ -10,6 +10,8 @@ import movementFunctions as move
 import rangeSensorFunctions as rangeSen
 import sys
 
+goalName = "Goal"
+
 def main():
     print ('Program started')
     emptybuf = bytearray()
@@ -40,12 +42,12 @@ def main():
         hokuyo = rangeSen.getSensorHandles(clientID)
         distB(clientID, hokuyo)
         """
-        res, rayHit = move.headTowardsModel(clientID, "Goal", hokuyo)
+        res, rayHit = move.headTowardsModel(clientID, goalName, hokuyo)
 
         side = move.wallOrient(clientID, hokuyo, rayHit)
         followBoundary(clientID, hokuyo, side)
         """
-        #move.headTowardsModel(clientID, "Goal", hokuyo)
+        #move.headTowardsModel(clientID, goalName, hokuyo)
         #move.sideway(1.0, clientID, True);
 
         # Stop simulation ----------------------------------------------------------------------------------------------
@@ -75,7 +77,8 @@ def followBoundary(clientID, sensorHandles, rightSide):
     newDis = rangeData[rayHit][3]
 
     while True:
-        while not move.detectCorner(clientID,sensorHandles, rayHit, rightSide): #not abs(oldDis - newDis)>1
+        while not move.detectCorner(clientID,sensorHandles, rayHit, (minRange+maxRange)/2.0): #not abs(oldDis - newDis)>1
+            print(not move.detectCorner(clientID,sensorHandles, rayHit, rightSide))
             oldDis = newDis
             rangeData = rangeSen.getSensorData(clientID, sensorHandles)
             if rangeData[307][3]<0.5 or rangeData[378][3] < 0.5:
@@ -140,9 +143,9 @@ def detectClearPath(clientID):
 
 	return False
 def distB(clientID, sensorHandles):
-    isGoal, hitRay = move.headTowardsModel(clientID, 'Goal', sensorHandles)
+    isGoal, hitRay = move.headTowardsModel(clientID, goalName, sensorHandles)
     while (isGoal):
-        isGoal, hitRay = move.headTowardsModel(clientID, 'Goal', sensorHandles)
+        isGoal, hitRay = move.headTowardsModel(clientID, goalName, sensorHandles)
         isRight = move.wallOrient(clientID, sensorHandles, hitRay)
         followBoundary(clientID, sensorHandles, isRight)
         print("is goal:", isGoal)

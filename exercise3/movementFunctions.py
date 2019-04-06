@@ -474,17 +474,18 @@ def wallOrient(clientID, rangeSensorHandles, rayHit):
     else:
         rotateUntilOrientation(clientID, a2)
         isRight= False
-    
 
     print("ends wallOrient ", isRight)
     return isRight
 
-def detectCorner(clientID, rangeSensorHandles, rayHit, isRight):
+def detectCorner(clientID, rangeSensorHandles, rayHit, maxDist):
+
     rangeData = rangeSensor.getSensorData(clientID, rangeSensorHandles)
 
-    for i in range(rayHit, rayHit+15):
-        if(rangeData[i][3] < rangeData[i+5][3] - 1 or rangeData[i][3]-1 > rangeData[i+5][3]):
-            return True 
+    for i in range(rayHit-5, rayHit+5):
+        if (rangeData[i][3] > maxDist + 0.5):
+            print("corner detected!")
+            return True
 
     return False
 
