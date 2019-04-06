@@ -42,8 +42,8 @@ def main():
         hokuyo = rangeSen.getSensorHandles(clientID)
 
 
-        #distB(clientID, hokuyo)
-        followBoundary(clientID, hokuyo, True)
+        distB(clientID, hokuyo)
+        #followBoundary(clientID, hokuyo, True)
 
 
         """
@@ -161,7 +161,7 @@ def distB(clientID, sensorHandles):
     isGoal, hitRay = move.headTowardsModel(clientID, goalName, sensorHandles)
     while (isGoal):
         isGoal, hitRay = move.headTowardsModel(clientID, goalName, sensorHandles)
-        isRight = move.wallOrient(clientID, sensorHandles, hitRay)
+        isRight = move.wallOrient(clientID, sensorHandles, hitRay, False)
         followBoundary(clientID, sensorHandles, isRight)
         print("is goal:", isGoal)
 
