@@ -488,7 +488,7 @@ def wallOrient(clientID, rangeSensorHandles, rayHit, isInOrientState):
             rotateUntilOrientation(clientID, a2)
             isRight= False
 
-    else:
+    #else:
         #TODO:
 
 
