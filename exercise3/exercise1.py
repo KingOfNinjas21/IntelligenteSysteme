@@ -42,8 +42,8 @@ def main():
         hokuyo = rangeSen.getSensorHandles(clientID)
 
 
-        #distB(clientID, hokuyo)
-        followBoundary(clientID, hokuyo, True)
+        distB(clientID, hokuyo)
+        #followBoundary(clientID, hokuyo, True)
 
 
         """
@@ -72,7 +72,7 @@ def followBoundary(clientID, sensorHandles, rightSide):
     else:
         rayHit = 82
     rotateAngle = 1.0
-    rangeToWallOld = rangeSen.getSensorData(clientID, sensorHandles)[rayHit][3]
+    rangeToWallOld = 0.5
     minRange = rangeToWallOld-0.1
     maxRange = rangeToWallOld+0.1
     counter = 0
@@ -86,8 +86,12 @@ def followBoundary(clientID, sensorHandles, rightSide):
         while not move.detectCorner(clientID,sensorHandles, rayHit, (minRange+maxRange)/2.0): #not abs(oldDis - newDis)>1
             oldDis = newDis
             rangeData = rangeSen.getSensorData(clientID, sensorHandles)
-            if rangeData[307][3]<0.5 or rangeData[378][3] < 0.5:
-                move.wallOrient(clientID, sensorHandles, 307)
+
+            for i in range(move.FRONT_SEN_START,move.FRONT_SEN_END):          # check for a pool of front sensors if there is an obstacle
+                if rangeData[i][3] <= 0.5:
+                    move.wallOrient(clientID, sensorHandles, rayHit, True)
+                    break
+
             move.startMoving(clientID)
             if counter % 5 == 0:
 
@@ -133,6 +137,22 @@ def goAroundCorner(clientID, sensorHandles, rightSide, rayHit):
     move.forward(0.8, clientID)
     if(normalBorder(clientID, sensorHandles, rightSide)):
         print("just a corner")
+
+    elif isChair(clientID, sensorHandles, rayHit):
+        move.startMoving(clientID)
+        while True:
+            countRay = 0
+            rangeData = rangeSen.getSensorData(clientID, sensorHandles)
+            for i in range(rayHit-15, rayHit+15):
+                if rangeData[i][3] > 0.7:
+                    countRay += 1 
+
+            if countRay == 0:
+                break
+
+        setWheelVelocity(clientID, 0)
+      
+
     else:
         print("U-Turn")
         while True:
@@ -146,14 +166,25 @@ def goAroundCorner(clientID, sensorHandles, rightSide, rayHit):
                 break
         move.rotate(90, clientID, not rightSide)
         move.forward(1.0, clientID)
-        move.wallOrient(clientID, sensorHandles, rayHit)
+        move.wallOrient(clientID, sensorHandles, rayHit, False)
     print("end going around corner")
+
+def isChair(clientID, sensorHandles, rayHit):
+    counter = 0
+    rangeData = rangeSen.getSensorData(clientID, sensorHandles)
+    for i in range(rayHit-15, rayHit+15):
+        for j in range(i+5, i+30):
+            if(abs(rangeData[i][3] - rangeData[j][3]) < 0.7):
+                counter += 1
+    if counter > 4 and counter < 12:
+        return False
+    return True
 
 def normalBorder(clientID, sensorHandles, rayHit):
     rangeData = rangeSen.getSensorData(clientID, sensorHandles)
     for i in range(rayHit-15, rayHit+15):
         for j in range(i+5, i+30):
-            if(abs(rangeData[i][3] - rangeData[j][3]) > 0.2):
+            if(abs(rangeData[i][3] - rangeData[j][3]) > 0.7):
                 return False
     return True
 
@@ -161,7 +192,7 @@ def distB(clientID, sensorHandles):
     isGoal, hitRay = move.headTowardsModel(clientID, goalName, sensorHandles)
     while (isGoal):
         isGoal, hitRay = move.headTowardsModel(clientID, goalName, sensorHandles)
-        isRight = move.wallOrient(clientID, sensorHandles, hitRay)
+        isRight = move.wallOrient(clientID, sensorHandles, hitRay, False)
         followBoundary(clientID, sensorHandles, isRight)
         print("is goal:", isGoal)
 
