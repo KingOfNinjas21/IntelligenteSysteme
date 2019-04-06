@@ -38,12 +38,15 @@ def main():
         # initialize sensor and get sensor handles:
         rangeSen.initializeSensor(clientID)
         hokuyo = rangeSen.getSensorHandles(clientID)
+        distB(clientID, hokuyo)
+        """
         res, rayHit = move.headTowardsModel(clientID, "Goal", hokuyo)
 
         side = move.wallOrient(clientID, hokuyo, rayHit)
         followBoundary(clientID, hokuyo, side)
-        move.headTowardsModel(clientID, "Goal", hokuyo)
-
+        """
+        #move.headTowardsModel(clientID, "Goal", hokuyo)
+        #move.sideway(1.0, clientID, True);
 
         # Stop simulation ----------------------------------------------------------------------------------------------
         vrep.simxStopSimulation(clientID,vrep.simx_opmode_oneshot_wait)
@@ -66,12 +69,14 @@ def followBoundary(clientID, sensorHandles, rightSide):
     minRange = rangeToWallOld-0.1
     maxRange = rangeToWallOld+0.1
     counter = 0
-
+    rangeData = rangeSen.getSensorData(clientID, sensorHandles)
     minDistToTarget = -1.0
-
+    oldDis = rangeData[rayHit][3]
+    newDis = rangeData[rayHit][3]
 
     while True:
-        while not move.detectCorner(clientID, sensorHandles, rayHit, rightSide):
+        while not move.detectCorner(clientID,sensorHandles, rayHit, rightSide): #not abs(oldDis - newDis)>1
+            oldDis = newDis
             rangeData = rangeSen.getSensorData(clientID, sensorHandles)
             if rangeData[307][3]<0.5 or rangeData[378][3] < 0.5:
                 move.wallOrient(clientID, sensorHandles, 307)
@@ -84,9 +89,15 @@ def followBoundary(clientID, sensorHandles, rightSide):
                 rangeToWallNew = rangeData[rayHit][3]
                 print(rangeToWallNew)
                 if rangeToWallNew<minRange:
-                    move.rotate(rotateAngle, clientID, True)
+                    move.setWheelVelocity(clientID, 0)
+                    move.sideway(minRange -rangeToWallNew ,clientID,rightSide)
+                    move.startMoving(clientID)
+                    #move.rotate(rotateAngle, clientID, True)
                 elif rangeToWallNew>maxRange:
-                    move.rotate(rotateAngle, clientID, False)
+                    move.setWheelVelocity(clientID, 0)
+                    move.sideway(rangeToWallNew - maxRange ,clientID, not rightSide)
+                    move.startMoving(clientID)
+                    #move.rotate(rotateAngle, clientID, False)
 
                 #else:
                 #    move.wallOrient(clientID, sensorHandles, 603)
@@ -101,6 +112,8 @@ def followBoundary(clientID, sensorHandles, rightSide):
             if leavingCondition:
                 print("leaving cause of leaving condition")
                 return
+
+            newDis = rangeData[rayHit][3]
 
 
         print("drive around corner")
@@ -126,7 +139,13 @@ def detectClearPath(clientID):
     # todo: realize clear path
 
 	return False
-
+def distB(clientID, sensorHandles):
+    isGoal, hitRay = move.headTowardsModel(clientID, 'Goal', sensorHandles)
+    while (isGoal):
+        isGoal, hitRay = move.headTowardsModel(clientID, 'Goal', sensorHandles)
+        isRight = move.wallOrient(clientID, sensorHandles, hitRay)
+        followBoundary(clientID, sensorHandles, isRight)
+        print("is goal:", isGoal)
 
 def removeModel(clientID, name):
     res,toRemove=vrep.simxGetObjectHandle(clientID, name, vrep.simx_opmode_blocking)

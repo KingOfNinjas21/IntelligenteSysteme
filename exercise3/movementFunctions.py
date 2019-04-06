@@ -63,6 +63,39 @@ def forward(meter, clientID):
     for i in range(0, 4):
         vrep.simxSetJointTargetVelocity(clientID, wheelJoints[i], 0, vrep.simx_opmode_oneshot)
 
+def sideway(meter, clientID, toRight):
+    # set velocety to 0
+    wheelJoints = getWheelJoints(clientID)
+    for i in range(0, 4):
+        vrep.simxSetJointTargetVelocity(clientID, wheelJoints[i], 0, vrep.simx_opmode_oneshot)
+
+    # start moving
+    vrep.simxPauseCommunication(clientID, True)
+    if(toRight):
+        for i in range(0, 4):
+            vrep.simxSetJointTargetVelocity(clientID, wheelJoints[i], wheelVel( 0.0,FORWARD_VEL, 0.0)[i],vrep.simx_opmode_oneshot)
+    else: 
+        for i in range(0, 4):
+            vrep.simxSetJointTargetVelocity(clientID, wheelJoints[i], wheelVel( 0.0,-FORWARD_VEL, 0.0)[i],vrep.simx_opmode_oneshot)
+    vrep.simxPauseCommunication(clientID, False)
+
+    # continuously check traveled distance
+    distance = 0.0
+    dt = 0.0
+    x = 0.0
+    y = 0.0
+    while distance <= meter:
+        start = time.time()
+        x, y, w = odometry(x, y, 0.0, FORWARD_VEL, 0.0, 0.0, dt)
+        distance = math.sqrt(x*x+y*y)
+        time.sleep(1.0e-06)         # problems with very small time slices -> little delay (if you have a bad angle calculation on your pc try to change this value)
+        end = time.time()
+        dt = end-start
+
+    # stop moving
+    for i in range(0, 4):
+        vrep.simxSetJointTargetVelocity(clientID, wheelJoints[i], 0, vrep.simx_opmode_oneshot)
+
 
 def setWheelVelocity(clientID, velocity):
     wheelJoints = getWheelJoints(clientID)
@@ -91,6 +124,7 @@ def forwardUntilObstacleAnywhere(meter, clientID, rangeSensorHandles):
     x = 0.0
     y = 0.0
     stop = False
+    hit = 0 
     while distance <= meter and stop!=True:
         start = time.time()
         # get range sensor data as list of x,y,z,distance
@@ -183,26 +217,38 @@ def rotateUntilOrientation(clientID, targetOrient):
     rotationVel = ROTATE_VEL
     wheelJoints = getWheelJoints(clientID)
     currentOrient = getOrientation(clientID)
+    safty = False
     print("Current Orientation: {} , Target Orientation: {}" .format(currentOrient, targetOrient))
-    if currentOrient>0:
-        if targetOrient>currentOrient:
+    """
+    if currentOrient > 0 :
+        if targetOrient>currentOrient: 
             rotationVel *= -1
             startRotating(clientID, rotationVel)
-            while targetOrient > currentOrient:
+            if(targetOrient + 1) > 180:
+                safty = True
+            while targetOrient > currentOrient: #fails at 180/-180
                 time.sleep(0.05)
                 currentOrient = getOrientation(clientID)
+                if(currentOrient < -179 and safty == True):
+                    break
 
-        elif targetOrient<currentOrient:
+        elif targetOrient<currentOrient: #Fehler bei Bot auf 90 and goal on -135 takes longer way
             rotationVel *= 1
             startRotating(clientID, rotationVel)
-            while targetOrient < currentOrient:
+            if(targetOrient - 1) < -180:
+                safty = True
+            while targetOrient < currentOrient: #fails at 0
                 time.sleep(0.05)
                 currentOrient = getOrientation(clientID)
+                if(currentOrient > 179) and safty == True:
+                    break
 
     elif currentOrient<0:
         if targetOrient < currentOrient:
             rotationVel *= 1
             startRotating(clientID, rotationVel)
+            if(targetOrient - 1) < 180:
+                safty = True
             while targetOrient < currentOrient:
                 time.sleep(0.05)
                 currentOrient = getOrientation(clientID)
@@ -210,9 +256,78 @@ def rotateUntilOrientation(clientID, targetOrient):
         elif targetOrient > currentOrient:
             rotationVel *= -1
             startRotating(clientID, rotationVel)
+            if(targetOrient + 1) > 180:
+                safty = True
             while targetOrient > currentOrient:
                 time.sleep(0.05)
                 currentOrient = getOrientation(clientID)
+    """
+
+    if(currentOrient > 0 and targetOrient < 0 and abs(targetOrient - currentOrient)> 180):
+        rotationVel *= -1
+        startRotating(clientID, rotationVel)
+        if(targetOrient + 1) > 180:
+            safty = True
+        while targetOrient > currentOrient: #fails at 180/-180
+            time.sleep(0.05)
+            currentOrient = getOrientation(clientID)
+            if(currentOrient < -179 and safty == True):
+                break
+
+    elif(currentOrient > 0 and targetOrient < currentOrient):
+        rotationVel *= 1
+        startRotating(clientID, rotationVel)
+        if(targetOrient - 1) < -180:
+            safty = True
+        while targetOrient < currentOrient: #fails at 0
+            time.sleep(0.05)
+            currentOrient = getOrientation(clientID)
+            if(currentOrient > 179) and safty == True:
+                break
+
+    elif(currentOrient > 0 and targetOrient > currentOrient):
+        rotationVel *= -1
+        startRotating(clientID, rotationVel)
+        if(targetOrient + 1) > 180:
+            safty = True
+        while targetOrient > currentOrient: #fails at 180/-180
+            time.sleep(0.05)
+            currentOrient = getOrientation(clientID)
+            if(currentOrient < -179 and safty == True):
+                break
+
+
+    elif(currentOrient < 0 and targetOrient > 0 and abs(targetOrientation-currentOrient)>180):
+        rotationVel *= 1
+        startRotating(clientID, rotationVel)
+        if(targetOrient - 1) < -180:
+            safty = True
+        while targetOrient < currentOrient: #fails at 0
+            time.sleep(0.05)
+            currentOrient = getOrientation(clientID)
+            if(currentOrient > 179) and safty == True:
+                break
+    elif(currentOrient < 0 and targetOrient < currentOrient):
+        rotationVel *= 1
+        startRotating(clientID, rotationVel)
+        if(targetOrient - 1) < -180:
+            safty = True
+        while targetOrient < currentOrient: #fails at 0
+            time.sleep(0.05)
+            currentOrient = getOrientation(clientID)
+            if(currentOrient > 179) and safty == True:
+                break
+
+    else:
+        rotationVel *= -1
+        startRotating(clientID, rotationVel)
+        if(targetOrient + 1) > 180:
+            safty = True
+        while targetOrient > currentOrient: #fails at 180/-180
+            time.sleep(0.05)
+            currentOrient = getOrientation(clientID)
+            if(currentOrient < -179 and safty == True):
+                break
 
     # stop moving
     for i in range(0, 4):
@@ -354,13 +469,14 @@ def wallOrient(clientID, rangeSensorHandles, rayHit):
     if abs(botOrient-a1)<abs(botOrient-a2):
         rotateUntilOrientation(clientID, a1)
         isRight= True
+        
     
     else:
         rotateUntilOrientation(clientID, a2)
         isRight= False
     
 
-    print("ends wallOrient ")
+    print("ends wallOrient ", isRight)
     return isRight
 
 def detectCorner(clientID, rangeSensorHandles, rayHit, isRight):
@@ -446,6 +562,11 @@ def calcFreeSpace(clientID, sensorHandles):
     ray = getRayToTarget(clientID)
 
     minDist = rangeData[ray][3]
+    if(ray < 30):
+        ray = 30
+
+    if(ray > 650):
+        ray = 650
     for i in range(ray-20, ray+20):
         if rangeData[i][3] < minDist:
             minDist = rangeData[i][3]
