@@ -268,10 +268,11 @@ def rotateUntilOrientation(clientID, targetOrient):
 
     if(currentOrient > 0 and targetOrient < 0 and abs(targetOrient - currentOrient)> 180):
         rotationVel *= -1
+        print("sjffbj")
         startRotating(clientID, rotationVel)
         if(targetOrient + 1) > 180:
             safty = True
-        while targetOrient > currentOrient: #fails at 180/-180
+        while not (targetOrient + 5.0 > currentOrient and currentOrient > targetOrient -5.0): #fails at 180/-180
             time.sleep(0.05)
             currentOrient = getOrientation(clientID)
             if(currentOrient < -175 and safty == True):
@@ -331,6 +332,8 @@ def rotateUntilOrientation(clientID, targetOrient):
             currentOrient = getOrientation(clientID)
             if(currentOrient < -175 and safty == True):
                 break
+
+
 
     # stop moving
     for i in range(0, 4):
@@ -669,3 +672,31 @@ def freespaceCondition(clientID, hitPoint):
 
 def completedLoop():
     return False
+
+# rotate degree degrees to the right if degree is positive, otherwise (degree negative) rotate to the left
+def rotateSys(degree, clientID):
+    startOrient = getOrientation(clientID)
+    goalOrient = substractOrientation(startOrient, -degree)
+
+    # start rotation
+    rotateUntilOrientation(clientID, goalOrient)
+
+def driveAroundChair(clientID):
+    rotate(45.0, clientID, True)
+    forward(1.8, clientID)
+    rotate(45.0, clientID, False)
+    forward(1.8, clientID)
+
+
+def isChairInFront(sensorData):
+    sum = 0
+    for i in range(FRONT_SEN_START , FRONT_SEN_END):
+        sum += sensorData[i][3]
+
+    avg = sum / (FRONT_SEN_END - FRONT_SEN_START)
+
+    print("chair detection avg: {}".format(avg))
+    if avg >= 1.5:
+        return True
+    else:
+        return False
