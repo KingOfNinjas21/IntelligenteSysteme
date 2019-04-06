@@ -72,7 +72,7 @@ def followBoundary(clientID, sensorHandles, rightSide):
     else:
         rayHit = 82
     rotateAngle = 1.0
-    rangeToWallOld = rangeSen.getSensorData(clientID, sensorHandles)[rayHit][3]
+    rangeToWallOld = 0.5
     minRange = rangeToWallOld-0.1
     maxRange = rangeToWallOld+0.1
     counter = 0
@@ -157,7 +157,7 @@ def normalBorder(clientID, sensorHandles, rayHit):
     rangeData = rangeSen.getSensorData(clientID, sensorHandles)
     for i in range(rayHit-15, rayHit+15):
         for j in range(i+5, i+30):
-            if(abs(rangeData[i][3] - rangeData[j][3]) < 0.2):
+            if(abs(rangeData[i][3] - rangeData[j][3]) > 0.2):
                 return False
     return True
 

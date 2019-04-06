@@ -274,7 +274,7 @@ def rotateUntilOrientation(clientID, targetOrient):
         while targetOrient > currentOrient: #fails at 180/-180
             time.sleep(0.05)
             currentOrient = getOrientation(clientID)
-            if(currentOrient < -179 and safty == True):
+            if(currentOrient < -175 and safty == True):
                 break
 
     elif(currentOrient > 0 and targetOrient < currentOrient):
@@ -285,7 +285,7 @@ def rotateUntilOrientation(clientID, targetOrient):
         while targetOrient < currentOrient: #fails at 0
             time.sleep(0.05)
             currentOrient = getOrientation(clientID)
-            if(currentOrient > 179) and safty == True:
+            if(currentOrient > 175) and safty == True:
                 break
 
     elif(currentOrient > 0 and targetOrient > currentOrient):
@@ -296,7 +296,7 @@ def rotateUntilOrientation(clientID, targetOrient):
         while targetOrient > currentOrient: #fails at 180/-180
             time.sleep(0.05)
             currentOrient = getOrientation(clientID)
-            if(currentOrient < -179 and safty == True):
+            if(currentOrient < -175 and safty == True):
                 break
 
 
@@ -308,7 +308,7 @@ def rotateUntilOrientation(clientID, targetOrient):
         while targetOrient < currentOrient: #fails at 0
             time.sleep(0.05)
             currentOrient = getOrientation(clientID)
-            if(currentOrient > 179) and safty == True:
+            if(currentOrient > 175) and safty == True:
                 break
     elif(currentOrient < 0 and targetOrient < currentOrient):
         rotationVel *= 1
@@ -318,7 +318,7 @@ def rotateUntilOrientation(clientID, targetOrient):
         while targetOrient < currentOrient: #fails at 0
             time.sleep(0.05)
             currentOrient = getOrientation(clientID)
-            if(currentOrient > 179) and safty == True:
+            if(currentOrient > 175) and safty == True:
                 break
 
     else:
@@ -329,7 +329,7 @@ def rotateUntilOrientation(clientID, targetOrient):
         while targetOrient > currentOrient: #fails at 180/-180
             time.sleep(0.05)
             currentOrient = getOrientation(clientID)
-            if(currentOrient < -179 and safty == True):
+            if(currentOrient < -175 and safty == True):
                 break
 
     # stop moving
@@ -499,6 +499,7 @@ def wallOrient(clientID, rangeSensorHandles, rayHit, isInOrientState):
         elif(rangeData[RIGHT_RAY_NINETY][3]<3):
             rotate(90.0, clientID, False)
         isRight = True # set isRight only because the return wants it
+        wallOrient(clientID, rangeSensorHandles, rayHit, False) # make wall orient after going around corner
 
     print("ends wallOrient ", isRight)
     return isRight
@@ -598,7 +599,7 @@ def calcFreeSpace(clientID, sensorHandles):
 
     minDistToObstacle = rangeData[ray][3]
 
-    for i in range(ray-20, ray+20):
+    for i in range(ray-30, ray+30):
         if rangeData[i][3] < minDistToObstacle:
             minDistToObstacle = rangeData[i][3]
 
