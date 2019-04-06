@@ -20,6 +20,9 @@ RAY_ANGLE = 120.0/342.0
 FRONT_SEN_START = 322
 FRONT_SEN_END = 357
 
+LEFT_RAY_NINETY = 603
+RIGHT_RAY_NINETY = 82
+
 
 def getWheelJoints(clientID):
     # Retrieve wheel joint handles:
@@ -454,7 +457,7 @@ def calcTargetOrient(clientID, xStart, yStart, xEnd, yEnd):
     return targetOrient
 
 
-def wallOrient(clientID, rangeSensorHandles, rayHit):
+def wallOrient(clientID, rangeSensorHandles, rayHit, isInOrientState):
     print("start wallOrient ")
     rangeData = rangeSensor.getSensorData(clientID, rangeSensorHandles)
     botOrient = getOrientation(clientID)
@@ -475,17 +478,23 @@ def wallOrient(clientID, rangeSensorHandles, rayHit):
 
     a1 = calcTargetOrient(clientID, x2, y2, x1, y1)
     a2 = calcTargetOrient(clientID, x1,y1,x2,y2)
-    if abs(botOrient-a1)<abs(botOrient-a2) and :
-        rotateUntilOrientation(clientID, a1)
-        isRight= True
-        
-    
+    if(not isInOrientState):
+        if abs(botOrient-a1)<abs(botOrient-a2):
+            rotateUntilOrientation(clientID, a1)
+            isRight= True
+
+
+        else:
+            rotateUntilOrientation(clientID, a2)
+            isRight= False
+
     else:
-        rotateUntilOrientation(clientID, a2)
-        isRight= False
+        #TODO:
+
 
     print("ends wallOrient ", isRight)
     return isRight
+
 
 def detectCorner(clientID, rangeSensorHandles, rayHit, maxDist):
 
