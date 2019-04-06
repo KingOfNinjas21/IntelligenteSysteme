@@ -661,3 +661,17 @@ def freespaceCondition(clientID, hitPoint):
 
 def completedLoop():
     return False
+
+# rotate degree degrees to the right if degree is positive, otherwise (degree negative) rotate to the left
+def rotateSys(degree, clientID):
+    startOrient = getOrientation(clientID)
+    goalOrient = substractOrientation(startOrient, -degree)
+
+    # start rotation
+    rotateUntilOrientation(clientID, goalOrient)
+
+def driveAroundChair(clientID):
+    rotate(90.0, clientID, True)
+    forward(1.8, clientID)
+    rotate(90.0, clientID, False)
+    forward(1.8, clientID)
