@@ -268,10 +268,11 @@ def rotateUntilOrientation(clientID, targetOrient):
 
     if(currentOrient > 0 and targetOrient < 0 and abs(targetOrient - currentOrient)> 180):
         rotationVel *= -1
+        print("sjffbj")
         startRotating(clientID, rotationVel)
         if(targetOrient + 1) > 180:
             safty = True
-        while targetOrient > currentOrient: #fails at 180/-180
+        while not (targetOrient + 5.0 > currentOrient and currentOrient > targetOrient -5.0): #fails at 180/-180
             time.sleep(0.05)
             currentOrient = getOrientation(clientID)
             if(currentOrient < -175 and safty == True):
@@ -331,6 +332,8 @@ def rotateUntilOrientation(clientID, targetOrient):
             currentOrient = getOrientation(clientID)
             if(currentOrient < -175 and safty == True):
                 break
+
+
 
     # stop moving
     for i in range(0, 4):
