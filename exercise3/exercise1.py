@@ -45,7 +45,8 @@ def main():
         hokuyo = rangeSen.getSensorHandles(clientID)
         #move.rotateUntilOrientation(clientID, -135.0)
 
-        bug.distB(clientID, hokuyo, goalName)
+        #bug.distB(clientID, hokuyo, goalName)
+        bug.followOstecel(clientID,hokuyo, True, False)
         #bug.followBoundary(clientID, hokuyo, True)
         #bug.wallOrient(clientID, hokuyo, LEFT_RAY_NINETY, False)
 

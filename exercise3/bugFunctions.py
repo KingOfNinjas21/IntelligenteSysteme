@@ -141,7 +141,7 @@ def wallOrient(clientID, rangeSensorHandles, rayHit, isInOrientState):
         a1 = calcTargetOrient(clientID, x2, y2, x1, y1)
         a2 = calcTargetOrient(clientID, x1, y1, x2, y2)
 
-        if abs(move.substractOrientation(botOrient, a1))< abs(move.substractOrientation(botOrient, a2)):
+        if abs(botOrient-a1)<abs(botOrient-a2):
             move.rotateUntilOrientation(clientID, a1)
             isRight= True
 
@@ -326,6 +326,7 @@ def followBoundary(clientID, sensorHandles, rightSide):
 
             for i in range(move.FRONT_SEN_START,move.FRONT_SEN_END):          # check for a pool of front sensors if there is an obstacle
                 if rangeData[i][3] <= 0.5:
+                    print("FLALALALALAL")
                     wallOrient(clientID, sensorHandles, rayHit, True)
                     break
 
@@ -437,3 +438,87 @@ def distB(clientID, sensorHandles, goalName):
 
         print("Bot is in goal: {}".format( not isNotGoal))
 
+
+
+
+def followOstecel(clientID, sensorHandles, rightSide, roundFinished):
+    print("Follow boundary: start")
+
+    # set rayHit to the ray index where the followed wall is
+    if rightSide:
+        rayHit = LEFT_RAY_NINETY
+    else:
+        rayHit = RIGHT_RAY_NINETY
+
+    targetDistanceToWall = 0.5
+    minRange = targetDistanceToWall-0.05
+    maxRange = targetDistanceToWall+0.05
+    counter = 0
+
+    startPoint = (move.getPos(clientID)[0][0], move.getPos(clientID)[0][1])
+    res, objHandle = vrep.simxGetObjectHandle(clientID, 'Goal', vrep.simx_opmode_oneshot_wait)
+    RES, targetPosition = vrep.simxGetObjectPosition(clientID, objHandle, -1, vrep.simx_opmode_oneshot_wait)
+    goalPoint = (targetPosition[0], targetPosition[1])
+    print(startPoint)
+
+    minDist = move.getDistanceBetweenPoints(startPoint, goalPoint)
+    minPoint = startPoint
+    disToMin = 0
+    distanceTravled = 0
+
+    while True:
+        move.startMoving(clientID)
+        while not detectCorner(clientID,sensorHandles, rayHit, (minRange+maxRange)/2.0): #not abs(oldDis - newDis)>1
+            rangeData = rangeSensor.getSensorData(clientID, sensorHandles)
+
+            for i in range(move.FRONT_SEN_START,move.FRONT_SEN_END):          # check for a pool of front sensors if there is an obstacle
+                if rangeData[i][3] <= 0.5:
+                    print("FLALALALALAL")
+                    wallOrient(clientID, sensorHandles, rayHit, True)
+                    break
+
+            move.startMoving(clientID)
+            # Only check the following every 5 iterations, so that the correction of following doesn't happen too often
+            if counter % 5 == 0:
+
+                rangeToWallNew = rangeData[rayHit][3]
+                print("Current range to wall: {}".format(rangeToWallNew))
+
+                # if the distance to the wall is to little drive away from the wall
+                if rangeToWallNew<minRange:
+                    move.setWheelVelocity(clientID, 0)
+                    move.sideway(minRange -rangeToWallNew ,clientID,rightSide)
+                    move.startMoving(clientID)
+                    wallOrient(clientID, sensorHandles, rayHit, False)
+
+                # if the distance to the wall is too high -> drive towards the wall
+                elif rangeToWallNew>maxRange:
+                    move.setWheelVelocity(clientID, 0)
+                    move.sideway(rangeToWallNew - maxRange ,clientID, not rightSide)
+                    move.startMoving(clientID)
+                    wallOrient(clientID, sensorHandles, rayHit, False)
+
+            counter+=1
+            currentPoint = (move.getPos(clientID)[0][0], move.getPos(clientID)[0][1])
+            if(roundFinished == False and distanceTravled > 1):
+                roundFinished = move.isSamePoint(startPoint, currentPoint)
+
+
+            if(move.getDistanceBetweenPoints(currentPoint, goalPoint) < minDist):
+                minDist = move.getDistanceBetweenPoints(currentPoint, goalPoint)
+                minPoint = currentPoint
+                disToMin = distanceTravled
+
+
+            if(roundFinished and move.isSamePoint(minPoint, currentPoint) and 2*disToMin - 1 < distanceTravled):
+                print("min Point found")
+                return
+
+
+        print("drive around corner")
+
+        goAroundCorner(clientID, sensorHandles, rightSide, rayHit)
+
+        if(roundFinished and move.isSamePoint(minPoint, currentPoint)):
+            print("min Point found")
+            return
