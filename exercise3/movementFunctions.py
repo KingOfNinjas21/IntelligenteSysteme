@@ -678,7 +678,8 @@ def freespaceCondition(clientID, hitPoint):
 def completedLoop():
     return False
 
-# rotate degree degrees to the right if degree is positive, otherwise (degree negative) rotate to the left
+# rotate degree degrees to the right if rotRight is True, otherwise (rotRight=False) rotate to the left
+# this function uses the system orientation
 def rotateSys(degree, clientID, isRotRight):
     if not isRotRight:
         degree *= -1
@@ -690,10 +691,10 @@ def rotateSys(degree, clientID, isRotRight):
     rotateUntilOrientation(clientID, goalOrient)
 
 def driveAroundChair(clientID):
-    rotate(45.0, clientID, True)
-    forward(1.8, clientID)
-    rotate(45.0, clientID, False)
-    forward(1.8, clientID)
+    rotate(90.0, clientID, True)
+    forward(1.0, clientID)
+    rotate(90.0, clientID, False)
+    forward(1.0, clientID)
 
 def isChairInFront(sensorData):
     startRay = FRONT_SEN_START - 50
