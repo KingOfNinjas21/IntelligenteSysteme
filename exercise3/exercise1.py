@@ -44,17 +44,13 @@ def main():
 
         # programable space --------------------------------------------------------------------------------------------
 
-        useDistBug = True
+        useDistBug = False
 
         if(useDistBug):
             bug.distB(clientID, hokuyo, goalName)
         else:
-            bug.bug1(clientID, hokuyo)
+            bug.bug1(clientID, hokuyo, goalName)
 
-
-        bug.followOstecel(clientID,hokuyo, True, False)
-        #bug.followBoundary(clientID, hokuyo, True)
-        #bug.wallOrient(clientID, hokuyo, LEFT_RAY_NINETY, False)
 
         # Stop simulation ----------------------------------------------------------------------------------------------
         vrep.simxStopSimulation(clientID,vrep.simx_opmode_oneshot_wait)
