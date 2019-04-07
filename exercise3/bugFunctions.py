@@ -464,11 +464,19 @@ def followOstecel(clientID, sensorHandles, rightSide, roundFinished):
     minDist = move.getDistanceBetweenPoints(startPoint, goalPoint)
     minPoint = startPoint
     disToMin = 0
-    distanceTravled = 0
 
     while True:
         move.startMoving(clientID)
+
+        #variables for distance tracking
+        x = 0.0
+        y = 0.0
+        dt = 0.0
         while not detectCorner(clientID,sensorHandles, rayHit, (minRange+maxRange)/2.0): #not abs(oldDis - newDis)>1
+            start = time.time()                     # start time for distance tracking
+
+            x, y, distanceTravled = move.calcTraveldDistance(x, y, dt)
+
             rangeData = rangeSensor.getSensorData(clientID, sensorHandles)
 
             for i in range(move.FRONT_SEN_START,move.FRONT_SEN_END):          # check for a pool of front sensors if there is an obstacle
@@ -513,6 +521,9 @@ def followOstecel(clientID, sensorHandles, rightSide, roundFinished):
             if(roundFinished and move.isSamePoint(minPoint, currentPoint) and 2*disToMin - 1 < distanceTravled):
                 print("min Point found")
                 return
+
+            end = time.time()                                           # end time for distance tracking
+            dt = end - start
 
 
         print("drive around corner")
