@@ -174,6 +174,18 @@ def forward(dist, clientID):
     for i in range(0, 4):
         vrep.simxSetJointTargetVelocity(clientID, wheelJoints[i], 0, vrep.simx_opmode_oneshot)
 
+
+# This function calculates the traveld distance in a given timeslice. Only works if the robot drives forward
+# Make sure to track dt accurate
+# x, y the start point of this timeslice (init with 0.0, 0.0 if you want to track the distance from a sertain point and update it with the returned values)
+def calcTraveldDistance(x, y, dt):
+    x, y, w = odometry(x, y, 0.0, FORWARD_VEL, 0.0, 0.0, dt)
+    distance = math.sqrt(x * x + y * y)
+    time.sleep(1.0e-06)                     # problems with very small time slices -> little delay (if you have a bad angle calculation on your pc try to change this value)
+
+    return x, y, distance
+
+
 # drive sideways for dist meters
 def sideway(dist, clientID, toRight):
     # set velocety to 0
