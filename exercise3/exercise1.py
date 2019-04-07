@@ -46,8 +46,8 @@ def main():
         #move.rotateUntilOrientation(clientID, -135.0)
 
         bug.distB(clientID, hokuyo, goalName)
-        #followBoundary(clientID, hokuyo, True)
-
+        #bug.followBoundary(clientID, hokuyo, True)
+        #bug.wallOrient(clientID, hokuyo, LEFT_RAY_NINETY, False)
 
         """
         res, rayHit = move.headTowardsModel(clientID, goalName, hokuyo)
