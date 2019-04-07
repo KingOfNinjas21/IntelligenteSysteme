@@ -107,6 +107,35 @@ def formatVel(forwBackVel, leftRightVel, rotVel):
     return vf, vr, w0
 
 
+# This function compares two points with some latitude
+def isSamePoint(pointA, pointB):
+    latituteRadius = 0.3
+
+    if getDistanceBetweenPoints(pointA, pointB) <= latituteRadius:
+        return True
+
+    return False
+
+# This function returns the distance between two points
+def getDistanceBetweenPoints(pointA, pointB):
+    xA = pointA[0]
+    yA = pointA[1]
+    xB = pointB[0]
+    yB = pointB[1]
+
+    # vector from A to B
+    xNew = xB - xA
+    yNew = yB - yA
+
+    # length of vector
+    dist = math.sqrt(xNew*xNew + yNew*yNew)
+
+    return dist
+
+
+
+
+
 """
 ************************************
 FORWARD/SIDEWAYS FUNCTIONS

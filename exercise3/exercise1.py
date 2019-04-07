@@ -69,7 +69,13 @@ def main():
 
 
 
-# removes a model from the v-rep scene by it's name
+# This function represents a bug one algorithm.
+def bug1(clientID, sensorHandles):
+    # todo head toward goal
+
+    # todo when obstacle hit follow boundary
+    startPoint, x = move.getPos(clientID)                       # starting point when following boundary
+    minPoint = startPoint                                       # shortest point to target while following boundary
 def removeModel(clientID, name):
     res,toRemove=vrep.simxGetObjectHandle(clientID, name, vrep.simx_opmode_blocking)
     vrep.simxRemoveModel(clientID, toRemove, vrep.simx_opmode_oneshot)
