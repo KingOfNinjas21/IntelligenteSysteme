@@ -141,7 +141,7 @@ def wallOrient(clientID, rangeSensorHandles, rayHit, isInOrientState):
         a1 = calcTargetOrient(clientID, x2, y2, x1, y1)
         a2 = calcTargetOrient(clientID, x1, y1, x2, y2)
 
-        if abs(botOrient-a1)<abs(botOrient-a2):
+        if abs(move.substractOrientation(botOrient, a1))< abs(move.substractOrientation(botOrient, a2)):
             move.rotateUntilOrientation(clientID, a1)
             isRight= True
 
