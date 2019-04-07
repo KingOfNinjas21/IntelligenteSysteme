@@ -273,7 +273,7 @@ def rotate(degree, clientID, rotRight):
 # rotate degree degrees to the right if rotRight is True, otherwise (rotRight=False) rotate to the left
 # this function uses the system orientation
 def rotateSys(degree, clientID, isRotRight):
-    if not isRotRight:
+    if isRotRight:
         degree *= -1
 
     startOrient = getOrientation(clientID)
