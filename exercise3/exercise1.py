@@ -66,6 +66,7 @@ def main():
 
 
 def followBoundary(clientID, sensorHandles, rightSide):
+    print("Follow boundary: start")
     # 603 und 82
     if rightSide:
         rayHit = 603
@@ -96,7 +97,7 @@ def followBoundary(clientID, sensorHandles, rightSide):
             if counter % 5 == 0:
 
                 rangeToWallNew = rangeData[rayHit][3]
-                print(rangeToWallNew)
+                print("Current range to wall: {}".format(rangeToWallNew))
                 if rangeToWallNew<minRange:
                     move.setWheelVelocity(clientID, 0)
                     move.sideway(minRange -rangeToWallNew ,clientID,rightSide)
@@ -121,7 +122,8 @@ def followBoundary(clientID, sensorHandles, rightSide):
             leavingCondition, minDistToTarget = move.calcLeavingConditin(minDistToTarget, freespace, clientID)
 
             if leavingCondition:
-                print("leaving cause of leaving condition")
+                print("Leaving follow boundary ... cause: leaving condition")
+                print("Follow boundary: end")
                 return
 
             newDis = rangeData[rayHit][3]
@@ -145,7 +147,7 @@ def followBoundary(clientID, sensorHandles, rightSide):
 
 
 def goAroundCorner(clientID, sensorHandles, rightSide, rayHit):
-    print("start going around corner")
+    print("Going around corner: start")
     move.forward(0.8, clientID)
     move.rotate(90, clientID, not rightSide)
     move.forward(0.8, clientID)
@@ -167,7 +169,7 @@ def goAroundCorner(clientID, sensorHandles, rightSide, rayHit):
         move.rotate(90, clientID, not rightSide)
         move.forward(1.0, clientID)
         move.wallOrient(clientID, sensorHandles, rayHit, False)
-    print("end going around corner")
+    print("Going around corner: end")
 
 def normalBorder(clientID, sensorHandles, rayHit):
     rangeData = rangeSen.getSensorData(clientID, sensorHandles)
@@ -194,7 +196,7 @@ def distB(clientID, sensorHandles):
         else:
             isRight = move.wallOrient(clientID, sensorHandles, hitRay, False)
             followBoundary(clientID, sensorHandles, isRight)
-        print("is goal:", isGoal)
+        print("Bot is in goal: {}".format( not isGoal))
 
 def removeModel(clientID, name):
     res,toRemove=vrep.simxGetObjectHandle(clientID, name, vrep.simx_opmode_blocking)
