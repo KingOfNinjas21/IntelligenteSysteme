@@ -8,10 +8,10 @@ import pdb
 
 def initializeSensor(clientID):
     # start Hokuyo sensor
-    res = vrep.simxSetIntegerSignal(clientID, 'handle_xy_sensor', 2, vrep.simx_opmode_oneshot);
+    res = vrep.simxSetIntegerSignal(clientID, 'handle_xy_sensor', 2, vrep.simx_opmode_oneshot)
 
     # display range sensor beam
-    vrep.simxSetIntegerSignal(clientID, 'displaylasers', 1, vrep.simx_opmode_oneshot);
+    vrep.simxSetIntegerSignal(clientID, 'displaylasers', 1, vrep.simx_opmode_oneshot)
 
     # Get sensor handle:
     hokuyo = getSensorHandles(clientID)
