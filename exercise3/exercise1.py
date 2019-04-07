@@ -38,26 +38,23 @@ def main():
         res, wheelJoints[2] = vrep.simxGetObjectHandle(clientID, 'rollingJoint_fr', vrep.simx_opmode_oneshot_wait)
         res, wheelJoints[3] = vrep.simxGetObjectHandle(clientID, 'rollingJoint_rr', vrep.simx_opmode_oneshot_wait)
 
-        # programable space --------------------------------------------------------------------------------------------
-
         # initialize sensor and get sensor handles:
         rangeSen.initializeSensor(clientID)
         hokuyo = rangeSen.getSensorHandles(clientID)
-        #move.rotateUntilOrientation(clientID, -135.0)
 
-        #bug.distB(clientID, hokuyo, goalName)
+        # programable space --------------------------------------------------------------------------------------------
+
+        useDistBug = True
+
+        if(useDistBug):
+            bug.distB(clientID, hokuyo, goalName)
+        else:
+            bug.bug1(clientID, hokuyo)
+
+
         bug.followOstecel(clientID,hokuyo, True, False)
         #bug.followBoundary(clientID, hokuyo, True)
         #bug.wallOrient(clientID, hokuyo, LEFT_RAY_NINETY, False)
-
-        """
-        res, rayHit = move.headTowardsModel(clientID, goalName, hokuyo)
-
-        side = move.wallOrient(clientID, hokuyo, rayHit)
-        followBoundary(clientID, hokuyo, side)
-        """
-        #move.headTowardsModel(clientID, goalName, hokuyo)
-        #move.sideway(1.0, clientID, True);
 
         # Stop simulation ----------------------------------------------------------------------------------------------
         vrep.simxStopSimulation(clientID,vrep.simx_opmode_oneshot_wait)
@@ -68,15 +65,6 @@ def main():
         print ('Failed connecting to remote API server')
     print ('Program ended')
 
-
-
-# This function represents a bug one algorithm.
-def bug1(clientID, sensorHandles):
-    # todo head toward goal
-
-    # todo when obstacle hit follow boundary
-    startPoint, x = move.getPos(clientID)                       # starting point when following boundary
-    minPoint = startPoint                                       # shortest point to target while following boundary
 def removeModel(clientID, name):
     res,toRemove=vrep.simxGetObjectHandle(clientID, name, vrep.simx_opmode_blocking)
     vrep.simxRemoveModel(clientID, toRemove, vrep.simx_opmode_oneshot)
