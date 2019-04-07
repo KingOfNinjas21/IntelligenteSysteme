@@ -304,6 +304,8 @@ def isChairInFront(sensorData):
     else:
         return False
 
+
+#follows a obstacle until a leaving condition is found (for dist bug)
 def followBoundary(clientID, sensorHandles, rightSide):
     print("Follow boundary: start")
 
@@ -440,8 +442,8 @@ def distB(clientID, sensorHandles, goalName):
 
 
 
-
-def followOstecel(clientID, sensorHandles, rightSide, roundFinished):
+#follows a obstical until it is at the closes point to a goal (for bug1)
+def followObstacle(clientID, sensorHandles, rightSide, roundFinished):
     print("Follow boundary: start")
 
     # set rayHit to the ray index where the followed wall is
@@ -455,14 +457,14 @@ def followOstecel(clientID, sensorHandles, rightSide, roundFinished):
     maxRange = targetDistanceToWall+0.05
     counter = 0
 
-    startPoint = (move.getPos(clientID)[0][0], move.getPos(clientID)[0][1])
+    startPoint = (move.getPos(clientID)[0][0], move.getPos(clientID)[0][1]) #point where ubot first hit the obstacle 
     res, objHandle = vrep.simxGetObjectHandle(clientID, 'Goal', vrep.simx_opmode_oneshot_wait)
     RES, targetPosition = vrep.simxGetObjectPosition(clientID, objHandle, -1, vrep.simx_opmode_oneshot_wait)
     goalPoint = (targetPosition[0], targetPosition[1])
-    print(startPoint)
+    
 
-    minDist = move.getDistanceBetweenPoints(startPoint, goalPoint)
-    minPoint = startPoint
+    minDist = move.getDistanceBetweenPoints(startPoint, goalPoint) #shortest dist to the goal
+    minPoint = startPoint #coordinates of the nearest point to the goal
     disToMin = 0
 
     while True:
@@ -508,17 +510,17 @@ def followOstecel(clientID, sensorHandles, rightSide, roundFinished):
 
             counter+=1
             currentPoint = (move.getPos(clientID)[0][0], move.getPos(clientID)[0][1])
-            if(roundFinished == False and distanceTravled > 1):
+            if(roundFinished == False and distanceTravled > 1): #checks if the ubot drove around the obstacle (distanceTraveld > 1 is tolleranz to prevent, that the ubot thinks he finished a rond when he is at the starting point for the first time)
                 roundFinished = move.isSamePoint(startPoint, currentPoint)
 
 
-            if(move.getDistanceBetweenPoints(currentPoint, goalPoint) < minDist):
+            if(move.getDistanceBetweenPoints(currentPoint, goalPoint) < minDist): #checks for the min distance to the goal 
                 minDist = move.getDistanceBetweenPoints(currentPoint, goalPoint)
                 minPoint = currentPoint
                 disToMin = distanceTravled
 
 
-            if(roundFinished and move.isSamePoint(minPoint, currentPoint) and 2*disToMin - 1 < distanceTravled):
+            if(roundFinished and move.isSamePoint(minPoint, currentPoint) and 2*disToMin - 1 < distanceTravled): #checks if the robot is again at the nearest point, again with toleranz 
                 print("min Point found")
                 return
 
@@ -533,3 +535,25 @@ def followOstecel(clientID, sensorHandles, rightSide, roundFinished):
         if(roundFinished and move.isSamePoint(minPoint, currentPoint)):
             print("min Point found")
             return
+
+
+#impliments bug1 algo 
+def bug1(clientID, sensorHandles, goalName):
+    isNotGoal = True
+    while (isNotGoal):
+        isNotGoal , hitRay = headTowardsModel(clientID, goalName, sensorHandles)
+
+        # if headTowardsModel returned False it means it successfully got to the goal point
+        if(not isNotGoal):
+            print("FINISHED")
+            return
+
+
+        #
+        else:
+            # orient to wall to have a better start when following a wall
+            isRight = wallOrient(clientID, sensorHandles, hitRay, False)
+            followObstacle(clientID, sensorHandles, isRight, True)
+
+        print("Bot is in goal: {}".format( not isNotGoal))
+
