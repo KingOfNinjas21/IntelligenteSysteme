@@ -8,9 +8,12 @@ import time
 import math
 import movementFunctions as move
 import rangeSensorFunctions as rangeSen
+import bugFunctions as bug
 import sys
 
 goalName = "Goal"
+LEFT_RAY_NINETY = 603
+RIGHT_RAY_NINETY = 82
 
 def main():
     print ('Program started')
@@ -42,7 +45,7 @@ def main():
         hokuyo = rangeSen.getSensorHandles(clientID)
         #move.rotateUntilOrientation(clientID, -135.0)
 
-        distB(clientID, hokuyo)
+        bug.distB(clientID, hokuyo, goalName)
         #followBoundary(clientID, hokuyo, True)
 
 
@@ -65,139 +68,8 @@ def main():
     print ('Program ended')
 
 
-def followBoundary(clientID, sensorHandles, rightSide):
-    print("Follow boundary: start")
-    # 603 und 82
-    if rightSide:
-        rayHit = 603
-    else:
-        rayHit = 82
-    rotateAngle = 1.0
-    rangeToWallOld = 0.5
-    minRange = rangeToWallOld-0.1
-    maxRange = rangeToWallOld+0.1
-    counter = 0
-    rangeData = rangeSen.getSensorData(clientID, sensorHandles)
-    minDistToTarget = -1.0
-    oldDis = rangeData[rayHit][3]
-    newDis = rangeData[rayHit][3]
 
-    while True:
-        move.startMoving(clientID)
-        while not move.detectCorner(clientID,sensorHandles, rayHit, (minRange+maxRange)/2.0): #not abs(oldDis - newDis)>1
-            oldDis = newDis
-            rangeData = rangeSen.getSensorData(clientID, sensorHandles)
-
-            for i in range(move.FRONT_SEN_START,move.FRONT_SEN_END):          # check for a pool of front sensors if there is an obstacle
-                if rangeData[i][3] <= 0.5:
-                    move.wallOrient(clientID, sensorHandles, rayHit, True)
-                    break
-
-            move.startMoving(clientID)
-            if counter % 5 == 0:
-
-                rangeToWallNew = rangeData[rayHit][3]
-                print("Current range to wall: {}".format(rangeToWallNew))
-                if rangeToWallNew<minRange:
-                    move.setWheelVelocity(clientID, 0)
-                    move.sideway(minRange -rangeToWallNew ,clientID,rightSide)
-                    move.startMoving(clientID)
-                    move.wallOrient(clientID, sensorHandles, rayHit, False)
-                    #move.rotate(rotateAngle, clientID, True)
-                elif rangeToWallNew>maxRange:
-                    move.setWheelVelocity(clientID, 0)
-                    move.sideway(rangeToWallNew - maxRange ,clientID, not rightSide)
-                    move.startMoving(clientID)
-                    move.wallOrient(clientID, sensorHandles, rayHit, False)
-                    #move.rotate(rotateAngle, clientID, False)
-
-                #else:
-                #    move.wallOrient(clientID, sensorHandles, 603)
-                rangeToWallOld = rangeToWallNew
-
-            counter+=1
-
-            # calc stuff for leaving condition
-            freespace = move.calcFreeSpace(clientID, sensorHandles)
-            leavingCondition, minDistToTarget = move.calcLeavingConditin(minDistToTarget, freespace, clientID)
-
-            if leavingCondition:
-                print("Leaving follow boundary ... cause: leaving condition")
-                print("Follow boundary: end")
-                return
-
-            newDis = rangeData[rayHit][3]
-
-
-
-        print("drive around corner")
-
-        goAroundCorner(clientID, sensorHandles, rightSide, rayHit)
-
-        #TODO: check leaving conditions here
-        freespace = move.calcFreeSpace(clientID, sensorHandles)
-        leavingCondition, minDistToTarget = move.calcLeavingConditin(minDistToTarget, freespace, clientID)
-
-        if leavingCondition:
-            print("leaving cause of leaving condition")
-            return
-        #elif(True):
-            # condition target is visible holds
-
-
-
-def goAroundCorner(clientID, sensorHandles, rightSide, rayHit):
-    print("Going around corner: start")
-    move.forward(0.8, clientID)
-    move.rotate(90, clientID, not rightSide)
-    move.forward(0.8, clientID)
-
-    if(normalBorder(clientID, sensorHandles, rightSide)):
-        print("just a corner")
-
-    else:
-        print("U-Turn")
-        while True:
-            move.forward(0.2, clientID)
-            rangeData = rangeSen.getSensorData(clientID, sensorHandles)
-            countRays = 0
-            for i in range(rayHit - 80, rayHit + 80):
-                if rangeData[i][3] < 0.8:
-                    countRays += 1
-            if countRays < 5:
-                break
-        move.rotate(90, clientID, not rightSide)
-        move.forward(1.0, clientID)
-        move.wallOrient(clientID, sensorHandles, rayHit, False)
-    print("Going around corner: end")
-
-def normalBorder(clientID, sensorHandles, rayHit):
-    rangeData = rangeSen.getSensorData(clientID, sensorHandles)
-    for i in range(rayHit-15, rayHit+15):
-        for j in range(i+5, i+30):
-            if(abs(rangeData[i][3] - rangeData[j][3]) > 0.2):
-                return False
-    #for i in range(rayHit+10, rayHit + 50):
-    #    if(abs(rangeData[i][3]-rangeData[rayHit][3])<0.5):
-    #        return True
-
-    return True
-
-def distB(clientID, sensorHandles):
-    isGoal, hitRay = move.headTowardsModel(clientID, goalName, sensorHandles)
-    while (isGoal):
-        isGoal, hitRay = move.headTowardsModel(clientID, goalName, sensorHandles)
-        if(not isGoal):
-            print("FINISHED")
-            return
-        rangeData = rangeSen.getSensorData(clientID, sensorHandles)
-        if(move.isChairInFront(rangeData)):
-            move.driveAroundChair(clientID)
-        else:
-            isRight = move.wallOrient(clientID, sensorHandles, hitRay, False)
-            followBoundary(clientID, sensorHandles, isRight)
-        print("Bot is in goal: {}".format( not isGoal))
-
+# removes a model from the v-rep scene by it's name
 def removeModel(clientID, name):
     res,toRemove=vrep.simxGetObjectHandle(clientID, name, vrep.simx_opmode_blocking)
     vrep.simxRemoveModel(clientID, toRemove, vrep.simx_opmode_oneshot)
