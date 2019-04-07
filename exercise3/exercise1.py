@@ -183,6 +183,17 @@ def normalBorder(clientID, sensorHandles, rayHit):
 
     return True
 
+
+# This function represents a bug one algorithm.
+def bug1(clientID, sensorHandles):
+    # todo head toward goal
+
+    # todo when obstacle hit follow boundary
+    startPoint, x = move.getPos(clientID)                       # starting point when following boundary
+    minPoint = startPoint                                       # shortest point to target while following boundary
+
+
+
 def distB(clientID, sensorHandles):
     isGoal, hitRay = move.headTowardsModel(clientID, goalName, sensorHandles)
     while (isGoal):
