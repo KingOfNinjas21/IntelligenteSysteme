@@ -679,7 +679,10 @@ def completedLoop():
     return False
 
 # rotate degree degrees to the right if degree is positive, otherwise (degree negative) rotate to the left
-def rotateSys(degree, clientID):
+def rotateSys(degree, clientID, isRotRight):
+    if not isRotRight:
+        degree *= -1
+
     startOrient = getOrientation(clientID)
     goalOrient = substractOrientation(startOrient, -degree)
 
