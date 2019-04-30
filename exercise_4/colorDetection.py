@@ -6,7 +6,7 @@ from PIL import Image
 
 
 # constans for color boundaries
-boundariesGreen = [([50, 200, 50], [75, 255, 75])]
+boundariesGreen = ([50, 200, 50], [75, 255, 75])
 
 
 
