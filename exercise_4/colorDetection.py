@@ -24,4 +24,13 @@ def convertToCv2Format (sensorImg, res):
 
     return img
 
+'''
+calculates the center for given contours of an object in an image
+'''
+def calcCenter (contours):
+    M = cv2.moments(contours[0])
+    cx = int(M['m10'] / M['m00'])
+    cy = int(M['m01'] / M['m00'])
+
+    return cx, cy
 
