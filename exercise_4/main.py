@@ -74,7 +74,7 @@ def main():
                 # image_buffer = Image.frombuffer("RGB", (res[0],res[1]), bytes(image_byte_array), "raw", "RGB", 0, 1) , use
                 img = np.asarray(image_buffer)
                 # Convert RGB to BGR
-                img = img[:, :, ::-1].copy()
+                img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
                 cv2.imshow("img from vrep", img)
                 cv2.waitKey(0)
                 #cv2.imwrite("imageFromVREP.png", image_buffer, cv2.IMWRITE_PNG_COMPRESSION)
