@@ -5,6 +5,11 @@ import cv2
 from PIL import Image
 
 
+# constans for color boundaries
+boundariesGreen = [([50, 200, 50], [75, 255, 75])]
+
+
+
 '''
 converts an image from vrep sensor to cv2 format.
 sesorImg: the image from the sensor
@@ -23,5 +28,27 @@ def convertToCv2Format (sensorImg, res):
     img = cv2.flip(img, 0)
 
     return img
+
+
+'''
+Gets a raw cv2 image, process it and returns the contours of the given color boundaries 
+'''
+def getContours(image, boundaries):
+    # create NumPy arrays from the boundaries
+    lower = np.array(boundaries[0], dtype="uint8")
+    upper = np.array(boundaries[1], dtype="uint8")
+
+    # find the colors within the specified boundaries and apply the mask
+    mask = cv2.inRange(image, lower, upper)
+    output = cv2.bitwise_and(image, image, mask=mask)
+
+    # process image
+    imgray = cv2.cvtColor(output, cv2.COLOR_BGR2GRAY)
+    ret, thresh = cv2.threshold(imgray, 127, 255, 0)
+
+    contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+    return contours
+
 
 
