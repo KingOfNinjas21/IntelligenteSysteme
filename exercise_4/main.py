@@ -1,6 +1,6 @@
 # Introduction to Intelligent and Autonomus Systems, UIBK, 2017
 #contact:senka.krivic@uibk.ac.at
-# 
+#
 
 import vrep
 import numpy as np
@@ -67,12 +67,17 @@ def main():
                 image_byte_array = array.array('b', image)
 
                 # transformation to opencv2 image
-                image_buffer = Image.frombuffer("RGB", (res[0], res[1]), image_byte_array, "raw", "RGB", 0, 1)
+                #image_buffer = Image.frombuffer("RGB", (res[0], res[1]), image_byte_array, "raw", "RGB", 0, 1)
                 # if python 3, you may instead need to do:
-                # image_buffer = Image.frombuffer("RGB", (res[0],res[1]), np.asarray(image_byte_array), "raw", "RGB", 0, 1) , use
+                image_buffer = Image.frombuffer("RGB", (res[0],res[1]), np.asarray(image_byte_array), "raw", "RGB", 0, 1)
                 # or
                 # image_buffer = Image.frombuffer("RGB", (res[0],res[1]), bytes(image_byte_array), "raw", "RGB", 0, 1) , use
                 img = np.asarray(image_buffer)
+                # Convert RGB to BGR
+                img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+                cv2.imshow("img from vrep", img)
+                cv2.waitKey(0)
+                #cv2.imwrite("imageFromVREP.png", image_buffer, cv2.IMWRITE_PNG_COMPRESSION)
 
         # Stop simulation ----------------------------------------------------------------------------------------------
         vrep.simxStopSimulation(clientID,vrep.simx_opmode_oneshot_wait)
