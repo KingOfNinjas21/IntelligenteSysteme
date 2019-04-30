@@ -7,6 +7,7 @@ import cv2
 
 # load the image
 image = cv2.imread("color_detection_blue_version.jpg")
+image2 = cv2.imread("color_detection_blue_version.jpg")
 
 # define the list of boundaries
 boundaries = [([17, 15, 100], [50, 56, 200])]
@@ -29,6 +30,8 @@ for (lower, upper) in boundaries:
     cv2.drawContours(image, contours, -1, (0, 255, 0), 3)
 
     # show the images
-    cv2.imshow("images", np.hstack([image, output]))
-    cnts = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    #cv2.imshow("images", np.hstack([image, output]))
+    cnts, scnd = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    cv2.drawContours(image2, cnts, 4, (0, 255, 0), 1)
+    cv2.imshow("blaba", np.hstack([image2, output]))
     cv2.waitKey(0)
