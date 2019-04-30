@@ -7,6 +7,7 @@ import cv2
 
 # load the image
 image = cv2.imread("test.png")
+image2 = cv2.imread("test.png")
 
 # define the list of boundaries
 boundaries = [([0, 230, 0], [20, 255, 20])]
@@ -26,6 +27,9 @@ for (lower, upper) in boundaries:
     ret, thresh = cv2.threshold(imgray, 127, 255, 0)
     contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
+    cv2.drawContours(image2, contours, 0, (255, 0, 0), 1)
+    cv2.imshow("conturs", np.hstack([image2, output]))
+
     
 
     # show the images
@@ -36,5 +40,7 @@ for (lower, upper) in boundaries:
     cy = int(M['m01']/M['m00'])
 
     print(cx, cy)
+
+    cv2.waitKey(0)
 
   
