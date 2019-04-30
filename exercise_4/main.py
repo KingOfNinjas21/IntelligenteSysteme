@@ -58,10 +58,21 @@ def main():
         while (vrep.simxGetConnectionId(clientID) != -1):
             # get further images from vision sensor
             err, res, image = vrep.simxGetVisionSensorImage(clientID, youBotCam, 0, vrep.simx_opmode_buffer)
-            
+
             if err == vrep.simx_return_ok:
-                cv2.imshow("img from vrep", colorDet.convertToCv2Format(image, res))
+                # do some image stuff ----------------------------------------------------------------------------------
+
+                cv2Image = colorDet.convertToCv2Format(image, res)
+                cv2ImageCopy = cv2Image
+
+                imageContours = colorDet.getContours(cv2Image, colorDet.boundariesGreen)
+                cv2.drawContours(cv2ImageCopy, imageContours, 0, (255, 0, 0), 1)
+                cv2.imshow("conturs", cv2ImageCopy)
+
                 cv2.waitKey(0)
+
+                # end some image stuff ---------------------------------------------------------------------------------
+
 
         # Stop simulation ----------------------------------------------------------------------------------------------
         vrep.simxStopSimulation(clientID,vrep.simx_opmode_oneshot_wait)
