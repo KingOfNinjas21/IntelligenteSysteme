@@ -9,6 +9,7 @@ import time
 import math
 import rangeSensorFunctions as rangeSen
 import colorDetection as colorDet
+import movementFunctions as move
 
 goalName = "Goal"
 LEFT_RAY_NINETY = 603
@@ -40,8 +41,6 @@ def main():
         rangeSen.initializeSensor(clientID)
         hokuyo = rangeSen.getSensorHandles(clientID)
 
-        # programable space --------------------------------------------------------------------------------------------
-
         # change the angle of the camera view (default is pi/4)
         res = vrep.simxSetFloatSignal(clientID, 'rgbd_sensor_scan_angle', math.pi / 2, vrep.simx_opmode_oneshot_wait)
 
@@ -55,7 +54,11 @@ def main():
         err, resolution, image = vrep.simxGetVisionSensorImage(clientID, youBotCam, 0, vrep.simx_opmode_streaming)
         time.sleep(1)
 
-        while (vrep.simxGetConnectionId(clientID) != -1):
+        # programmable space --------------------------------------------------------------------------------------------
+
+        counter = 1
+
+        while counter<=5:
             # get further images from vision sensor
             err, res, image = vrep.simxGetVisionSensorImage(clientID, youBotCam, 0, vrep.simx_opmode_buffer)
 
@@ -67,12 +70,22 @@ def main():
 
                 imageContours = colorDet.getContours(cv2Image, colorDet.boundariesGreen)
                 cv2.drawContours(cv2ImageCopy, imageContours, 0, (255, 0, 0), 1)
-                cv2.imshow("conturs", cv2ImageCopy)
+                cv2.imshow("Current Image of youBot", cv2ImageCopy)
 
-                cv2.waitKey(0)
+                # calculate center of green blob
+                x,y = colorDet.calcCenter(imageContours)
 
+                print("Current center of the green blob: x={} y={}".format(x,y))
+
+                cv2.waitKey(0) # key to get out of waiting is ESC
+                
                 # end some image stuff ---------------------------------------------------------------------------------
 
+            move.forward(0.1, clientID)
+
+            counter+=1
+
+        # end of programmable space --------------------------------------------------------------------------------------------
 
         # Stop simulation ----------------------------------------------------------------------------------------------
         vrep.simxStopSimulation(clientID,vrep.simx_opmode_oneshot_wait)
