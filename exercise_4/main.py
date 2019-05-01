@@ -7,9 +7,7 @@ import numpy as np
 import cv2
 import time
 import math
-import rangeSensorFunctions as rangeSen
 import colorDetection as colorDet
-import movementFunctions as move
 
 goalName = "Goal"
 LEFT_RAY_NINETY = 603
@@ -37,10 +35,6 @@ def main():
         res, wheelJoints[2] = vrep.simxGetObjectHandle(clientID, 'rollingJoint_fr', vrep.simx_opmode_oneshot_wait)
         res, wheelJoints[3] = vrep.simxGetObjectHandle(clientID, 'rollingJoint_rr', vrep.simx_opmode_oneshot_wait)
 
-        # initialize sensor and get sensor handles:
-        rangeSen.initializeSensor(clientID)
-        hokuyo = rangeSen.getSensorHandles(clientID)
-
         # change the angle of the camera view (default is pi/4)
         res = vrep.simxSetFloatSignal(clientID, 'rgbd_sensor_scan_angle', math.pi / 2, vrep.simx_opmode_oneshot_wait)
 
@@ -56,34 +50,7 @@ def main():
 
         # programmable space --------------------------------------------------------------------------------------------
 
-        counter = 1
-
-        while counter<=5:
-            # get further images from vision sensor
-            err, res, image = vrep.simxGetVisionSensorImage(clientID, youBotCam, 0, vrep.simx_opmode_buffer)
-
-            if err == vrep.simx_return_ok:
-                # do some image stuff ----------------------------------------------------------------------------------
-
-                cv2Image = colorDet.convertToCv2Format(image, res)
-                cv2ImageCopy = cv2Image
-
-                imageContours = colorDet.getContours(cv2Image, colorDet.boundariesGreen)
-                cv2.drawContours(cv2ImageCopy, imageContours, 0, (255, 0, 0), 1)
-                cv2.imshow("Current Image of youBot", cv2ImageCopy)
-
-                # calculate center of green blob
-                x,y = colorDet.calcCenter(imageContours)
-
-                print("Current center of the green blob: x={} y={}".format(x,y))
-
-                cv2.waitKey(0) # key to get out of waiting is ESC
-                
-                # end some image stuff ---------------------------------------------------------------------------------
-
-            move.forward(0.1, clientID)
-
-            counter+=1
+        colorDet.exercise4_action(clientID, youBotCam)
 
         # end of programmable space --------------------------------------------------------------------------------------------
 

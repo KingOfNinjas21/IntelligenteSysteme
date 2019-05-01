@@ -1,6 +1,8 @@
 import array
 import numpy as np
 import cv2
+import vrep
+import movementFunctions as move
 
 from PIL import Image
 
@@ -59,5 +61,33 @@ def getContours(image, boundaries):
 
     return contours
 
+def exercise4_action(clientID, youBotCam):
+    counter = 1
 
+    while counter <= 5:
+        # get further images from vision sensor
+        err, res, image = vrep.simxGetVisionSensorImage(clientID, youBotCam, 0, vrep.simx_opmode_buffer)
+
+        if err == vrep.simx_return_ok:
+            # do some image stuff ----------------------------------------------------------------------------------
+
+            cv2Image = convertToCv2Format(image, res)
+            cv2ImageCopy = cv2Image
+
+            imageContours = getContours(cv2Image, boundariesGreen)
+            cv2.drawContours(cv2ImageCopy, imageContours, 0, (255, 0, 0), 1)
+            cv2.imshow("Current Image of youBot", cv2ImageCopy)
+
+            # calculate center of green blob
+            x, y = calcCenter(imageContours)
+
+            print("Current center of the green blob: x={} y={}".format(x, y))
+
+            cv2.waitKey(0)  # key to get out of waiting is ESC
+
+            # end some image stuff ---------------------------------------------------------------------------------
+
+        move.forward(0.1, clientID)
+
+        counter += 1
 
