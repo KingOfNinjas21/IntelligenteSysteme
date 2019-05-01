@@ -24,9 +24,10 @@ def main():
     if clientID!=-1:
         print ('Connected to remote API server')
 
-
         # Start the simulation:
         vrep.simxStartSimulation(clientID,vrep.simx_opmode_oneshot_wait)
+
+        # start init wheels --------------------------------------------------------------------------------------------
 
         wheelJoints = np.empty(4, dtype=np.int)
         wheelJoints.fill(-1)  # front left, rear left, rear right, front right
@@ -34,6 +35,10 @@ def main():
         res, wheelJoints[1] = vrep.simxGetObjectHandle(clientID, 'rollingJoint_rl', vrep.simx_opmode_oneshot_wait)
         res, wheelJoints[2] = vrep.simxGetObjectHandle(clientID, 'rollingJoint_fr', vrep.simx_opmode_oneshot_wait)
         res, wheelJoints[3] = vrep.simxGetObjectHandle(clientID, 'rollingJoint_rr', vrep.simx_opmode_oneshot_wait)
+
+        # end init wheels ----------------------------------------------------------------------------------------------
+
+        # start init camera --------------------------------------------------------------------------------------------
 
         # change the angle of the camera view (default is pi/4)
         res = vrep.simxSetFloatSignal(clientID, 'rgbd_sensor_scan_angle', math.pi / 2, vrep.simx_opmode_oneshot_wait)
@@ -48,16 +53,22 @@ def main():
         err, resolution, image = vrep.simxGetVisionSensorImage(clientID, youBotCam, 0, vrep.simx_opmode_streaming)
         time.sleep(1)
 
-        # programmable space --------------------------------------------------------------------------------------------
+        # end init camera ----------------------------------------------------------------------------------------------
+
+
+
+        # programmable space -------------------------------------------------------------------------------------------
 
         colorDet.exercise4_action(clientID, youBotCam)
 
         # end of programmable space --------------------------------------------------------------------------------------------
 
-        # Stop simulation ----------------------------------------------------------------------------------------------
+
+
+        # Stop simulation
         vrep.simxStopSimulation(clientID,vrep.simx_opmode_oneshot_wait)
 
-        # Now close the connection to V-REP:
+        # Close connection to V-REP:
         vrep.simxFinish(clientID)
     else:
         print ('Failed connecting to remote API server')

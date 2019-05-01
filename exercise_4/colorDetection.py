@@ -61,6 +61,13 @@ def getContours(image, boundaries):
 
     return contours
 
+'''
+This is the action to be called for the exercise 4 of the proseminar
+1. Retrieves image 
+2. processes it and calculates the center of the green blob
+3. prints the center of the green blob and waits for the ESC-key 
+4. moves 0.1 meters and begins again at 1. until this loop happened 5 times
+'''
 def exercise4_action(clientID, youBotCam):
     counter = 1
 
