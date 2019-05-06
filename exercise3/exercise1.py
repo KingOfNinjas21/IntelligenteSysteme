@@ -44,7 +44,7 @@ def main():
 
         # programable space --------------------------------------------------------------------------------------------
 
-        useDistBug = True
+        useDistBug = False
 
         if(useDistBug):
             bug.distB(clientID, hokuyo, goalName)
