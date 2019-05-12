@@ -72,11 +72,14 @@ def main():
 
         print(prime_corners)
         cv2.imshow("Penis", image)
-        cv2.waitKey(0)
+        #cv2.waitKey(0)
 
         A = calcHomgenMatrix(prime_corners, global_corners)
         #invA = np.linalg.inv(A)
         print(A)
+        print(A.shape)
+        u, s, vh = np.linalg.svd(np.asarray(A, dtype='float'), full_matrices=True)
+        print(vh)
         #print(invA)
         # end of programmable space --------------------------------------------------------------------------------------------
 
@@ -103,10 +106,16 @@ def addOne(matrix):
 
 def calcHomgenMatrix(prime_corners, global_corners):
     A = []
+    np.concatenate((np.zeros(3), np.dot(global_corners[0], -prime_corners[0][2]), np.dot(global_corners[0], prime_corners[0][1])), axis=None)
     for i in range(len(prime_corners)):
-        A.append([np.zeros((1,3)), np.dot(np.transpose(global_corners[i]),-prime_corners[i][2]), np.dot(np.transpose(global_corners[i]),prime_corners[i][1])])
-        A.append([np.dot(np.transpose(global_corners[i]),prime_corners[i][2]), np.zeros((1,3)), np.dot(np.transpose(global_corners[i]),-prime_corners[i][0])])
-        A.append([np.dot(np.transpose(global_corners[i]),-prime_corners[i][1]), np.dot(np.transpose(global_corners[i]),prime_corners[i][0]), np.zeros((1,3))])
+        np.append(A,np.concatenate((np.zeros(3),                                        np.dot(global_corners[i],-prime_corners[i][2]),     np.dot(global_corners[i],prime_corners[i][1])), axis=None))
+        np.append(A,np.concatenate((np.dot(global_corners[i], prime_corners[i][2]),     np.zeros(3),                                        np.dot(global_corners[i],-prime_corners[i][0])), axis=None))
+        np.append(A,np.concatenate((np.dot(global_corners[i],-prime_corners[i][1]),     np.dot(global_corners[i],prime_corners[i][0]),      np.zeros(3)), axis=None))
+        print("new A: ", A)
+
     return np.asarray(A)
+
+
+
 
 if __name__ == "__main__": main()
