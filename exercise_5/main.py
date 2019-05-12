@@ -65,6 +65,13 @@ def main():
 
         found, prime_corners = cv2.findChessboardCorners(image,(3,4))
 
+        global_corners2 = [[-0.025, 0.125], [-0.025, 0.075], [-0.025, 0.025], [-0.075, 0.125],
+                          [-0.075, 0.075], [-0.075, 0.025],
+                          [-0.125, 0.125], [-0.125, 0.075], [-0.125, 0.025], [-0.175, 0.125],
+                          [-0.175, 0.075], [-0.175, 0.025]]
+
+        print("Find homo: ",cv2.findHomography(global_corners2, prime_corners))
+
         prime_corners = addOne(prime_corners)
 
         global_corners = [[-0.025, 0.125, 1.0], [-0.025, 0.075, 1.0], [-0.025, 0.025, 1.0], [-0.075, 0.125, 1.0], [-0.075, 0.075, 1.0], [-0.075, 0.025, 1.0],
@@ -78,9 +85,13 @@ def main():
         #invA = np.linalg.inv(A)
         print(len(A))  
         u,s,vh = np.linalg.svd(A,full_matrices=False)
-        
 
-        #print(vh)
+        print("vh as row: ", np.transpose(vh)[:,8])
+        print("vh as row: ", vh[8])
+        print("vh as 3x3: ",np.reshape(vh[8], (3,3)))
+        print("x prime: ",np.dot(np.reshape(vh[8], (3,3)), prime_corners[0]))
+        print(np.transpose(vh))
+        print(vh.shape)
         #print(invA)
         # end of programmable space --------------------------------------------------------------------------------------------
 
