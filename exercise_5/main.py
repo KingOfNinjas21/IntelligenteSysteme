@@ -67,16 +67,20 @@ def main():
 
         prime_corners = addOne(prime_corners)
 
-        global_corners = [[-0.025, 0.125, 1], [-0.025, 0.075, 1], [-0.025, 0.025, 1], [-0.075, 0.125, 1], [-0.075, 0.075, 1], [-0.075, 0.025, 1],
-                          [-0.125, 0.125, 1], [-0.125, 0.075, 1], [-0.125, 0.025, 1], [-0.175, 0.125, 1], [-0.175, 0.075, 1], [-0.175, 0.025, 1]]
+        global_corners = [[-0.025, 0.125, 1.0], [-0.025, 0.075, 1.0], [-0.025, 0.025, 1.0], [-0.075, 0.125, 1.0], [-0.075, 0.075, 1.0], [-0.075, 0.025, 1.0],
+                          [-0.125, 0.125, 1.0], [-0.125, 0.075, 1.0], [-0.125, 0.025, 1.0], [-0.175, 0.125, 1.0], [-0.175, 0.075, 1.0], [-0.175, 0.025, 1.0]]
 
         print(prime_corners)
-        cv2.imshow("Penis", image)
-        cv2.waitKey(0)
+        #cv2.imshow("Penis", image)
+        #cv2.waitKey(0)
 
         A = calcHomgenMatrix(prime_corners, global_corners)
         #invA = np.linalg.inv(A)
-        print(A)
+        print(len(A))  
+        u,s,vh = np.linalg.svd(A,full_matrices=False)
+        
+
+        #print(vh)
         #print(invA)
         # end of programmable space --------------------------------------------------------------------------------------------
 
@@ -104,9 +108,10 @@ def addOne(matrix):
 def calcHomgenMatrix(prime_corners, global_corners):
     A = []
     for i in range(len(prime_corners)):
-        A.append([np.zeros((1,3)), np.dot(np.transpose(global_corners[i]),-prime_corners[i][2]), np.dot(np.transpose(global_corners[i]),prime_corners[i][1])])
-        A.append([np.dot(np.transpose(global_corners[i]),prime_corners[i][2]), np.zeros((1,3)), np.dot(np.transpose(global_corners[i]),-prime_corners[i][0])])
-        A.append([np.dot(np.transpose(global_corners[i]),-prime_corners[i][1]), np.dot(np.transpose(global_corners[i]),prime_corners[i][0]), np.zeros((1,3))])
+        a = (np.zeros(3), np.dot(np.transpose(global_corners[i]),-prime_corners[i][2]), np.dot(np.transpose(global_corners[i]),prime_corners[i][1]))
+        A.append(np.concatenate(a))
+        A.append(np.concatenate((np.dot(np.transpose(global_corners[i]),prime_corners[i][2]), np.zeros((3)), np.dot(np.transpose(global_corners[i]),-prime_corners[i][0]))))
+        A.append(np.concatenate((np.dot(np.transpose(global_corners[i]),-prime_corners[i][1]), np.dot(np.transpose(global_corners[i]),prime_corners[i][0]), np.zeros((3)))))
     return np.asarray(A)
 
 if __name__ == "__main__": main()
