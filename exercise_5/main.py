@@ -70,14 +70,56 @@ def main():
         global_corners = [[-0.025, 0.125, 1], [-0.025, 0.075, 1], [-0.025, 0.025, 1], [-0.075, 0.125, 1], [-0.075, 0.075, 1], [-0.075, 0.025, 1],
                           [-0.125, 0.125, 1], [-0.125, 0.075, 1], [-0.125, 0.025, 1], [-0.175, 0.125, 1], [-0.175, 0.075, 1], [-0.175, 0.025, 1]]
 
-        print(prime_corners)
-        cv2.imshow("Penis", image)
-        cv2.waitKey(0)
+        #cv2.imshow("Penis", image)
+        #cv2.waitKey(0)
 
+        cvHomo, mask = cv2.findHomography(prime_corners, np.array(global_corners))
+        
+        
+        # print and calc some cv2.findHomography matrizes
+        print(cvHomo)
+        
+        print("\n\n")
+
+        point = np.dot(cvHomo, prime_corners[0])
+        
+        print(point / point[2])
+        
+        print("\n\n")
+        
+        print(prime_corners)
+        
+        print("\n\n")
+
+
+
+		# calc our own homogene matirix
         A = calcHomgenMatrix(prime_corners, global_corners)
-        #invA = np.linalg.inv(A)
-        print(A)
-        #print(invA)
+        
+        # calc via pinv
+        
+        
+        
+        '''
+        u, s, vh = np.linalg.svd(A)
+
+        vh = np.transpose(vh)
+
+        vh = vh[:, 8]
+        vh = np.reshape(vh, (3, 3))
+        vh = vh / vh[2,2]
+        '''
+
+        
+        ourPoint = np.dot(vh, prime_corners[0])
+        
+        print(ourPoint / ourPoint[2])
+        
+        print("\n\n")
+        print(vh)
+        
+        #print(np.dot(prime_corners, vh))
+        
         # end of programmable space --------------------------------------------------------------------------------------------
 
 
@@ -102,11 +144,33 @@ def addOne(matrix):
 
 
 def calcHomgenMatrix(prime_corners, global_corners):
-    A = []
+    A = np.empty((1, 9))
     for i in range(len(prime_corners)):
-        A.append([np.zeros((1,3)), np.dot(np.transpose(global_corners[i]),-prime_corners[i][2]), np.dot(np.transpose(global_corners[i]),prime_corners[i][1])])
-        A.append([np.dot(np.transpose(global_corners[i]),prime_corners[i][2]), np.zeros((1,3)), np.dot(np.transpose(global_corners[i]),-prime_corners[i][0])])
-        A.append([np.dot(np.transpose(global_corners[i]),-prime_corners[i][1]), np.dot(np.transpose(global_corners[i]),prime_corners[i][0]), np.zeros((1,3))])
-    return np.asarray(A)
+        dot11 = np.dot(np.transpose(global_corners[i]), -prime_corners[i][2])
+        dot12 = np.dot(np.transpose(global_corners[i]), prime_corners[i][1])
+
+        a1 = np.concatenate((np.zeros(3), dot11, dot12))
+
+
+        dot21 = np.dot(np.transpose(global_corners[i]), prime_corners[i][2])
+        dot22 = np.dot(np.transpose(global_corners[i]), -prime_corners[i][0])
+
+        a2 = np.concatenate((dot21, np.zeros(3), dot22))
+
+
+        dot31 = np.dot(np.transpose(global_corners[i]), -prime_corners[i][1])
+        dot32 = np.dot(np.transpose(global_corners[i]), prime_corners[i][0])
+
+        a3 = np.concatenate((dot31, dot32, np.zeros(3)))
+
+
+        A = np.append(A, [a1], axis=0)
+        A = np.append(A, [a2], axis=0)
+        A = np.append(A, [a3], axis=0)
+
+
+    np.delete(A, 1, axis=0)
+
+    return A
 
 if __name__ == "__main__": main()
