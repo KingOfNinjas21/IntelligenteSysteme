@@ -65,10 +65,10 @@ def main():
 
         found, prime_corners = cv2.findChessboardCorners(image,(3,4))
 
-        prime_corners = addOne(prime_corners)
+        #prime_corners = addOne(prime_corners)
 
-        global_corners = [[-0.025, 0.125, 1.0], [-0.025, 0.075, 1.0], [-0.025, 0.025, 1.0], [-0.075, 0.125, 1.0], [-0.075, 0.075, 1.0], [-0.075, 0.025, 1.0],
-                          [-0.125, 0.125, 1.0], [-0.125, 0.075, 1.0], [-0.125, 0.025, 1.0], [-0.175, 0.125, 1.0], [-0.175, 0.075, 1.0], [-0.175, 0.025, 1.0]]
+        global_corners = [[-0.025, 0.125], [-0.025, 0.075] [-0.025, 0.025], [-0.075, 0.125], [-0.075, 0.075], [-0.075, 0.025],
+                          [-0.125, 0.125], [-0.125, 0.075], [-0.125, 0.025], [-0.175, 0.125], [-0.175, 0.075], [-0.175, 0.025]]
 
         print(prime_corners)
         #cv2.imshow("Penis", image)
@@ -76,11 +76,12 @@ def main():
 
         A = calcHomgenMatrix(prime_corners, global_corners)
         #invA = np.linalg.inv(A)
-        print(len(A))  
+        #print(len(A))  
         u,s,vh = np.linalg.svd(A,full_matrices=False)
+        XX = cv2.findHomography(prime_corners,global_corners)
+        print(XX)
+        getH(vh, prime_corners)
         
-
-        #print(vh)
         #print(invA)
         # end of programmable space --------------------------------------------------------------------------------------------
 
@@ -104,6 +105,19 @@ def addOne(matrix):
         new.append(row)
     return np.asarray(new)
 
+def getH(vh, prime_corners):
+    """
+    rows = len(vh)
+    col = len(vh[0])
+
+    h = []
+
+    for i in range()
+    """
+    #vh = np.transpose(vh)
+    vh = np.reshape(vh[8],(3,3))
+    print(vh)
+    print(np.dot(vh,prime_corners[0]))
 
 def calcHomgenMatrix(prime_corners, global_corners):
     A = []
