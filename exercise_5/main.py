@@ -8,6 +8,7 @@ import cv2
 import time
 import math
 import colorDetection as colorDet
+import movementFunctions as move
 
 goalName = "Goal"
 LEFT_RAY_NINETY = 603
@@ -58,14 +59,17 @@ def main():
 
 
         # programmable space -------------------------------------------------------------------------------------------
+        x, y = egocentricToGlobal([1.0, 1.0], clientID)
+        print(globalToEgocentric(x, y, clientID))
 
+        '''
         err, res, image = vrep.simxGetVisionSensorImage(clientID, youBotCam, 0, vrep.simx_opmode_buffer)
         image = colorDet.convertToCv2Format(image, res)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
         found, prime_corners = cv2.findChessboardCorners(image,(3,4))
 
-        prime_corners = addOne(prime_corners)
+        prime_corners_one = addOne(prime_corners)
 
         global_corners = [[-0.025, 0.125, 1], [-0.025, 0.075, 1], [-0.025, 0.025, 1], [-0.075, 0.125, 1], [-0.075, 0.075, 1], [-0.075, 0.025, 1],
                           [-0.125, 0.125, 1], [-0.125, 0.075, 1], [-0.125, 0.025, 1], [-0.175, 0.125, 1], [-0.175, 0.075, 1], [-0.175, 0.025, 1]]
@@ -73,7 +77,7 @@ def main():
         #cv2.imshow("Penis", image)
         #cv2.waitKey(0)
 
-        cvHomo, mask = cv2.findHomography(prime_corners, np.array(global_corners))
+        cvHomo, mask = cv2.findHomography(prime_corners_one, np.array(global_corners))
         
         
         # print and calc some cv2.findHomography matrizes
@@ -81,27 +85,39 @@ def main():
         
         print("\n\n")
 
-        point = np.dot(cvHomo, prime_corners[0])
+        point = np.dot(cvHomo, prime_corners_one[0])
         
         print(point / point[2])
         
         print("\n\n")
         
-        print(prime_corners)
+        print(prime_corners_one)
         
         print("\n\n")
 
 
 
-		# calc our own homogene matirix
-        A = calcHomgenMatrix(prime_corners, global_corners)
+        # calc our own homogene matirix
+        A = calcHomgenMatrix(prime_corners_one, global_corners)
+        cA = A
+        print("Neue A matrix", A)
+        A = np.delete(A, 8, axis=1)
+        A = np.linalg.pinv(A)
+
+        d = np.reshape(prime_corners, (24, 1))
+        print("d: ", d)
+
+        h = np.dot(A, d)
+        h = np.append(h, 1)
+
+        h = np.reshape(h, (3, 3))
+        h = h/h[2, 2]
+        print("h matrix: ", h)
+        # calc via pinvc
+
         
-        # calc via pinv
-        
-        
-        
-        '''
-        u, s, vh = np.linalg.svd(A)
+
+        u, s, vh = np.linalg.svd(cA)
 
         vh = np.transpose(vh)
 
@@ -111,12 +127,14 @@ def main():
         '''
 
         
+        '''
         ourPoint = np.dot(vh, prime_corners[0])
         
         print(ourPoint / ourPoint[2])
         
         print("\n\n")
         print(vh)
+        '''
         
         #print(np.dot(prime_corners, vh))
         
@@ -146,31 +164,65 @@ def addOne(matrix):
 def calcHomgenMatrix(prime_corners, global_corners):
     A = np.empty((1, 9))
     for i in range(len(prime_corners)):
-        dot11 = np.dot(np.transpose(global_corners[i]), -prime_corners[i][2])
+        '''dot11 = np.dot(np.transpose(global_corners[i]), -prime_corners[i][2])
         dot12 = np.dot(np.transpose(global_corners[i]), prime_corners[i][1])
 
-        a1 = np.concatenate((np.zeros(3), dot11, dot12))
+        a1 = np.concatenate((np.zeros(3), dot11, dot12[:-1]))
 
 
         dot21 = np.dot(np.transpose(global_corners[i]), prime_corners[i][2])
         dot22 = np.dot(np.transpose(global_corners[i]), -prime_corners[i][0])
 
-        a2 = np.concatenate((dot21, np.zeros(3), dot22))
+        a2 = np.concatenate((dot21, np.zeros(3), dot22[:-1]))'''
 
-
+        '''
         dot31 = np.dot(np.transpose(global_corners[i]), -prime_corners[i][1])
         dot32 = np.dot(np.transpose(global_corners[i]), prime_corners[i][0])
 
         a3 = np.concatenate((dot31, dot32, np.zeros(3)))
+        '''
+
+        #A = np.append(A, [a1], axis=0)
+        #A = np.append(A, [a2], axis=0)
+        #A = np.append(A, [a3], axis=0)
+        row1 = [0.0, 0.0, 0.0, global_corners[i][0], global_corners[i][1], 1.0, -global_corners[i][0]*prime_corners[i][1], -prime_corners[i][1]*global_corners[i][1], global_corners[i][1]]
+        row2 = [global_corners[i][0], global_corners[i][1], 1.0, 0.0, 0.0, 0.0, -global_corners[i][0] * prime_corners[i][0], -global_corners[i][1] * prime_corners[i][0], global_corners[i][0]]
+
+        A = np.append(A, [row2], axis=0)
+        A = np.append(A, [row1], axis=0)
+    #np.delete(A, 1, axis=0)
+
+    return A[1:]
+
+def egocentricToGlobal(ego, clientID):
+    x = ego[0]
+    y = ego[1]
+    pos, orient = move.getPos(clientID)
+    alpha = move.getOrientation(clientID)/math.pi*180.0
+    move.printPos(clientID)
+    rotationMatrix = [[math.cos(-alpha), -math.sin(-alpha)],
+                      [math.sin(-alpha), math.cos(-alpha)]]
+    newVec = np.dot(np.array(rotationMatrix), np.array([x, y]))
+
+    x = newVec[0]
+    y = newVec[1]
+
+    xBot = pos[0]
+    yBot = pos[1]
 
 
-        A = np.append(A, [a1], axis=0)
-        A = np.append(A, [a2], axis=0)
-        A = np.append(A, [a3], axis=0)
 
+    return x+xBot, y+yBot
 
-    np.delete(A, 1, axis=0)
+def globalToEgocentric(globalX, globalY, clientID):
+    pos, orient = move.getPos(clientID)
+    egoVec = [globalX-pos[0], globalY-pos[1]]
 
-    return A
+    alpha = move.getOrientation(clientID)/math.pi*180.0
 
+    rotationMatrix = [[math.cos(alpha), -math.sin(alpha)],
+                      [math.sin(alpha), math.cos(alpha)]]
+    newVec = np.dot(np.array(rotationMatrix), np.array(egoVec))
+
+    return newVec[0], newVec[1]
 if __name__ == "__main__": main()
