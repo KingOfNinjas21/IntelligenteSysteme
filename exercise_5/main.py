@@ -65,23 +65,77 @@ def main():
 
         found, prime_corners = cv2.findChessboardCorners(image,(3,4))
 
-        #prime_corners = addOne(prime_corners)
-
-        global_corners = [[-0.025, 0.125], [-0.025, 0.075] [-0.025, 0.025], [-0.075, 0.125], [-0.075, 0.075], [-0.075, 0.025],
-                          [-0.125, 0.125], [-0.125, 0.075], [-0.125, 0.025], [-0.175, 0.125], [-0.175, 0.075], [-0.175, 0.025]]
-
+        prime_corners = addOne(prime_corners)
         print(prime_corners)
-        #cv2.imshow("Penis", image)
-        #cv2.waitKey(0)
+        
+        global_corners2 = [[-0.025, 0.125], [-0.025, 0.075], [-0.025, 0.025], [-0.075, 0.125],
+                          [-0.075, 0.075], [-0.075, 0.025],
+                          [-0.125, 0.125], [-0.125, 0.075], [-0.125, 0.025], [-0.175, 0.125],
+                          [-0.175, 0.075], [-0.175, 0.025]]
+
+        #print("Find homo: ",cv2.findHomography(global_corners2, prime_corners))
+
+        #prime_corners = addOne(prime_corners)
+        
+
+        global_corners = [[-0.025, 0.125, 1.0], [-0.025, 0.075, 1.0], [-0.025, 0.025, 1.0], [-0.075, 0.125, 1.0], [-0.075, 0.075, 1.0], [-0.075, 0.025, 1.0],
+                          [-0.125, 0.125, 1.0], [-0.125, 0.075, 1.0], [-0.125, 0.025, 1.0], [-0.175, 0.125, 1.0], [-0.175, 0.075, 1.0], [-0.175, 0.025, 1.0]]
+        """
+        print(prime_corners)
+        cv2.imshow("Penis", image)
+        cv2.waitKey(0)
 
         A = calcHomgenMatrix(prime_corners, global_corners)
+        d = A[:,8]
+        A = A[:,0:8]
+        #print("'''''''''''''''", A)
+        invA = np.linalg.pinv(A)
+        print(d.shape)
+        h = np.dot(invA, d)
+        
+        h = np.reshape(h, (3, 3))
+        print(h)
+        print(A.shape)        
         #invA = np.linalg.inv(A)
         #print(len(A))  
-        u,s,vh = np.linalg.svd(A,full_matrices=False)
-        XX = cv2.findHomography(prime_corners,global_corners)
-        print(XX)
-        getH(vh, prime_corners)
+        #u,s,vh = np.linalg.svd(A,full_matrices=False)
+
+        #XX = cv2.findHomography(prime_corners,global_corners)
+        #print(XX)
+        #getH(vh, prime_corners)
         
+
+        """
+
+        A = getA(prime_corners, global_corners)
+        u,s,vh = np.linalg.svd(A,full_matrices=False)
+
+        h1 = vh[8]
+        h1 = np.reshape(h1,(3,3))
+       
+        trueH = cv2.findHomography(prime_corners,np.asarray(global_corners))
+
+        print(h1,"\n##########################################")
+        print(h2,"\n##########################################")
+        print(trueH, "\n######################################")
+
+        point1 = np.dot(trueH[0], prime_corners[0])
+        point1 = point1/point1[2]
+        print("CV2####",point1)
+
+        point2 = np.dot(h1, prime_corners[0])
+        point2 = point2/point2[2]
+        print("meins#####",point2)
+
+      
+        """
+        print("vh as row: ", np.transpose(vh)[:,8])
+        print("vh as row: ", vh[8])
+        print("vh as 3x3: ",np.reshape(vh[8], (3,3)))
+        print("x prime: ",np.dot(np.reshape(vh[8], (3,3)), prime_corners[0]))
+        print(np.transpose(vh))
+        print(vh.shape)
+        """
         #print(invA)
         # end of programmable space --------------------------------------------------------------------------------------------
 
@@ -106,19 +160,19 @@ def addOne(matrix):
     return np.asarray(new)
 
 def getH(vh, prime_corners):
-    """
-    rows = len(vh)
-    col = len(vh[0])
+    
+    
 
-    h = []
+def getA(prime_corners, global_corners):
+    A = []
+    for i in range(len(prime_corners)):
+        p1 = [-prime_corners[i][0], -prime_corners[i][1], -1, 0,0,0,prime_corners[i][0]*global_corners[i][0],prime_corners[i][1]*global_corners[i][0],global_corners[i][0]]
+        p2 = [0,0,0,-prime_corners[i][0], -prime_corners[i][1],-1,global_corners[i][1]*prime_corners[i][0],global_corners[i][1]*prime_corners[i][1],global_corners[i][1]]
 
-    for i in range()
-    """
-    #vh = np.transpose(vh)
-    vh = np.reshape(vh[8],(3,3))
-    print(vh)
-    print(np.dot(vh,prime_corners[0]))
+        A.append(np.asarray(p1))
+        A.append(np.asarray(p2))
 
+    return np.asarray(A)
 def calcHomgenMatrix(prime_corners, global_corners):
     A = []
     for i in range(len(prime_corners)):
@@ -126,6 +180,7 @@ def calcHomgenMatrix(prime_corners, global_corners):
         A.append(np.concatenate(a))
         A.append(np.concatenate((np.dot(np.transpose(global_corners[i]),prime_corners[i][2]), np.zeros((3)), np.dot(np.transpose(global_corners[i]),-prime_corners[i][0]))))
         A.append(np.concatenate((np.dot(np.transpose(global_corners[i]),-prime_corners[i][1]), np.dot(np.transpose(global_corners[i]),prime_corners[i][0]), np.zeros((3)))))
-    return np.asarray(A)
 
+    return np.asarray(A)
+    
 if __name__ == "__main__": main()
