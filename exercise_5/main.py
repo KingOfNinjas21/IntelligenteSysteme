@@ -112,6 +112,8 @@ def main():
 
         h1 = vh[8]
         h1 = np.reshape(h1,(3,3))
+
+        h2 = getH(A)
        
         trueH = cv2.findHomography(prime_corners,np.asarray(global_corners))
 
@@ -159,8 +161,12 @@ def addOne(matrix):
         new.append(row)
     return np.asarray(new)
 
-def getH(vh, prime_corners):
-    
+def getH(A):
+    u,s,vh = np.linalg.svd(A,full_matrices=False)
+    h = vh[8]
+    H = np.reshape(h,(3,3))
+    return H
+
     
 
 def getA(prime_corners, global_corners):
