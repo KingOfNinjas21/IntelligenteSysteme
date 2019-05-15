@@ -41,6 +41,16 @@ def calcCenter (contours):
 
     return cx, cy
 
+"""
+gives us the bottom most point of an Object
+"""
+def getBottom(cnt):
+
+    cnt = cnt[0]
+    bottom = tuple(cnt[cnt[:,:,1].argmax()][0])
+    print(bottom)
+    return bottom
+
 '''
 Gets a raw cv2 image, process it and returns the contours of the given color boundaries 
 '''
