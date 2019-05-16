@@ -13,6 +13,7 @@ import movementFunctions as move
 goalName = "Goal"
 LEFT_RAY_NINETY = 603
 RIGHT_RAY_NINETY = 82
+WIDTH_CUBE = 1
 
 def main():
     print ('Program started')
