@@ -140,6 +140,16 @@ def main():
         print(np.transpose(vh))
         print(vh.shape)
         """
+
+        '''
+        # print(move.getPos(clientID)[0], "youBot position")
+        # print(move.getCameraOrientation(clientID), "Camera orientation")
+        # print(move.getCameraPos(clientID)[0], "Camera position")
+        print(move.getOrientation(clientID), "youBot orientation")
+        print(egocentricToGlobal(globalToEgocentric([1,1], clientID), clientID))
+        print(globalToEgocentric(egocentricToGlobal([1,1], clientID), clientID))
+        print(egocentricToGlobal([1,1], clientID))
+        '''
         # print(invA)
         
         # end of programmable space --------------------------------------------------------------------------------------------
@@ -190,10 +200,11 @@ def egocentricToGlobal(ego, clientID):
     x = ego[0]
     y = ego[1]
     pos, orient = move.getPos(clientID)
-    alpha = move.getOrientation(clientID)/math.pi*180.0
-    move.printPos(clientID)
-    rotationMatrix = [[math.cos(-alpha), -math.sin(-alpha)],
-                      [math.sin(-alpha), math.cos(-alpha)]]
+    alpha = move.getOrientation(clientID)/180.0*math.pi
+
+    rotationMatrix = [[math.cos(alpha), -math.sin(alpha)],
+                      [math.sin(alpha), math.cos(alpha)]]
+
     newVec = np.dot(np.array(rotationMatrix), np.array([x, y]))
 
     x = newVec[0]
@@ -204,20 +215,27 @@ def egocentricToGlobal(ego, clientID):
 
 
 
-    return x+xBot, y+yBot
+    return [x+xBot, y+yBot]
 
 
-def globalToEgocentric(globalX, globalY, clientID):
+def globalToEgocentric(globalCoord, clientID):
     pos, orient = move.getPos(clientID)
-    egoVec = [globalX-pos[0], globalY-pos[1]]
+    egoVec = [globalCoord[0]-pos[0], globalCoord[1]-pos[1]]
 
-    alpha = move.getOrientation(clientID)/math.pi*180.0
+    alpha = move.getOrientation(clientID)/180*math.pi
 
-    rotationMatrix = [[math.cos(alpha), -math.sin(alpha)],
-                      [math.sin(alpha), math.cos(alpha)]]
+    rotationMatrix = [[math.cos(-alpha), -math.sin(-alpha)],
+                      [math.sin(-alpha), math.cos(-alpha)]]
     newVec = np.dot(np.array(rotationMatrix), np.array(egoVec))
 
-    return newVec[0], newVec[1]
+    return newVec
+
+def doTranslationOnVector(distX, distY, vector):
+    newVec = vector
+    newVec[0] += distX
+    newVec[1] += distY
+
+    return newVec
 
 
 if __name__ == "__main__": main()

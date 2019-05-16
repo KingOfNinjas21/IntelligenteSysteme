@@ -62,11 +62,30 @@ def getPos(clientID):
     base_orient = vrep.simxGetObjectOrientation(clientID, base, -1, vrep.simx_opmode_oneshot_wait)
     return base_pos[1], base_orient[1]
 
+def getCameraPos(clientID):
+    res, base = vrep.simxGetObjectHandle(clientID, 'rgbdSensor', vrep.simx_opmode_oneshot_wait)
+    base_pos = vrep.simxGetObjectPosition(clientID, base, -1, vrep.simx_opmode_oneshot_wait)
+    base_orient = vrep.simxGetObjectOrientation(clientID, base, -1, vrep.simx_opmode_oneshot_wait)
+    return base_pos[1], base_orient[1]
+
 # returns the youbot orientation in degree
 def getOrientation(clientID):
     res, base = vrep.simxGetObjectHandle(clientID, 'youBot_center', vrep.simx_opmode_oneshot_wait)
     base_orient = vrep.simxGetObjectOrientation(clientID, base, -1, vrep.simx_opmode_oneshot_wait)
     return base_orient[1][2]*180.0/math.pi
+
+# returns the rgbd camera orientation in degree
+# side note: bot degree| camera degree
+#               0      |   145
+#               90     |   -125
+#             -180     |   -35
+#              -90     |   55
+def getCameraOrientation(clientID):
+    res, base = vrep.simxGetObjectHandle(clientID, 'rgbdSensor', vrep.simx_opmode_oneshot_wait)
+    base_orient = vrep.simxGetObjectOrientation(clientID, base, -1, vrep.simx_opmode_oneshot_wait)
+    return base_orient[1][2]*180.0/math.pi
+
+
 
 # This function substracts two orientation. It returns the substracted orientation in a range (-180,+180].
 def substractOrientation(orientationA, orientationB):
