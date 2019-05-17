@@ -14,6 +14,7 @@ goalName = "Goal"
 LEFT_RAY_NINETY = 603
 RIGHT_RAY_NINETY = 82
 WIDTH_CUBE = 1
+WIDTH_BOT = 50
 
 def main():
     print ('Program started')
@@ -141,7 +142,10 @@ def main():
         print(vh.shape)
         """
         # print(invA)
-        
+
+        print(egocentricToGlobal([1.0,1.0], clientID), "Egocentrical to global")
+        print(globalToEgocentric([1.0,1.0], clientID), "Global to egocentric to global")
+        print(move.getOrientation(clientID),"Own orientation")
         # end of programmable space --------------------------------------------------------------------------------------------
 
 
@@ -190,10 +194,10 @@ def egocentricToGlobal(ego, clientID):
     x = ego[0]
     y = ego[1]
     pos, orient = move.getPos(clientID)
-    alpha = move.getOrientation(clientID)/math.pi*180.0
-    move.printPos(clientID)
-    rotationMatrix = [[math.cos(-alpha), -math.sin(-alpha)],
-                      [math.sin(-alpha), math.cos(-alpha)]]
+    alpha = move.getOrientation(clientID)/180.0*math.pi+math.pi/2.0
+
+    rotationMatrix = [[math.cos(alpha), -math.sin(alpha)],
+                      [math.sin(alpha), math.cos(alpha)]]
     newVec = np.dot(np.array(rotationMatrix), np.array([x, y]))
 
     x = newVec[0]
@@ -207,17 +211,36 @@ def egocentricToGlobal(ego, clientID):
     return x+xBot, y+yBot
 
 
-def globalToEgocentric(globalX, globalY, clientID):
+def globalToEgocentric(globCorrd, clientID):
     pos, orient = move.getPos(clientID)
-    egoVec = [globalX-pos[0], globalY-pos[1]]
+    egoVec = [globCorrd[0]-pos[0], globCorrd[1]-pos[1]]
 
-    alpha = move.getOrientation(clientID)/math.pi*180.0
-
-    rotationMatrix = [[math.cos(alpha), -math.sin(alpha)],
-                      [math.sin(alpha), math.cos(alpha)]]
+    alpha = move.getOrientation(clientID)/180.0*math.pi+math.pi/2.0
+    rotationMatrix = [[math.cos(-alpha), -math.sin(-alpha)],
+                      [math.sin(-alpha), math.cos(-alpha)]]
     newVec = np.dot(np.array(rotationMatrix), np.array(egoVec))
 
     return newVec[0], newVec[1]
 
+
+#get the distance between two cubes - work in progress
+def getDistanceBetweenCubes(posCube1, posCube2):
+    xCube1 = posCube1[0]
+    yCube1 = posCube1[1]
+
+    xCube2 = posCube2[0]
+    yCube2 = posCube2[1]
+
+    xVec = abs(xCube1 - xCube2)
+    yVec = abs(yCube1 - yCube2)
+
+    distance = math.sqrt(xVec * xVec + yVec * yVec)
+
+    return distance
+
+
+#method stub
+def youBotFits(posCube1, posCube2):
+    return
 
 if __name__ == "__main__": main()
