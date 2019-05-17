@@ -143,8 +143,8 @@ def main():
         """
         # print(invA)
 
-        print(egocentricToGlobal([1.0,1.0], clientID), "Egocentrical to global")
-        print(globalToEgocentric([1.0,1.0], clientID), "Global to egocentric to global")
+        print(egocentricToGlobal([1.0,1.0], clientID), "Egocentrical [1,1] to global")
+        print(globalToEgocentric([1.0,1.0], clientID), "Global to egocentric [1,1] to global")
         print(move.getOrientation(clientID),"Own orientation")
         # end of programmable space --------------------------------------------------------------------------------------------
 
@@ -208,7 +208,7 @@ def egocentricToGlobal(ego, clientID):
 
 
 
-    return x+xBot, y+yBot
+    return [x+xBot, y+yBot]
 
 
 def globalToEgocentric(globCorrd, clientID):
@@ -220,7 +220,7 @@ def globalToEgocentric(globCorrd, clientID):
                       [math.sin(-alpha), math.cos(-alpha)]]
     newVec = np.dot(np.array(rotationMatrix), np.array(egoVec))
 
-    return newVec[0], newVec[1]
+    return newVec
 
 
 #get the distance between two cubes - work in progress
