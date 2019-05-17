@@ -3,6 +3,7 @@ import numpy as np
 import cv2
 import vrep
 import movementFunctions as move
+import main
 
 from PIL import Image
 
@@ -61,17 +62,55 @@ def getBottom(cnt):
     return bottom
 
 
-def getBlobsGlobal(img):
+def getBlobsGlobal(img, homoMatrix, clientID):
     imgCopy = img
     points = []
+    
     for c in colors:
         img = imgCopy
         cnts = getContours(img, c)
 
         for k in cnts:
-            points.append(getBottom(k))
+            newPoint = np.dot(homoMatrix, getBottom(k))
+            newPoint = newPoint / newPoint[2]
+            newPoint = main.egocentricToGlobal(newPoint, clientID)
+            points.append((newPoint, c))
 
     return points
+
+def findAllBlobs(clientId, youBotCam, homoMatrix):
+
+    currentDegree = 0
+    blobList = []
+    #we will rotate for 180 degree for spotting the blobs
+    while(currentDegree < 180):
+        currentDegree = currentDegree + 10
+
+        err, res, image = vrep.simxGetVisionSensorImage(clientID, youBotCam, 0, vrep.simx_opmode_buffer)
+
+        if err == vrep.simx_return_ok:
+            # do some image stuff ----------------------------------------------------------------------------------
+
+            cv2Image = convertToCv2Format(image, res)
+            cv2ImageCopy = cv2Image
+
+            tempBlobs = getBlobsGlobal(cv2Image, homoMatrix, clientId)
+            count = 0
+            for tb in tempBlobs:
+                count = 0
+                for b in blobList:
+                    if move.isSamePoint(tb[0], b[0]):
+                        count = count + 1
+
+                if count == 0:
+                    blobList.append(tb)
+
+        print(blobList)
+        return blobList
+
+
+
+
 
 
 '''

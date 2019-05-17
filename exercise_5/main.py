@@ -83,6 +83,8 @@ def main():
                           [-0.075, 0.075, 1.0], [-0.075, 0.025, 1.0],
                           [-0.125, 0.125, 1.0], [-0.125, 0.075, 1.0], [-0.125, 0.025, 1.0], [-0.175, 0.125, 1.0],
                           [-0.175, 0.075, 1.0], [-0.175, 0.025, 1.0]]
+
+        homographyM = [[ 7.83997775e-04  1.06380259e-05 -1.48473442e-01], [-2.04475550e-04 -1.73981914e-03  6.99266560e-01] ,[ 1.03411216e-04 -4.04130706e-03  1.00000000e+00]]
         """
         print(prime_corners)
         cv2.imshow("Penis", image)
@@ -109,7 +111,7 @@ def main():
 
 
         """
-
+        """
         A = getA(prime_corners, global_corners)
         u, s, vh = np.linalg.svd(A, full_matrices=False)
 
@@ -128,10 +130,11 @@ def main():
         point1 = point1 / point1[2]
         print("CV2####", point1)
 
-        point2 = np.dot(h1, prime_corners[0])
+        point2 = np.dot(h2, prime_corners[0])
+        print(h2)
         point2 = point2 / point2[2]
         print("meins#####", point2)
-
+        """
         """
         print("vh as row: ", np.transpose(vh)[:,8])
         print("vh as row: ", vh[8])
@@ -154,7 +157,7 @@ def main():
         
         # end of programmable space --------------------------------------------------------------------------------------------
 
-
+        colorDet.finAllBlobs(clientID,homographyM,youBotCam)
 
         # Stop simulation
         vrep.simxStopSimulation(clientID,vrep.simx_opmode_oneshot_wait)
@@ -179,6 +182,7 @@ def getH(A):
     u, s, vh = np.linalg.svd(A, full_matrices=False)
     h = vh[8]
     H = np.reshape(h, (3, 3))
+
     return H
 
 
