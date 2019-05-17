@@ -141,6 +141,16 @@ def main():
         print(np.transpose(vh))
         print(vh.shape)
         """
+
+        '''
+        # print(move.getPos(clientID)[0], "youBot position")
+        # print(move.getCameraOrientation(clientID), "Camera orientation")
+        # print(move.getCameraPos(clientID)[0], "Camera position")
+        print(move.getOrientation(clientID), "youBot orientation")
+        print(egocentricToGlobal(globalToEgocentric([1,1], clientID), clientID))
+        print(globalToEgocentric(egocentricToGlobal([1,1], clientID), clientID))
+        print(egocentricToGlobal([1,1], clientID))
+        '''
         # print(invA)
 
         print(egocentricToGlobal([1.0,1.0], clientID), "Egocentrical [1,1] to global")
@@ -194,10 +204,13 @@ def egocentricToGlobal(ego, clientID):
     x = ego[0]
     y = ego[1]
     pos, orient = move.getPos(clientID)
+
     alpha = move.getOrientation(clientID)/180.0*math.pi+math.pi/2.0
 
     rotationMatrix = [[math.cos(alpha), -math.sin(alpha)],
                       [math.sin(alpha), math.cos(alpha)]]
+
+    
     newVec = np.dot(np.array(rotationMatrix), np.array([x, y]))
 
     x = newVec[0]
@@ -211,17 +224,18 @@ def egocentricToGlobal(ego, clientID):
     return [x+xBot, y+yBot]
 
 
+
 def globalToEgocentric(globCorrd, clientID):
     pos, orient = move.getPos(clientID)
     egoVec = [globCorrd[0]-pos[0], globCorrd[1]-pos[1]]
 
     alpha = move.getOrientation(clientID)/180.0*math.pi+math.pi/2.0
+
     rotationMatrix = [[math.cos(-alpha), -math.sin(-alpha)],
                       [math.sin(-alpha), math.cos(-alpha)]]
     newVec = np.dot(np.array(rotationMatrix), np.array(egoVec))
 
     return newVec
-
 
 #get the distance between two cubes - work in progress
 def getDistanceBetweenCubes(posCube1, posCube2):
@@ -237,6 +251,14 @@ def getDistanceBetweenCubes(posCube1, posCube2):
     distance = math.sqrt(xVec * xVec + yVec * yVec)
 
     return distance
+
+
+def doTranslationOnVector(distX, distY, vector):
+    newVec = vector
+    newVec[0] += distX
+    newVec[1] += distY
+
+    return newVec
 
 
 #method stub
