@@ -84,7 +84,10 @@ def main():
                           [-0.125, 0.125, 1.0], [-0.125, 0.075, 1.0], [-0.125, 0.025, 1.0], [-0.175, 0.125, 1.0],
                           [-0.175, 0.075, 1.0], [-0.175, 0.025, 1.0]]
 
-        homographyM = [[ 7.83997775e-04  1.06380259e-05 -1.48473442e-01], [-2.04475550e-04 -1.73981914e-03  6.99266560e-01] ,[ 1.03411216e-04 -4.04130706e-03  1.00000000e+00]]
+        A = getA(prime_corners, global_corners)
+        homographyM = getH(A)
+
+    
         """
         print(prime_corners)
         cv2.imshow("Penis", image)
@@ -157,7 +160,7 @@ def main():
         
         # end of programmable space --------------------------------------------------------------------------------------------
 
-        colorDet.finAllBlobs(clientID,homographyM,youBotCam)
+        colorDet.findAllBlobs(clientID,youBotCam,homographyM)
 
         # Stop simulation
         vrep.simxStopSimulation(clientID,vrep.simx_opmode_oneshot_wait)

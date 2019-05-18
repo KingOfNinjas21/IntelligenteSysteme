@@ -86,7 +86,7 @@ def findAllBlobs(clientId, youBotCam, homoMatrix):
     while(currentDegree < 180):
         currentDegree = currentDegree + 10
 
-        err, res, image = vrep.simxGetVisionSensorImage(clientID, youBotCam, 0, vrep.simx_opmode_buffer)
+        err, res, image = vrep.simxGetVisionSensorImage(clientId, youBotCam, 0, vrep.simx_opmode_buffer)
 
         if err == vrep.simx_return_ok:
             # do some image stuff ----------------------------------------------------------------------------------
