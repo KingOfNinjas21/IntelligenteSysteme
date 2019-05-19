@@ -152,7 +152,7 @@ def findAllBlobs(clientId, youBotCam, homoMatrix):
     currentDegree = 0
     blobList = []
     #we will rotate for 180 degree for spotting the blobs
-    while(currentDegree < 120):
+    while(currentDegree < 150):
         currentDegree = currentDegree + 30
 
         err, res, image = vrep.simxGetVisionSensorImage(clientId, youBotCam, 0, vrep.simx_opmode_buffer)
@@ -173,7 +173,7 @@ def findAllBlobs(clientId, youBotCam, homoMatrix):
             for tb in tempBlobs:
                 count = 0
                 for b in blobList:
-                    if move.isSamePoint(tb[0], b[0]):
+                    if move.isSamePoint(tb[0], b[0]) and tb[1] == b[1]:
                         count = count + 1
                 
                 if count == 0:

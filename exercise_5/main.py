@@ -66,12 +66,13 @@ def main():
         image = colorDet.convertToCv2Format(image, res)
         imageC = image 
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        cv2.imshow("Current Image of youBot", imageC)
-        cv2.waitKey(0)
+
         #colorDet.test(imageC)
 
         found, prime_corners = cv2.findChessboardCorners(image, (3, 4))
-
+        #print(prime_corners)
+        #cv2.imshow("Current Image of youBot", imageC)
+        #cv2.waitKey(0)
         prime_corners = addOne(prime_corners)
         #print(prime_corners)
 
@@ -91,10 +92,10 @@ def main():
 
         global_corners_ex2 = [[-0.075, 0.45, 1.0], [-0.075, 0.5, 1.0], [-0.075, 0.55, 1.0], [-0.025, 0.45, 1.0], [-0.025, 0.5, 1.0], [-0.025, 0.55, 1.0], [0.025, 0.45, 1.0], [0.025, 0.5, 1.0], [0.025, 0.55, 1.0], [0.075, 0.45, 1.0], [0.075, 0.5, 1.0], [0.075, 0.55, 1.0]] 
 
-        
+        gCX = [[0.075, 0.55, 1.0], [0.075, 0.5, 1.0], [0.075, 0.45, 1.0], [0.025, 0.55, 1.0], [0.025, 0.5, 1.0], [0.025, 0.45, 1.0], [-0.025, 0.55, 1.0], [-0.025, 0.5, 1.0], [-0.025, 0.45, 1.0], [-0.075, 0.55, 1.0], [-0.075, 0.5, 1.0], [-0.075, 0.45, 1.0]]
         
         ego_corners  = []
-        for gc in global_corners_ex2:
+        for gc in gCX:
             newCorner = colorDet.globalToEgocentric(gc, clientID)
             ego_corners.append(newCorner)
 
