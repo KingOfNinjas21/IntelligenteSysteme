@@ -161,6 +161,38 @@ FORWARD/SIDEWAYS FUNCTIONS
 ************************************
 """
 
+def forwardSys(dist, clientID):
+    # get start coordinates
+    pos, rot = getPos(clientID)
+    xStart = pos[0]
+    yStart = pos[1]
+
+    # set velocety to 0
+    wheelJoints = getWheelJoints(clientID)
+    for i in range(0, 4):
+        vrep.simxSetJointTargetVelocity(clientID, wheelJoints[i], 0, vrep.simx_opmode_oneshot)
+
+    # start moving
+    vrep.simxPauseCommunication(clientID, True)
+    for i in range(0, 4):
+        vrep.simxSetJointTargetVelocity(clientID, wheelJoints[i], wheelVel(FORWARD_VEL, 0.0, 0.0)[i],
+                                        vrep.simx_opmode_oneshot)
+    vrep.simxPauseCommunication(clientID, False)
+
+    distance = 0.0
+    while distance < dist:
+        # get pos from v-rep
+        pos, rot = getPos(clientID)
+        xNew = pos[0]
+        yNew = pos[1]
+        x = math.fabs(xStart - xNew)
+        y = math.fabs(yStart - yNew)
+        distance = math.sqrt(x * x + y * y)
+
+    # stop moving
+    for i in range(0, 4):
+        vrep.simxSetJointTargetVelocity(clientID, wheelJoints[i], 0, vrep.simx_opmode_oneshot)
+
 
 # drive forward for dist meters
 def forward(dist, clientID):
