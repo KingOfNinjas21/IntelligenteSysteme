@@ -299,10 +299,6 @@ ROTATING FUNCTIONS
 
 # rotate degree degrees to the right if rotRight is True, otherwise (rotRight=False) rotate to the left
 def rotate(degree, clientID, rotRight):
-
-    rotateSys(degree, clientID, rotRight)
-    return
-
     rotationVel = ROTATE_VEL
     if not rotRight:
         rotationVel *= -1
