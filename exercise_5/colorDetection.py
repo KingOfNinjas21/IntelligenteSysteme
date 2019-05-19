@@ -9,11 +9,29 @@ from PIL import Image
 
 # constans for color boundaries
 boundariesGreen = ([0, 200, 0], [75, 255, 75])
-boundariesYellow = ([50, 210, 210], [80, 255, 255])
-boundariesBlue = ([204, 45, 45], [255, 85, 85])
-boundariesRed = ([45, 45, 205], [86, 86, 255])
+boundariesYellow = ([0, 190, 190], [80, 255, 255])
+boundariesBlue = ([190, 20, 10], [255, 85, 85])
+boundariesRed = ([20, 30, 190], [86, 86, 255])
 
 colors = [boundariesRed, boundariesYellow, boundariesBlue, boundariesGreen]
+
+
+def test(image):
+    imageCopy = image
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+    thresh = cv2.threshold(blurred, 60, 255, cv2.THRESH_BINARY)[1]
+
+
+
+    cnts = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL,
+    cv2.CHAIN_APPROX_SIMPLE)[0]
+
+    cv2.drawContours(imageCopy, cnts, 0, (255, 255, 255), 1)
+    cv2.imshow("Current Image of youBot", imageCopy)
+    cv2.waitKey(0)
+
+
 
 def egocentricToGlobal(ego, clientID):
     x = ego[0]
@@ -102,6 +120,7 @@ def getBottom(cnt):
 
 def getBlobsGlobal(img, homoMatrix, clientID):
     imgCopy = img
+    iC = img
     points = []
     
     #cv2.imshow("Current Image of youBot", imgCopy)
@@ -111,7 +130,9 @@ def getBlobsGlobal(img, homoMatrix, clientID):
     for c in colors:
         img = imgCopy
         cnts = getContours(img, c)
-
+        #cv2.drawContours(iC, cnts, 0, (255, 255, 255), 1)
+        #cv2.imshow("Current Image of youBot", iC)
+        #cv2.waitKey(0)
         for k in cnts:
             newPoint = np.dot(homoMatrix, getBottom(k))
             newPoint = newPoint / newPoint[2]
@@ -126,8 +147,8 @@ def findAllBlobs(clientId, youBotCam, homoMatrix):
     currentDegree = 0
     blobList = []
     #we will rotate for 180 degree for spotting the blobs
-    while(currentDegree < 180):
-        currentDegree = currentDegree + 10
+    while(currentDegree < 120):
+        currentDegree = currentDegree + 30
 
         err, res, image = vrep.simxGetVisionSensorImage(clientId, youBotCam, 0, vrep.simx_opmode_buffer)
         
@@ -138,13 +159,15 @@ def findAllBlobs(clientId, youBotCam, homoMatrix):
             cv2Image = convertToCv2Format(image, res)
             cv2ImageCopy = cv2Image
 
+            #cv2.imshow("Current Image of youBot", cv2Image)
+            #cv2.waitKey(0)
+
             tempBlobs = getBlobsGlobal(cv2Image, homoMatrix, clientId)
             count = 0
             for tb in tempBlobs:
                 count = 0
                 for b in blobList:
                     if move.isSamePoint(tb[0], b[0]):
-                        print("b")
                         count = count + 1
                 
                 if count == 0:
@@ -176,8 +199,8 @@ def getContours(image, boundaries):
     imgray = cv2.cvtColor(output, cv2.COLOR_BGR2GRAY)
     ret, thresh = cv2.threshold(imgray, 0, 255, cv2.THRESH_BINARY)  # 127, 255, 0)
 
-    # cv2.imshow("THRresh", mask)
-    # cv2.waitKey(0)
+    #cv2.imshow("THRresh", mask)
+    #cv2.waitKey(0)
 
     contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 

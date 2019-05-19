@@ -64,7 +64,11 @@ def main():
 
         err, res, image = vrep.simxGetVisionSensorImage(clientID, youBotCam, 0, vrep.simx_opmode_buffer)
         image = colorDet.convertToCv2Format(image, res)
+        imageC = image 
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        #cv2.imshow("Current Image of youBot", imageC)
+        #cv2.waitKey(0)
+        #colorDet.test(imageC)
 
         found, prime_corners = cv2.findChessboardCorners(image, (3, 4))
 
@@ -85,6 +89,7 @@ def main():
                           [-0.125, 0.125, 1.0], [-0.125, 0.075, 1.0], [-0.125, 0.025, 1.0], [-0.175, 0.125, 1.0],
                           [-0.175, 0.075, 1.0], [-0.175, 0.025, 1.0]]
 
+        
         
         ego_corners  = []
         for gc in global_corners:

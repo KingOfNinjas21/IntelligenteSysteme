@@ -353,7 +353,7 @@ def rotateUntilOrientation(clientID, targetOrient):
     wheelJoints = getWheelJoints(clientID)
     currentOrient = getOrientation(clientID)
     safty = False
-    print("Orientations for rotation: Current Orientation = {} , Target Orientation = {}" .format(currentOrient, targetOrient))
+    #print("Orientations for rotation: Current Orientation = {} , Target Orientation = {}" .format(currentOrient, targetOrient))
 
     # The following are all possibilities that can happen when rotating until a certain orientation
 
