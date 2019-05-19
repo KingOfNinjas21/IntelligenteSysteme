@@ -172,10 +172,10 @@ def findAllBlobs(clientId, youBotCam, homoMatrix):
                         count = count + 1
                 
                 if count == 0:
-                    print("add", tb)
+                    print("added", tb, " to blobList")
                     blobList.append(tb)
 
-        move.rotate(10,clientId,True)
+        move.rotate(10, clientId, True)
 
     
     return blobList

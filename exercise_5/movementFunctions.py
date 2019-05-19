@@ -525,8 +525,6 @@ This function is not using odometry functions for positon calculating. The pos d
 The clientID to get position data from v-rep and drive with the robot.
 '''
 def moveToCoordinate(xTarget, yTarget, clientID):
-    print("move to ({}, {})".format(xTarget, yTarget))
-
     # get pos of robot
     pos, ori = getPos(clientID)
     xRobot = pos[0]
@@ -540,7 +538,5 @@ def moveToCoordinate(xTarget, yTarget, clientID):
     dist = calcDistanceToTarget(xRobot, yRobot, xTarget, yTarget)
     forward(dist, clientID)
 
-    # TODO delete (print new position)
-    pos, ori = getPos(clientID)
-    print("newPos ({}, {})".format(pos[0], pos[1]))
+
 
