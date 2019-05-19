@@ -126,6 +126,42 @@ class State_String(State):
                 self.children.append(child)
                 print("appended 4: ", val)
 
+            # first child - front left
+            val = self.value[:]
+            val[0] += step
+            val[1] -= step
+            child = State_String(val, self)
+            if not self.isTooCloseToCube(val):
+                self.children.append(child)
+                print("appended 1: ", val)
+
+            # first child - front right
+            val = self.value[:]
+            val[0] += step
+            val[1] += step
+            child = State_String(val, self)
+            if not self.isTooCloseToCube(val):
+                self.children.append(child)
+                print("appended 1: ", val)
+
+            # first child - back left
+            val = self.value[:]
+            val[0] -= step
+            val[1] -= step
+            child = State_String(val, self)
+            if not self.isTooCloseToCube(val):
+                self.children.append(child)
+                print("appended 1: ", val)
+
+            # first child - back right
+            val = self.value[:]
+            val[0] += step
+            val[1] -= step
+            child = State_String(val, self)
+            if not self.isTooCloseToCube(val):
+                self.children.append(child)
+                print("appended 1: ", val)
+
             '''
             for i in range(len(self.goal)-1):
                 val = self.value
