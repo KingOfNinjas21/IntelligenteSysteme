@@ -184,4 +184,25 @@ def driveThroughPath(obstacleCoordinates, youBotPos, goalPos, clientID):
         move.moveToCoordinate(p[0], p[1], clientID)
 
 
+def sortBlobsByRad(blobs):
+    blobsCopy = blobs[:]
+
+    blobsSorted = [([],([],[]))]
+
+    while len(blobsCopy) > 0:
+        min = blobsCopy[0]
+        for blob in blobsCopy:
+            if getBlobXAngle(blob) < getBlobXAngle(min):#
+                min = blob
+
+        blobsSorted.append(min)
+        blobsCopy.remove(min)
+
+    return blobsSorted
+
+
+def getBlobXAngle(blob):
+    return math.atan(blob[0][1] / blob[0][0])
+
+
 if __name__ == "__main__": main()
