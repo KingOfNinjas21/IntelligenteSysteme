@@ -9,6 +9,7 @@ import time
 import math
 import colorDetection as colorDet
 import movementFunctions as move
+import aStar
 
 goalName = "Goal"
 LEFT_RAY_NINETY = 603
@@ -28,7 +29,7 @@ def main():
         print ('Connected to remote API server')
 
         # Start the simulation:
-        vrep.simxStartSimulation(clientID,vrep.simx_opmode_oneshot_wait)
+        vrep.simxStartSimulation(clientID, vrep.simx_opmode_oneshot_wait)
 
         # start init wheels --------------------------------------------------------------------------------------------
 
@@ -61,6 +62,21 @@ def main():
 
 
         # programmable space -------------------------------------------------------------------------------------------
+
+        roboPos, ori = move.getPos(clientID)
+
+        res, objHandle = vrep.simxGetObjectHandle(clientID, "goal", vrep.simx_opmode_oneshot_wait)
+        targetPosition = vrep.simxGetObjectPosition(clientID, objHandle, -1, vrep.simx_opmode_oneshot_wait)
+        targetPosition = targetPosition[1][:2]
+
+
+        obstacleCoordinates = [
+            [1.5, 0.5],
+            [1.75, 0.25]
+        ]
+
+        driveThroughPath(obstacleCoordinates, roboPos[:2], targetPosition, clientID)
+
 
         err, res, image = vrep.simxGetVisionSensorImage(clientID, youBotCam, 0, vrep.simx_opmode_buffer)
         image = colorDet.convertToCv2Format(image, res)
@@ -261,8 +277,12 @@ def doTranslationOnVector(distX, distY, vector):
     return newVec
 
 
-#method stub
-def youBotFits(posCube1, posCube2):
-    return
+def driveThroughPath(obstacleCoordinates, youBotPos, goalPos, clientID):
+    a = aStar.AStar_Solver(youBotPos, goalPos, obstacleCoordinates)
+    a.Solve()
+
+    for p in a.path:
+        move.moveToCoordinate(p[0], p[1], clientID)
+
 
 if __name__ == "__main__": main()
