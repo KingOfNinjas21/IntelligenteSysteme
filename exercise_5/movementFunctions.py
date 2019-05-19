@@ -444,3 +444,71 @@ def startRotating(clientID, rotationVel):
                                         vrep.simx_opmode_oneshot)
     vrep.simxPauseCommunication(clientID, False)
 
+
+'''
+returns the orientation from the start points towards the end points based on the v-rep x,y,z axis / orientations
+'''
+def calcTargetOrient(xStart, yStart, xEnd, yEnd):
+    # target orientation is calculated with the atan(), so we need the opposite side length (GK) and
+    # adjacent side (AK)
+    GK = abs(float(yEnd-yStart))
+    AK = abs(float(xEnd-xStart))
+
+    angle = abs(math.atan2(GK, AK) * 180.0 / math.pi)
+
+    # 4 cases where the target can be based on the current position (xStart and yStart), every case
+    # represents one of the 4 quadrants in the x,y,z space
+    # Based on the quadrant you can calculate what orientation (0 degree: -y, 180/-180 degree y, 90 degree x,
+    # -90 degree -x) is needed to get from start to end
+    if xEnd<xStart:
+
+        if yEnd<yStart:
+            targetOrient = - 90.0 + angle
+        if yEnd>yStart:
+            targetOrient = - 90.0 - angle
+
+    elif xEnd>xStart:
+
+        if yEnd < yStart:
+            targetOrient = 90.0 - angle
+        if yEnd > yStart:
+            targetOrient = 90.0 + angle
+
+    else:
+        targetOrient = 0
+
+    return targetOrient
+
+
+'''
+calculates distance between 2 points given as coordinates
+'''
+def calcDistanceToTarget(xStart, yStart, xEnd, yEnd):
+    return math.sqrt((xEnd-xStart)*(xEnd-xStart)+(yEnd-yStart)*(yEnd-yStart))
+
+
+'''
+This Function moves the robot to the given global coordinates.
+This function is not using odometry functions for positon calculating. The pos date comes from v-rep.
+The clientID to get position data from v-rep and drive with the robot.
+'''
+def moveToCoordinate(xTarget, yTarget, clientID):
+    print("move to ({}, {})".format(xTarget, yTarget))
+
+    # get pos of robot
+    pos, ori = getPos(clientID)
+    xRobot = pos[0]
+    yRobot = pos[1]
+
+    # orient to goal
+    targetOrientation = calcTargetOrient(xRobot, yRobot, xTarget, yTarget)      # get orientation to target
+    rotateUntilOrientation(clientID, targetOrientation)
+
+    # drive forward until goal is reached
+    dist = calcDistanceToTarget(xRobot, yRobot, xTarget, yTarget)
+    forward(dist, clientID)
+
+    # TODO delete (print new position)
+    pos, ori = getPos(clientID)
+    print("newPos ({}, {})".format(pos[0], pos[1]))
+
