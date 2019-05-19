@@ -73,7 +73,7 @@ def main():
         found, prime_corners = cv2.findChessboardCorners(image, (3, 4))
 
         prime_corners = addOne(prime_corners)
-        print(prime_corners)
+        #print(prime_corners)
 
         global_corners2 = [[-0.025, 0.125], [-0.025, 0.075], [-0.025, 0.025], [-0.075, 0.125],
                            [-0.075, 0.075], [-0.075, 0.025],
@@ -100,7 +100,7 @@ def main():
 
         ego_corners = np.asarray(ego_corners)
 
-        print(ego_corners)                
+        #print(ego_corners)                
         
 
         A = getA(prime_corners, ego_corners)
@@ -108,9 +108,9 @@ def main():
 
         point = np.dot(H, prime_corners[0])
         point = point / point[2]
-        print(point)
+        #print(point)
         point = colorDet.egocentricToGlobal(point, clientID)
-        print(point)
+        #print(point)
 
         blobs = colorDet.findAllBlobs(clientID, youBotCam, H)
         print(blobs)

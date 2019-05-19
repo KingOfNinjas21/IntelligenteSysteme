@@ -10,10 +10,11 @@ from PIL import Image
 # constans for color boundaries
 boundariesGreen = ([0, 200, 0], [75, 255, 75])
 boundariesYellow = ([0, 190, 190], [80, 255, 255])
-boundariesBlue = ([190, 20, 10], [255, 85, 85])
-boundariesRed = ([20, 30, 190], [86, 86, 255])
+boundariesBlue = ([190, 0, 0], [255, 85, 85])
+boundariesRed = ([0, 0, 190], [86, 86, 255])
+boundiresOrange = ([0,100,231],[35,150,255])
 
-colors = [boundariesRed, boundariesYellow, boundariesBlue, boundariesGreen]
+colors = [boundariesRed, boundariesYellow, boundariesBlue, boundariesGreen, boundiresOrange]
 
 
 def test(image):
@@ -130,15 +131,19 @@ def getBlobsGlobal(img, homoMatrix, clientID):
     for c in colors:
         img = imgCopy
         cnts = getContours(img, c)
-        #cv2.drawContours(iC, cnts, 0, (255, 255, 255), 1)
-        #cv2.imshow("Current Image of youBot", iC)
-        #cv2.waitKey(0)
+        print(cnts)
+        
         for k in cnts:
             newPoint = np.dot(homoMatrix, getBottom(k))
             newPoint = newPoint / newPoint[2]
             newPoint = egocentricToGlobal(newPoint, clientID)
+             #print(newPoint)
 
             points.append((newPoint, c))
+        cv2.drawContours(iC, cnts, -1, (255, 255, 255), 1)
+        cv2.imshow("Current Image of youBot", iC)
+        cv2.waitKey(0)
+           
     
     return points
 
@@ -163,6 +168,7 @@ def findAllBlobs(clientId, youBotCam, homoMatrix):
             #cv2.waitKey(0)
 
             tempBlobs = getBlobsGlobal(cv2Image, homoMatrix, clientId)
+
             count = 0
             for tb in tempBlobs:
                 count = 0
