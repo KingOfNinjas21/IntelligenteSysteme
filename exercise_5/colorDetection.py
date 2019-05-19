@@ -152,7 +152,7 @@ def findAllBlobs(clientId, youBotCam, homoMatrix):
 
         move.rotate(10,clientId,True)
 
-    print(blobList[:,0])
+    
     return blobList
 
 
