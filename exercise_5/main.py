@@ -154,9 +154,7 @@ def getA(prime_corners, global_corners):
 def driveThroughPath(obstacleCoordinates, youBotPos, goalPos, clientID):
     # retrieve an AStar_Solver object
     a = aStar.AStar_Solver(youBotPos, goalPos, obstacleCoordinates)
-    #obstacles = [[0.5, 0.75], [1.0, 1.0], [1.5, 1], [1.5, 0.5], [1.75, 0.25], [2.0, 0], [2.0, -0.5], [3.0, 0.5]]
     print("Starting AStar algorithm...")
-    #a = aStar.AStar_Solver([0.0, 0.0], [2.5, 0.5], obstacleCoordinates)
     a.Solve()
     print("Found path: ")
     for p in a.path:
