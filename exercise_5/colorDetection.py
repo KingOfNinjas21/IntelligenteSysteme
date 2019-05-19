@@ -131,7 +131,7 @@ def getBlobsGlobal(img, homoMatrix, clientID):
     for c in colors:
         img = imgCopy
         cnts = getContours(img, c)
-        print(cnts)
+        #print(cnts)
         
         for k in cnts:
             newPoint = np.dot(homoMatrix, getBottom(k))
@@ -177,6 +177,7 @@ def findAllBlobs(clientId, youBotCam, homoMatrix):
                         count = count + 1
                 
                 if count == 0:
+                    print("add", tb)
                     blobList.append(tb)
 
         move.rotate(10,clientId,True)

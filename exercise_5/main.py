@@ -66,8 +66,8 @@ def main():
         image = colorDet.convertToCv2Format(image, res)
         imageC = image 
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        #cv2.imshow("Current Image of youBot", imageC)
-        #cv2.waitKey(0)
+        cv2.imshow("Current Image of youBot", imageC)
+        cv2.waitKey(0)
         #colorDet.test(imageC)
 
         found, prime_corners = cv2.findChessboardCorners(image, (3, 4))
@@ -89,10 +89,12 @@ def main():
                           [-0.125, 0.125, 1.0], [-0.125, 0.075, 1.0], [-0.125, 0.025, 1.0], [-0.175, 0.125, 1.0],
                           [-0.175, 0.075, 1.0], [-0.175, 0.025, 1.0]]
 
+        global_corners_ex2 = [[-0.075, 0.45, 1.0], [-0.075, 0.5, 1.0], [-0.075, 0.55, 1.0], [-0.025, 0.45, 1.0], [-0.025, 0.5, 1.0], [-0.025, 0.55, 1.0], [0.025, 0.45, 1.0], [0.025, 0.5, 1.0], [0.025, 0.55, 1.0], [0.075, 0.45, 1.0], [0.075, 0.5, 1.0], [0.075, 0.55, 1.0]] 
+
         
         
         ego_corners  = []
-        for gc in global_corners:
+        for gc in global_corners_ex2:
             newCorner = colorDet.globalToEgocentric(gc, clientID)
             ego_corners.append(newCorner)
 
@@ -105,6 +107,9 @@ def main():
 
         A = getA(prime_corners, ego_corners)
         H = getH(A)
+        trueH = cv2.findHomography(prime_corners,ego_corners)
+        print(H/H[2][2])
+        print(trueH)
 
         point = np.dot(H, prime_corners[0])
         point = point / point[2]
@@ -113,7 +118,8 @@ def main():
         #print(point)
 
         blobs = colorDet.findAllBlobs(clientID, youBotCam, H)
-        print(blobs)
+        for b in blobs:
+            print(b)
         # end of programmable space --------------------------------------------------------------------------------------------
 
 
