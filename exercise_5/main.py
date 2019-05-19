@@ -84,78 +84,31 @@ def main():
                           [-0.075, 0.075, 1.0], [-0.075, 0.025, 1.0],
                           [-0.125, 0.125, 1.0], [-0.125, 0.075, 1.0], [-0.125, 0.025, 1.0], [-0.175, 0.125, 1.0],
                           [-0.175, 0.075, 1.0], [-0.175, 0.025, 1.0]]
-        """
-        print(prime_corners)
-        cv2.imshow("Penis", image)
-        cv2.waitKey(0)
 
-        A = calcHomgenMatrix(prime_corners, global_corners)
-        d = A[:,8]
-        A = A[:,0:8]
-        #print("'''''''''''''''", A)
-        invA = np.linalg.pinv(A)
-        print(d.shape)
-        h = np.dot(invA, d)
+        
+        ego_corners  = []
+        for gc in global_corners:
+            newCorner = colorDet.globalToEgocentric(gc, clientID)
+            ego_corners.append(newCorner)
 
-        h = np.reshape(h, (3, 3))
-        print(h)
-        print(A.shape)        
-        #invA = np.linalg.inv(A)
-        #print(len(A))  
-        #u,s,vh = np.linalg.svd(A,full_matrices=False)
+        ego_corners = addOne(ego_corners)
 
-        #XX = cv2.findHomography(prime_corners,global_corners)
-        #print(XX)
-        #getH(vh, prime_corners)
+        ego_corners = np.asarray(ego_corners)
 
+        print(ego_corners)                
+        
 
-        """
+        A = getA(prime_corners, ego_corners)
+        H = getH(A)
 
-        A = getA(prime_corners, global_corners)
-        u, s, vh = np.linalg.svd(A, full_matrices=False)
+        point = np.dot(H, prime_corners[0])
+        point = point / point[2]
+        print(point)
+        point = colorDet.egocentricToGlobal(point, clientID)
+        print(point)
 
-        h1 = vh[8]
-        h1 = np.reshape(h1, (3, 3))
-
-        h2 = getH(A)
-
-        trueH = cv2.findHomography(prime_corners, np.asarray(global_corners))
-
-        print(h1, "\n##########################################")
-        print(h2, "\n##########################################")
-        print(trueH, "\n######################################")
-
-        point1 = np.dot(trueH[0], prime_corners[0])
-        point1 = point1 / point1[2]
-        print("CV2####", point1)
-
-        point2 = np.dot(h1, prime_corners[0])
-        point2 = point2 / point2[2]
-        print("meins#####", point2)
-
-        """
-        print("vh as row: ", np.transpose(vh)[:,8])
-        print("vh as row: ", vh[8])
-        print("vh as 3x3: ",np.reshape(vh[8], (3,3)))
-        print("x prime: ",np.dot(np.reshape(vh[8], (3,3)), prime_corners[0]))
-        print(np.transpose(vh))
-        print(vh.shape)
-        """
-
-        '''
-        # print(move.getPos(clientID)[0], "youBot position")
-        # print(move.getCameraOrientation(clientID), "Camera orientation")
-        # print(move.getCameraPos(clientID)[0], "Camera position")
-        print(move.getOrientation(clientID), "youBot orientation")
-        print(egocentricToGlobal(globalToEgocentric([1,1], clientID), clientID))
-        print(globalToEgocentric(egocentricToGlobal([1,1], clientID), clientID))
-        print(egocentricToGlobal([1,1], clientID))
-        '''
-        # print(invA)
-
-        print(egocentricToGlobal([1.0,1.0], clientID), "Egocentrical [1,1] to global")
-        print(globalToEgocentric([1.0,1.0], clientID), "Global to egocentric [1,1] to global")
-        print(move.getOrientation(clientID),"Own orientation")
+        blobs = colorDet.findAllBlobs(clientID, youBotCam, H)
+        print(blobs)
         # end of programmable space --------------------------------------------------------------------------------------------
 
 
@@ -200,42 +153,7 @@ def getA(prime_corners, global_corners):
     return np.asarray(A)
 
 
-def egocentricToGlobal(ego, clientID):
-    x = ego[0]
-    y = ego[1]
-    pos, orient = move.getPos(clientID)
 
-    alpha = move.getOrientation(clientID)/180.0*math.pi+math.pi/2.0
-
-    rotationMatrix = [[math.cos(alpha), -math.sin(alpha)],
-                      [math.sin(alpha), math.cos(alpha)]]
-
-    
-    newVec = np.dot(np.array(rotationMatrix), np.array([x, y]))
-
-    x = newVec[0]
-    y = newVec[1]
-
-    xBot = pos[0]
-    yBot = pos[1]
-
-
-
-    return [x+xBot, y+yBot]
-
-
-
-def globalToEgocentric(globCorrd, clientID):
-    pos, orient = move.getPos(clientID)
-    egoVec = [globCorrd[0]-pos[0], globCorrd[1]-pos[1]]
-
-    alpha = move.getOrientation(clientID)/180.0*math.pi+math.pi/2.0
-
-    rotationMatrix = [[math.cos(-alpha), -math.sin(-alpha)],
-                      [math.sin(-alpha), math.cos(-alpha)]]
-    newVec = np.dot(np.array(rotationMatrix), np.array(egoVec))
-
-    return newVec
 
 #get the distance between two cubes - work in progress
 def getDistanceBetweenCubes(posCube1, posCube2):

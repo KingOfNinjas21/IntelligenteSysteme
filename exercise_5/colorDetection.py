@@ -3,16 +3,54 @@ import numpy as np
 import cv2
 import vrep
 import movementFunctions as move
+import math
 
 from PIL import Image
 
 # constans for color boundaries
-boundariesGreen = ([50, 200, 50], [75, 255, 75])
+boundariesGreen = ([0, 200, 0], [75, 255, 75])
 boundariesYellow = ([50, 210, 210], [80, 255, 255])
 boundariesBlue = ([204, 45, 45], [255, 85, 85])
 boundariesRed = ([45, 45, 205], [86, 86, 255])
 
 colors = [boundariesRed, boundariesYellow, boundariesBlue, boundariesGreen]
+
+def egocentricToGlobal(ego, clientID):
+    x = ego[0]
+    y = ego[1]
+    pos, orient = move.getPos(clientID)
+
+    alpha = move.getOrientation(clientID)/180.0*math.pi+math.pi/2.0
+
+    rotationMatrix = [[math.cos(alpha), -math.sin(alpha)],
+                      [math.sin(alpha), math.cos(alpha)]]
+
+    
+    newVec = np.dot(np.array(rotationMatrix), np.array([x, y]))
+
+    x = newVec[0]
+    y = newVec[1]
+
+    xBot = pos[0]
+    yBot = pos[1]
+
+
+
+    return [x+xBot, y+yBot]
+
+
+
+def globalToEgocentric(globCorrd, clientID):
+    pos, orient = move.getPos(clientID)
+    egoVec = [globCorrd[0]-pos[0], globCorrd[1]-pos[1]]
+
+    alpha = move.getOrientation(clientID)/180.0*math.pi+math.pi/2.0
+
+    rotationMatrix = [[math.cos(-alpha), -math.sin(-alpha)],
+                      [math.sin(-alpha), math.cos(-alpha)]]
+    newVec = np.dot(np.array(rotationMatrix), np.array(egoVec))
+
+    return newVec
 
 '''
 converts an image from vrep sensor to cv2 format.
@@ -56,22 +94,67 @@ gives us the bottom most point of an Object
 
 def getBottom(cnt):
     cnt = cnt
-    bottom = tuple(cnt[cnt[:, :, 1].argmax()][0])
-    print(bottom)
+    bottom = (cnt[cnt[:, :, 1].argmax()][0])
+    bottom = np.append(bottom, 1)
+
     return bottom
 
 
-def getBlobsGlobal(img):
+def getBlobsGlobal(img, homoMatrix, clientID):
     imgCopy = img
     points = []
+    
+    #cv2.imshow("Current Image of youBot", imgCopy)
+    #cv2.waitKey(0)
+
+
     for c in colors:
         img = imgCopy
         cnts = getContours(img, c)
 
         for k in cnts:
-            points.append(getBottom(k))
+            newPoint = np.dot(homoMatrix, getBottom(k))
+            newPoint = newPoint / newPoint[2]
+            newPoint = egocentricToGlobal(newPoint, clientID)
 
+            points.append((newPoint, c))
+    
     return points
+
+def findAllBlobs(clientId, youBotCam, homoMatrix):
+
+    currentDegree = 0
+    blobList = []
+    #we will rotate for 180 degree for spotting the blobs
+    while(currentDegree < 180):
+        currentDegree = currentDegree + 10
+
+        err, res, image = vrep.simxGetVisionSensorImage(clientId, youBotCam, 0, vrep.simx_opmode_buffer)
+        
+
+        if err == vrep.simx_return_ok:
+            # do some image stuff ----------------------------------------------------------------------------------
+
+            cv2Image = convertToCv2Format(image, res)
+            cv2ImageCopy = cv2Image
+
+            tempBlobs = getBlobsGlobal(cv2Image, homoMatrix, clientId)
+            count = 0
+            for tb in tempBlobs:
+                count = 0
+                for b in blobList:
+                    if move.isSamePoint(tb[0], b[0]):
+                        print("b")
+                        count = count + 1
+                
+                if count == 0:
+                    blobList.append(tb)
+
+        move.rotate(10,clientId,True)
+
+    print(blobList[:,0])
+    return blobList
+
 
 
 '''
