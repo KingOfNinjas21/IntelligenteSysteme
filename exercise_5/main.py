@@ -278,10 +278,13 @@ def doTranslationOnVector(distX, distY, vector):
 
 
 def driveThroughPath(obstacleCoordinates, youBotPos, goalPos, clientID):
-    a = aStar.AStar_Solver(youBotPos, goalPos, obstacleCoordinates)
+    #a = aStar.AStar_Solver(youBotPos, goalPos, obstacleCoordinates)
+    obstacles = [[0.5, 0.75], [1.0, 1.0], [1.5, 1], [1.5, 0.5], [1.75, 0.25], [2.0, 0], [2.0, -0.5], [3.0, 0.5]]
+    a = aStar.AStar_Solver([0.0, 0.0], [2.5, 0.5], obstacles)
     a.Solve()
 
     for p in a.path:
+        print("next target: ", p)
         move.moveToCoordinate(p[0], p[1], clientID)
 
 

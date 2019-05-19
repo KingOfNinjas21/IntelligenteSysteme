@@ -43,6 +43,7 @@ class State(object):
             self.goal   = goal
             self.obstacles = obstacles
 
+
     def GetDistance(self):
         pass
 
@@ -82,12 +83,12 @@ class State_String(State):
         return distanceToTarget
 
     def isTooCloseToCube(self, coordinate):
-        radiusToStayAway = 1.0
-        print("Obstacles: ", self.obstacles)
+        radiusToStayAway = 0.4
+        #print("Obstacles: ", self.obstacles)
         for i in range(len(self.obstacles)):
             if self.calcDistanceToTarget(coordinate[0], coordinate[1], self.obstacles[i][0], self.obstacles[i][1]) < radiusToStayAway:
                 return True
-            print("Calculated distance: ", self.calcDistanceToTarget(coordinate[0], coordinate[1], self.obstacles[i][0], self.obstacles[i][1]))
+            #print("Calculated distance: ", self.calcDistanceToTarget(coordinate[0], coordinate[1], self.obstacles[i][0], self.obstacles[i][1]))
         return False
 
     def pointTooFarAway(self, pointToCheck):
@@ -95,7 +96,7 @@ class State_String(State):
         maxX = 9
         minY = -9
         maxY = 9
-        print("Point to check: ", pointToCheck)
+        #print("Point to check: ", pointToCheck)
         if pointToCheck[0] < minX or pointToCheck[0] > maxX:
             print("x not right")
             return True
@@ -116,7 +117,7 @@ class State_String(State):
             child = State_String(val, self)
             if (not self.isTooCloseToCube(val)) and (not self.pointTooFarAway(val)):
                 self.children.append(child)
-                print("appended 1: ", val)
+                #print("appended 1: ", val)
 
             # second child - back
             val = self.value[:]
@@ -124,7 +125,7 @@ class State_String(State):
             child = State_String(val, self)
             if (not self.isTooCloseToCube(val)) and (not self.pointTooFarAway(val)):
                 self.children.append(child)
-                print("appended 2: ", val)
+                #print("appended 2: ", val)
 
             # third child - left
             val = self.value[:]
@@ -132,7 +133,7 @@ class State_String(State):
             child = State_String(val, self)
             if (not self.isTooCloseToCube(val)) and (not self.pointTooFarAway(val)):
                 self.children.append(child)
-                print("appended 3: ", val)
+                #print("appended 3: ", val)
 
             # fourth child - right
             val = self.value[:]
@@ -140,7 +141,7 @@ class State_String(State):
             child = State_String(val, self)
             if (not self.isTooCloseToCube(val)) and (not self.pointTooFarAway(val)):
                 self.children.append(child)
-                print("appended 4: ", val)
+                #print("appended 4: ", val)
 
             # first child - front left
             val = self.value[:]
@@ -149,7 +150,7 @@ class State_String(State):
             child = State_String(val, self)
             if (not self.isTooCloseToCube(val)) and (not self.pointTooFarAway(val)):
                 self.children.append(child)
-                print("appended 1: ", val)
+                #print("appended 5: ", val)
 
             # first child - front right
             val = self.value[:]
@@ -158,7 +159,7 @@ class State_String(State):
             child = State_String(val, self)
             if (not self.isTooCloseToCube(val)) and (not self.pointTooFarAway(val)):
                 self.children.append(child)
-                print("appended 1: ", val)
+                #print("appended 6: ", val)
 
             # first child - back left
             val = self.value[:]
@@ -167,7 +168,7 @@ class State_String(State):
             child = State_String(val, self)
             if (not self.isTooCloseToCube(val)) and (not self.pointTooFarAway(val)):
                 self.children.append(child)
-                print("appended 1: ", val)
+                #print("appended 7: ", val)
 
             # first child - back right
             val = self.value[:]
@@ -176,9 +177,9 @@ class State_String(State):
             child = State_String(val, self)
             if (not self.isTooCloseToCube(val)) and (not self.pointTooFarAway(val)):
                 self.children.append(child)
-                print("appended 1: ", val)
+                #print("appended 8: ", val)
 
-            if not self.children:
+            if len(self.children)==0:
                 print("No children created!")
                 self.childrenCreated=True
 
@@ -234,8 +235,9 @@ class AStar_Solver:
 
 if __name__ == "__main__":
     start1 = [0.0, 0.0]
-    goal1  = [0.0, 5.5]
-    obstacles = [[0.0, 3.0]]
+    goal1  = [2.5, 5.0]
+    obstacles = [[0.5, 0.75], [1.0, 1.0], [1.5, 1], [1.5, 0.5, 1.75, 0.25], [2.0, 0], [2.0, -0.5], [3.0, 0.5]]
+    #obstacles = []
     print("Starting...")
 
     a = AStar_Solver(start1, goal1, obstacles)
