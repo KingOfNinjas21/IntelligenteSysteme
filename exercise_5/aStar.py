@@ -64,7 +64,7 @@ class State_String(State):
         return xIsOk and yIsOk
 
     def GetDistance(self):
-        bound = 0.3
+        bound = 0.2
 
         # check if the goal is already reached
         if self.inBound(bound):
@@ -106,7 +106,7 @@ class State_String(State):
         return False
 
     def CreateChildren(self):
-        step = 0.5
+        step = 0.3
         # if there are no children, generate them
         if not self.childrenCreated and not self.children:
             # create 4 children for left, right, front and back coordinates

@@ -63,50 +63,13 @@ def main():
 
         # programmable space -------------------------------------------------------------------------------------------
 
-        roboPos, ori = move.getPos(clientID)
-
-        res, objHandle = vrep.simxGetObjectHandle(clientID, "goal", vrep.simx_opmode_oneshot_wait)
-        targetPosition = vrep.simxGetObjectPosition(clientID, objHandle, -1, vrep.simx_opmode_oneshot_wait)
-        targetPosition = targetPosition[1][:2]
-
-
-        obstacleCoordinates = [
-            [1.5, 0.5],
-            [1.75, 0.25]
-        ]
-
-        driveThroughPath(obstacleCoordinates, roboPos[:2], targetPosition, clientID)
-
-
         err, res, image = vrep.simxGetVisionSensorImage(clientID, youBotCam, 0, vrep.simx_opmode_buffer)
         image = colorDet.convertToCv2Format(image, res)
-        imageC = image 
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-        #colorDet.test(imageC)
-
         found, prime_corners = cv2.findChessboardCorners(image, (3, 4))
-        #print(prime_corners)
-        #cv2.imshow("Current Image of youBot", imageC)
-        #cv2.waitKey(0)
+
         prime_corners = addOne(prime_corners)
-        #print(prime_corners)
-
-        global_corners2 = [[-0.025, 0.125], [-0.025, 0.075], [-0.025, 0.025], [-0.075, 0.125],
-                           [-0.075, 0.075], [-0.075, 0.025],
-                           [-0.125, 0.125], [-0.125, 0.075], [-0.125, 0.025], [-0.175, 0.125],
-                           [-0.175, 0.075], [-0.175, 0.025]]
-
-        # print("Find homo: ",cv2.findHomography(global_corners2, prime_corners))
-
-        # prime_corners = addOne(prime_corners)
-
-        global_corners = [[-0.025, 0.125, 1.0], [-0.025, 0.075, 1.0], [-0.025, 0.025, 1.0], [-0.075, 0.125, 1.0],
-                          [-0.075, 0.075, 1.0], [-0.075, 0.025, 1.0],
-                          [-0.125, 0.125, 1.0], [-0.125, 0.075, 1.0], [-0.125, 0.025, 1.0], [-0.175, 0.125, 1.0],
-                          [-0.175, 0.075, 1.0], [-0.175, 0.025, 1.0]]
-
-        global_corners_ex2 = [[-0.075, 0.45, 1.0], [-0.075, 0.5, 1.0], [-0.075, 0.55, 1.0], [-0.025, 0.45, 1.0], [-0.025, 0.5, 1.0], [-0.025, 0.55, 1.0], [0.025, 0.45, 1.0], [0.025, 0.5, 1.0], [0.025, 0.55, 1.0], [0.075, 0.45, 1.0], [0.075, 0.5, 1.0], [0.075, 0.55, 1.0]] 
 
         gCX = [[0.075, 0.55, 1.0], [0.075, 0.5, 1.0], [0.075, 0.45, 1.0], [0.025, 0.55, 1.0], [0.025, 0.5, 1.0], [0.025, 0.45, 1.0], [-0.025, 0.55, 1.0], [-0.025, 0.5, 1.0], [-0.025, 0.45, 1.0], [-0.075, 0.55, 1.0], [-0.075, 0.5, 1.0], [-0.075, 0.45, 1.0]]
         
@@ -119,24 +82,26 @@ def main():
 
         ego_corners = np.asarray(ego_corners)
 
-        #print(ego_corners)                
-        
-
         A = getA(prime_corners, ego_corners)
         H = getH(A)
         trueH = cv2.findHomography(prime_corners,ego_corners)
         print(H/H[2][2])
         print(trueH)
 
-        point = np.dot(H, prime_corners[0])
-        point = point / point[2]
-        #print(point)
-        point = colorDet.egocentricToGlobal(point, clientID)
-        #print(point)
-
         blobs = colorDet.findAllBlobs(clientID, youBotCam, H)
+        obstacleList = []
         for b in blobs:
-            print(b)
+            obstacleList.append(b[0])
+            b[0]
+
+
+        roboPos, ori = move.getPos(clientID)
+
+        res, objHandle = vrep.simxGetObjectHandle(clientID, "goal", vrep.simx_opmode_oneshot_wait)
+        targetPosition = vrep.simxGetObjectPosition(clientID, objHandle, -1, vrep.simx_opmode_oneshot_wait)
+        targetPosition = targetPosition[1][:2]
+
+        driveThroughPath(obstacleList, roboPos[:2], targetPosition, clientID)
         # end of programmable space --------------------------------------------------------------------------------------------
 
 
@@ -210,6 +175,7 @@ def doTranslationOnVector(distX, distY, vector):
 def driveThroughPath(obstacleCoordinates, youBotPos, goalPos, clientID):
     a = aStar.AStar_Solver(youBotPos, goalPos, obstacleCoordinates)
     #obstacles = [[0.5, 0.75], [1.0, 1.0], [1.5, 1], [1.5, 0.5], [1.75, 0.25], [2.0, 0], [2.0, -0.5], [3.0, 0.5]]
+    print("Starting...")
     a = aStar.AStar_Solver([0.0, 0.0], [2.5, 0.5], obstacleCoordinates)
     a.Solve()
 

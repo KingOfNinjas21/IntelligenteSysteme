@@ -141,8 +141,8 @@ def getBlobsGlobal(img, homoMatrix, clientID):
 
             points.append((newPoint, c))
         cv2.drawContours(iC, cnts, -1, (255, 255, 255), 1)
-        cv2.imshow("Current Image of youBot", iC)
-        cv2.waitKey(0)
+        #cv2.imshow("Current Image of youBot", iC)
+        #cv2.waitKey(0)
            
     
     return points
