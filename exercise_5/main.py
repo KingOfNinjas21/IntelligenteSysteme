@@ -94,12 +94,15 @@ def main():
             obstacleList.append(b[0])
             b[0]
 
-
         roboPos, ori = move.getPos(clientID)
 
         res, objHandle = vrep.simxGetObjectHandle(clientID, "goal", vrep.simx_opmode_oneshot_wait)
         targetPosition = vrep.simxGetObjectPosition(clientID, objHandle, -1, vrep.simx_opmode_oneshot_wait)
         targetPosition = targetPosition[1][:2]
+
+        print("Obstacle list: ", obstacleList)
+        print("robopos: robopos[:2]: ", roboPos, roboPos[:2])
+
 
         driveThroughPath(obstacleList, roboPos[:2], targetPosition, clientID)
         # end of programmable space --------------------------------------------------------------------------------------------
@@ -178,10 +181,10 @@ def driveThroughPath(obstacleCoordinates, youBotPos, goalPos, clientID):
     print("Starting...")
     a = aStar.AStar_Solver([0.0, 0.0], [2.5, 0.5], obstacleCoordinates)
     a.Solve()
-
-    for p in a.path:
+    print("Found path: ", a.path)
+    for p in range(1, len(a.path)):
         print("next target: ", p)
-        move.moveToCoordinate(p[0], p[1], clientID)
+        move.moveToCoordinate(a.path[p][0], a.path[p][1], clientID)
 
 
 if __name__ == "__main__": main()

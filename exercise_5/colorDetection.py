@@ -103,7 +103,7 @@ def calcCenter(contour):
     cx = int(M['m10'] / M['m00'])
     cy = int(M['m01'] / M['m00'])
 
-    return cx, cy
+    return [cx, cy, 1]
 
 
 """
@@ -116,6 +116,8 @@ def getBottom(cnt):
     bottom = (cnt[cnt[:, :, 1].argmax()][0])
     bottom = np.append(bottom, 1)
 
+    #extLeft =
+
     return bottom
 
 
@@ -123,10 +125,6 @@ def getBlobsGlobal(img, homoMatrix, clientID):
     imgCopy = img
     iC = img
     points = []
-    
-    #cv2.imshow("Current Image of youBot", imgCopy)
-    #cv2.waitKey(0)
-
 
     for c in colors:
         img = imgCopy
@@ -152,8 +150,9 @@ def findAllBlobs(clientId, youBotCam, homoMatrix):
     currentDegree = 0
     blobList = []
     #we will rotate for 180 degree for spotting the blobs
-    while(currentDegree < 150):
-        currentDegree = currentDegree + 30
+    i = 0
+    while(i<4):
+        i+=1
 
         err, res, image = vrep.simxGetVisionSensorImage(clientId, youBotCam, 0, vrep.simx_opmode_buffer)
         
@@ -162,10 +161,6 @@ def findAllBlobs(clientId, youBotCam, homoMatrix):
             # do some image stuff ----------------------------------------------------------------------------------
 
             cv2Image = convertToCv2Format(image, res)
-            cv2ImageCopy = cv2Image
-
-            #cv2.imshow("Current Image of youBot", cv2Image)
-            #cv2.waitKey(0)
 
             tempBlobs = getBlobsGlobal(cv2Image, homoMatrix, clientId)
 
@@ -226,7 +221,7 @@ This is the action to be called for the exercise 4 of the proseminar
 def exercise4_action(clientID, youBotCam):
     counter = 1
 
-    while counter <= 5:
+    while counter < 5:
         # get further images from vision sensor
         err, res, image = vrep.simxGetVisionSensorImage(clientID, youBotCam, 0, vrep.simx_opmode_buffer)
 

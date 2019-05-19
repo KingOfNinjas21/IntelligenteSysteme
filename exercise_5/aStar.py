@@ -64,7 +64,7 @@ class State_String(State):
         return xIsOk and yIsOk
 
     def GetDistance(self):
-        bound = 0.2
+        bound = 0.3
 
         # check if the goal is already reached
         if self.inBound(bound):
@@ -83,12 +83,12 @@ class State_String(State):
         return distanceToTarget
 
     def isTooCloseToCube(self, coordinate):
-        radiusToStayAway = 0.4
+        radiusToStayAway = 0.3
         #print("Obstacles: ", self.obstacles)
         for i in range(len(self.obstacles)):
-            if self.calcDistanceToTarget(coordinate[0], coordinate[1], self.obstacles[i][0], self.obstacles[i][1]) < radiusToStayAway:
+            if self.calcDistanceToTarget(coordinate[0], coordinate[1], self.obstacles[i][0]+0.1, self.obstacles[i][1]) < radiusToStayAway:
                 return True
-            #print("Calculated distance: ", self.calcDistanceToTarget(coordinate[0], coordinate[1], self.obstacles[i][0], self.obstacles[i][1]))
+
         return False
 
     def pointTooFarAway(self, pointToCheck):
@@ -143,6 +143,7 @@ class State_String(State):
                 self.children.append(child)
                 #print("appended 4: ", val)
 
+            '''
             # first child - front left
             val = self.value[:]
             val[0] += step
@@ -178,10 +179,10 @@ class State_String(State):
             if (not self.isTooCloseToCube(val)) and (not self.pointTooFarAway(val)):
                 self.children.append(child)
                 #print("appended 8: ", val)
-
-            if len(self.children)==0:
-                print("No children created!")
-                self.childrenCreated=True
+            '''
+            #if len(self.children)==0:
+            #    print("No children created!")
+            self.childrenCreated=True
 
             '''
             for i in range(len(self.goal)-1):
@@ -212,7 +213,7 @@ class AStar_Solver:
                                   self.obstacles)
 
         count = 0
-        self.priorityQueue.put((0,count,startState))
+        self.priorityQueue.put((0, count, startState))
 
         while not self.path and self.priorityQueue.qsize():
             closestChild = self.priorityQueue.get()[2]
@@ -225,7 +226,7 @@ class AStar_Solver:
                     if not child.dist:
                         self.path = child.path
                         break
-                    self.priorityQueue.put((child.dist,count,child))
+                    self.priorityQueue.put((child.dist, count, child))
 
         if not self.path:
             print("Goal of %s is not possible!" % self.goal)

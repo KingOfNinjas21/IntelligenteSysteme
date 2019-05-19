@@ -128,7 +128,7 @@ def formatVel(forwBackVel, leftRightVel, rotVel):
 
 # This function compares two points with some latitude
 def isSamePoint(pointA, pointB):
-    latituteRadius = 0.45
+    latituteRadius = 0.4
 
     if getDistanceBetweenPoints(pointA, pointB) <= latituteRadius:
         return True
