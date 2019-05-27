@@ -84,7 +84,9 @@ def main():
         # calculate H-matrix
         A = getA(prime_corners, ego_corners)
         H = getH(A)
-        print("H-matrix calculated")
+        newH = cv2.findHomography(prime_corners, ego_corners)
+        print("H-matrix cv2:", newH)
+        print("H-matrix own:", H/H[2][2])
 
         blobs = colorDet.findAllBlobs(clientID, youBotCam, H)
         obstacleList = []
