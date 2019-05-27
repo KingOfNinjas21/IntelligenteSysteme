@@ -12,7 +12,10 @@ import movementFunctions as move
 import aStar
 import constants as c
 
+
 def main():
+    global clientID
+
     print ('Program started')
     emptybuf = bytearray()
 
@@ -58,6 +61,37 @@ def main():
 
         # programmable space -------------------------------------------------------------------------------------------
 
+        # implement state machine
+        # 1 - init | 2 - detectBlob | 3 - moveToBlob | 4 - grab | 5 - moveBack | 6 - moveToNextGoal |
+        # 0 - finish | -1 - finish with error
+        state = 1
+
+        # space to store data to share between states
+        h_matrix = -1
+
+        while state != 0:
+            if state == 1:                  # init
+                state, h_matrix = init_state(youBotCam, clientID)
+
+            elif state == 2:                # TODO implement detectBlob
+                state=-1
+
+            elif state == 3:                # TODO implement moveToBlob
+                state=-1
+
+            elif state == 4:                # TODO implement grab
+                state=-1
+
+            elif state == 5:                # TODO implement moveBack
+                state=-1
+
+            elif state == 6:                # TODO implement moveToNextGoal
+                state=-1
+                
+            elif state == -1:               # finish with error
+                print("An error has occurred. Program finished with state -1.")
+                state = 0
+
 
         # end of programmable space --------------------------------------------------------------------------------------------
 
@@ -70,6 +104,10 @@ def main():
         print ('Failed connecting to remote API server')
     print ('Program ended')
 
+
+def init_state(youBotCam, clientID):
+    # init H-Matrix
+    return 2, colorDet.get_H_matrix(c.gCX, youBotCam, clientID)
 
 
 if __name__ == "__main__": main()

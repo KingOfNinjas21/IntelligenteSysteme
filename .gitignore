@@ -34,3 +34,5 @@ exercise_5/\.idea/
 *.iml
 
 exercise_6/\.idea/
+
+exercise_6/remoteApi\.so
