@@ -4,6 +4,7 @@ import cv2
 import vrep
 import movementFunctions as move
 import math
+import aStar
 
 from PIL import Image
 
@@ -249,3 +250,108 @@ def exercise4_action(clientID, youBotCam):
 
         counter += 1
 
+
+'''
+This method takes a picture of a chessboard and uses the global coordinates of the chessboard corners to calculate the H-Matrix of the camera.
+Make sure the robot camera sees the whole chessboard.
+chessboard_corners - The global coordinates of the chessboard.
+'''
+def get_H_matrix(chessboard_corners, youBotCam, clientID):
+    print("Begin calculation of H-matrix, please wait ...")
+    err, res, image = vrep.simxGetVisionSensorImage(clientID, youBotCam, 0, vrep.simx_opmode_buffer)
+    image = convertToCv2Format(image, res)
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    found, prime_corners = cv2.findChessboardCorners(image, (3, 4))
+
+    prime_corners = addOne(prime_corners)
+
+    # convert all global corners of the chessboard in egocentric world space
+    ego_corners = []
+    for gc in chessboard_corners:
+        newCorner = globalToEgocentric(gc, clientID)
+        ego_corners.append(newCorner)
+
+    # add a 1 in every row (globalToEgocentric only returns x,y coordinates
+    ego_corners = addOne(ego_corners)
+
+    # convert ego_corners in numpy array
+    ego_corners = np.asarray(ego_corners)
+
+    # calculate H-matrix
+    A = getA(prime_corners, ego_corners)
+    return getH(A)
+
+
+# adds a one at the end of every row
+def addOne(matrix):
+    new = []
+    for i in range(len(matrix)):
+        row = np.append(matrix[i], 1)
+        new.append(row)
+    return np.asarray(new)
+
+
+# retrieve H-matrix via the A-matrix
+def getH(A):
+    # the matrix we want is the last row of vh which needs then to be reshaped
+    u, s, vh = np.linalg.svd(A, full_matrices=False)
+    h = vh[8]
+    H = np.reshape(h, (3, 3))
+    return H
+
+
+# retrieve A-matrix via prime corners and global corners
+# prime_corners = points in screen (picture) space
+# global_corners = points in world space
+def getA(prime_corners, global_corners):
+    A = []
+    for i in range(len(prime_corners)):
+        p1 = [-prime_corners[i][0], -prime_corners[i][1], -1, 0, 0, 0, prime_corners[i][0] * global_corners[i][0],
+              prime_corners[i][1] * global_corners[i][0], global_corners[i][0]]
+        p2 = [0, 0, 0, -prime_corners[i][0], -prime_corners[i][1], -1, global_corners[i][1] * prime_corners[i][0],
+              global_corners[i][1] * prime_corners[i][1], global_corners[i][1]]
+
+        A.append(np.asarray(p1))
+        A.append(np.asarray(p2))
+
+    return np.asarray(A)
+
+
+# calculates a path from the youBotPos to the goalPos and drives to it
+def driveThroughPath(obstacleCoordinates, youBotPos, goalPos, clientID):
+    # retrieve an AStar_Solver object
+    a = aStar.AStar_Solver(youBotPos, goalPos, obstacleCoordinates)
+    print("Starting AStar algorithm...")
+    a.Solve()
+    print("Found path: ")
+    for p in a.path:
+        print(p)
+
+    print("\n")
+
+    # go through path list and move from point to point
+    for p in range(1, len(a.path)):
+        print("next target: ", a.path[p])
+        move.moveToCoordinate(a.path[p][0], a.path[p][1], clientID)
+
+# sort the blobs from right to left (selectionSort)
+def sortBlobsByRad(blobs):
+    blobsCopy = blobs[:]
+
+    blobsSorted = [([],([],[]))]
+
+    while len(blobsCopy) > 0:
+        min = blobsCopy[0]
+        for blob in blobsCopy:
+            if getBlobXAngle(blob) < getBlobXAngle(min):
+                min = blob
+
+        blobsSorted.append(min)
+        blobsCopy.remove(min)
+
+    return blobsSorted[1:]
+
+
+def getBlobXAngle(blob):
+    return math.atan(blob[0][1] / blob[0][0])

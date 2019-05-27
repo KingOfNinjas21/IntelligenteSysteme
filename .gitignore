@@ -28,3 +28,9 @@ exercise_1/vrep\.py
 exercise_1/vrepConst\.py
 exercise_6/vrep.py
 exercise_6/vrepConst.py
+
+exercise_5/\.idea/
+
+*.iml
+
+exercise_6/\.idea/
