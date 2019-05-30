@@ -382,7 +382,7 @@ def goAroundCorner(clientID, sensorHandles, rightSide, rayHit):
     # first drive forward -> rotate -> drive forward again
     move.forward(0.8, clientID)
     move.rotate(90, clientID, not rightSide)
-    move.forward(0.8, clientID)
+    move.forward(1.0, clientID)
 
     # check if the bot has to do a uturn because of the corner or he can get back to following the obstacle
     if(normalBorder(clientID, sensorHandles, rightSide)):

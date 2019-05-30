@@ -17,7 +17,7 @@ D = 0.30046
 
 FORWARD_VEL =  -2.0
 SIDEWARD_VEL =  2.0
-ROTATE_VEL =  2.0
+ROTATE_VEL =  1.3
 
 STEP = 3.5	# constant for the leaving condition
 RAY_ANGLE = 120.0/342.0
