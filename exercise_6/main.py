@@ -76,34 +76,36 @@ def main():
         # space to store data to share between states
         h_matrix = -1
         path = Queue()
+        blobsList = Queue()
+        posBeforeGrab = move.getPos(clientID)[0][:-1]
 
         while state != 0:
-            if state == 1:                  # init
-                state, explorePath, h_matrix = init_state(youBotCam, clientID)
-                path = explorePath
+            if state == 1:
+                # init path, H, and next state
+                state, path, h_matrix = init_state(youBotCam, clientID)
 
-            elif state == 2:                # TODO implement detectBlob
-                state=6
+            elif state == 2:
+                # find all blobs that are 360 degrees around youBot
+                state, blobsList = ex.findBlobs(clientID, youBotCam, h_matrix, blobsList)
 
-            elif state == 3:                # TODO implement moveToBlob
-                state=-1
+            elif state == 3:
+                posBeforeGrab = move.getPos(clientID)[0][:-1] # store current position for moving back later
+                # TODO: move to the exact position of next blob
+                state = 4
 
             elif state == 4:                # TODO implement grab
-                state=-1
+                state = 5
 
             elif state == 5:                # TODO implement moveBack
-                state=-1
+                # maybe use the following for moving back(?!): ex.headTowardsModel(clientID, posBeforeGrab, hokuyo)
+                state = 6
 
             elif state == 6:
-                #moveToNextGoal
-                if(not path.empty()):
-                    finished = ex.distB(clientID, hokuyo, path.get())
-                    if(finished):
-                        state=6
-                    else:
-                        state=-1
+                # move to next goal
+                if not path.empty():
+                    state, finished = ex.distB(clientID, hokuyo, path.get())
                 else:
-                    state=0
+                    state = 0
                 
             elif state == -1:               # finish with error
                 print("An error has occurred. Program finished with state -1.")
@@ -124,9 +126,9 @@ def main():
 
 def init_state(youBotCam, clientID):
     path = ex.initPath()
-    #colorDet.get_H_matrix(c.gCX, youBotCam, clientID)
+
     # init H-Matrix
-    return 2, path, 1
+    return 2, path, colorDet.get_H_matrix(c.gCX, youBotCam, clientID)
 
 
 if __name__ == "__main__": main()

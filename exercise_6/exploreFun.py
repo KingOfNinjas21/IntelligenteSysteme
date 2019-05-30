@@ -5,7 +5,7 @@ import vrep
 import time
 import rangeSensorFunctions as rangeSensor
 import math
-
+import colorDetection as colorDet
 
 def initPath():
     queue = Queue()
@@ -18,7 +18,7 @@ def initPath():
 
 # Implementation of distbug algorithm
 def distB(clientID, sensorHandles, targetPos):
-
+    nextState = -1
     isNotGoal = True
     while (isNotGoal):
         isNotGoal , hitRay = headTowardsModel(clientID, targetPos, sensorHandles)
@@ -26,7 +26,8 @@ def distB(clientID, sensorHandles, targetPos):
         # if headTowardsModel returned False it means it successfully got to the goal point
         if(not isNotGoal):
             print("REACHED GOAL")
-            return not isNotGoal
+            nextState = 2
+            return nextState, not isNotGoal
 
         # if there is no chair and headTowardsModel returned True -> follow the boundary
         else:
@@ -36,7 +37,7 @@ def distB(clientID, sensorHandles, targetPos):
 
         print("Bot is in goal: {}".format(not isNotGoal))
 
-    return not isNotGoal
+    return nextState, not isNotGoal
 
 
 # Get to the modelName model (name of the target)
@@ -112,3 +113,56 @@ def isSamePoint(pointA, pointB):
         return True
 
     return False
+
+
+
+'''
+Color Detection Functions
+'''
+
+def findBlobs(clientID, youBotCam, H, currentBlobsList):
+    blobs = findAllBlobs(clientID, youBotCam, H)
+    obstacleList = []
+    for b in blobs:
+        obstacleList.append(b[0])
+    nextState = 3
+    for blob in obstacleList:
+        currentBlobsList.put(blob)
+
+    return nextState, currentBlobsList
+
+
+def findAllBlobs(clientId, youBotCam, homoMatrix):
+    currentDegree = 0
+    degreePerPic = 60.0
+    amountPics = math.ceil(360.0/degreePerPic)
+    blobList = []
+    # we will rotate for 360 degree to spot all blobs near the bot
+    i = 0
+
+    while (i < amountPics):
+        i += 1
+
+        err, res, image = vrep.simxGetVisionSensorImage(clientId, youBotCam, 0, vrep.simx_opmode_buffer)
+
+        if err == vrep.simx_return_ok:
+            # do some image stuff ----------------------------------------------------------------------------------
+
+            cv2Image = colorDet.convertToCv2Format(image, res)
+
+            tempBlobs = colorDet.getBlobsGlobal(cv2Image, homoMatrix, clientId)
+
+            count = 0
+            for tb in tempBlobs:
+                count = 0
+                for b in blobList:
+                    if move.isSamePoint(tb[0], b[0]) and tb[1] == b[1]:
+                        count = count + 1
+
+                if count == 0:
+                    print("added", tb, " to blobList")
+                    blobList.append(tb)
+
+        move.rotate(degreePerPic, clientId, True)
+
+    return blobList
