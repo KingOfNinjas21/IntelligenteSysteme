@@ -11,7 +11,10 @@ import colorDetection as colorDet
 import movementFunctions as move
 import aStar
 import constants as c
-
+from queue import Queue
+import exploreFun as ex
+import bugFunctions as bug
+import rangeSensorFunctions as rangeSen
 
 def main():
     global clientID
@@ -57,7 +60,11 @@ def main():
 
         # end init camera ----------------------------------------------------------------------------------------------
 
-
+        # start init range sensor
+        # initialize sensor and get sensor handles:
+        rangeSen.initializeSensor(clientID)
+        hokuyo = rangeSen.getSensorHandles(clientID)
+        # end init range sensor
 
         # programmable space -------------------------------------------------------------------------------------------
 
@@ -68,13 +75,15 @@ def main():
 
         # space to store data to share between states
         h_matrix = -1
+        path = Queue()
 
         while state != 0:
             if state == 1:                  # init
-                state, h_matrix = init_state(youBotCam, clientID)
+                state, explorePath, h_matrix = init_state(youBotCam, clientID)
+                path = explorePath
 
             elif state == 2:                # TODO implement detectBlob
-                state=-1
+                state=6
 
             elif state == 3:                # TODO implement moveToBlob
                 state=-1
@@ -85,8 +94,16 @@ def main():
             elif state == 5:                # TODO implement moveBack
                 state=-1
 
-            elif state == 6:                # TODO implement moveToNextGoal
-                state=-1
+            elif state == 6:
+                #moveToNextGoal
+                if(not path.empty()):
+                    finished = ex.distB(clientID, hokuyo, path.get())
+                    if(finished):
+                        state=6
+                    else:
+                        state=-1
+                else:
+                    state=0
                 
             elif state == -1:               # finish with error
                 print("An error has occurred. Program finished with state -1.")
@@ -106,8 +123,10 @@ def main():
 
 
 def init_state(youBotCam, clientID):
+    path = ex.initPath()
+    #colorDet.get_H_matrix(c.gCX, youBotCam, clientID)
     # init H-Matrix
-    return 2, colorDet.get_H_matrix(c.gCX, youBotCam, clientID)
+    return 2, path, 1
 
 
 if __name__ == "__main__": main()
