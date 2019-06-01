@@ -60,11 +60,12 @@ def main():
 
         # end init camera ----------------------------------------------------------------------------------------------
 
-        # start init range sensor
+        # start init range sensor ----------------------------------------------------------------------------------------------
         # initialize sensor and get sensor handles:
         rangeSen.initializeSensor(clientID)
         hokuyo = rangeSen.getSensorHandles(clientID)
-        # end init range sensor
+
+        # end init range sensor ----------------------------------------------------------------------------------------------
 
         # programmable space -------------------------------------------------------------------------------------------
 
@@ -77,35 +78,32 @@ def main():
         h_matrix = -1
         path = Queue()
         blobsList = Queue()
-        posBeforeGrab = move.getPos(clientID)[0][:-1]
+        visitedBlobsList = []
+        posBeforeMoveToBlob = move.getPos(clientID)[0][:-1]
 
         while state != 0:
             if state == 1:
                 # init path, H, and next state
-                state, path, h_matrix = init_state(youBotCam, clientID)
+                state, path, h_matrix = ex.init_state(youBotCam, clientID)
 
             elif state == 2:
                 # find all blobs that are 360 degrees around youBot
-                state, blobsList = ex.findBlobs(clientID, youBotCam, h_matrix, blobsList)
-
-            elif state == 3:
-                posBeforeGrab = move.getPos(clientID)[0][:-1] # store current position for moving back later
-                # TODO: move to the exact position of next blob
-                state = 4
+                state, blobsList = ex.findBlobs(clientID, youBotCam, h_matrix, blobsList, visitedBlobsList)
+                state = 6
+            elif state == 3: # TODO implement getToNextBlob() function
+                # get to next blob state
+                posBeforeMoveToBlob = move.getPos(clientID)[0][:-1] # store current position for moving back later
+                state, blobsList, visitedBlobsList = ex.getToNextBlob(clientID, blobsList, visitedBlobsList)
 
             elif state == 4:                # TODO implement grab
-                state = 5
+                state = ex.grabBlob(clientID, blobsList)
 
             elif state == 5:                # TODO implement moveBack
-                # maybe use the following for moving back(?!): ex.headTowardsModel(clientID, posBeforeGrab, hokuyo)
-                state = 6
+                state = ex.moveBack(clientID, posBeforeMoveToBlob)
 
             elif state == 6:
                 # move to next goal
-                if not path.empty():
-                    state, finished = ex.distB(clientID, hokuyo, path.get())
-                else:
-                    state = 0
+                state = ex.distB(clientID, hokuyo, path)
                 
             elif state == -1:               # finish with error
                 print("An error has occurred. Program finished with state -1.")
@@ -122,13 +120,6 @@ def main():
     else:
         print ('Failed connecting to remote API server')
     print ('Program ended')
-
-
-def init_state(youBotCam, clientID):
-    path = ex.initPath()
-
-    # init H-Matrix
-    return 2, path, colorDet.get_H_matrix(c.gCX, youBotCam, clientID)
 
 
 if __name__ == "__main__": main()

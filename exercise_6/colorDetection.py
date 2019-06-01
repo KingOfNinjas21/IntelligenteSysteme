@@ -15,8 +15,8 @@ boundariesBlue = ([190, 0, 0], [255, 85, 85])
 boundariesRed = ([0, 0, 190], [86, 86, 255])
 boundiresOrange = ([0,100,231],[35,150,255])
 
-colors = [boundariesRed, boundariesYellow, boundariesBlue, boundariesGreen, boundiresOrange]
-
+#right now not needed boundaries list: colors = [boundariesRed, boundariesYellow, boundariesBlue, boundariesGreen, boundiresOrange]
+colors = [boundariesRed]
 
 def test(image):
     imageCopy = image
