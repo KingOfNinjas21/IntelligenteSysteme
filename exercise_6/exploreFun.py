@@ -126,6 +126,7 @@ def isSamePoint(pointA, pointB):
     return False
 
 # rotates the youBot until he reached a certain orientation value
+# copied from movementFunctions but changed only the rotation velocity
 def rotateUntilOrientation(clientID, targetOrient):
     move.setWheelVelocity(clientID, 0)
     # get needed youBot information's
@@ -210,11 +211,12 @@ def rotateUntilOrientation(clientID, targetOrient):
 
     return
 
+# moves youBot to the nex blob in the blob list
 def getToNextBlob(clientID, blobsList, visitedBlobsList):
     print("Start getting to the next blob")
     state = 4 # grab blob
-    nextBlob = blobsList.get()
-    visitedBlobsList.put(nextBlob)
+    nextBlob = blobsList[0]
+    visitedBlobsList.append(nextBlob)
     # TODO: move to the exact position of next blob
 
     print("End getting to the next blob")
@@ -222,10 +224,12 @@ def getToNextBlob(clientID, blobsList, visitedBlobsList):
 
 # moves youBot back to the posBeforeMoveToBlob point
 def moveBack(clientID, posBeforeMoveToBlob):
+    print("Start moving back to " + posBeforeMoveToBlob)
     # TODO: move back
     #  maybe use the following for moving back: ex.headTowardsModel(clientID, posBeforeMoveToBlob, hokuyo)
 
     state = 3 # 3 = move to next blob
+    print("End moving back")
     return state
 
 '''
@@ -235,16 +239,18 @@ Color Detection Functions
 # finds all new blobs, that are not already visited
 def findBlobs(clientID, youBotCam, H, currentBlobsList, visitedBlobsList):
     blobs = findAllBlobs(clientID, youBotCam, H)
+    #visitedBlobsList, visitedBlobsQueue = getListFromQueue(visitedBlobsQueue)
     obstacleList = []
 
     print("Start checking which blobs are new: ")
     for b in blobs:
         isNew = True
+
         for visited in visitedBlobsList:
-            if isSameBlob(b, visited):
+            if isSameBlob(b[0], visited):
                 isNew = False
         if isNew:
-            print("Found new blob: [{}, {}]".format(b[0], b[1]))
+            print("Found new blob: {}".format(b[0]))
             obstacleList.append(b[0])
     print("End checking for new blobs")
 
@@ -252,10 +258,10 @@ def findBlobs(clientID, youBotCam, H, currentBlobsList, visitedBlobsList):
         # TODO maybe check here if the blob is too far away -> if so don't add it to the list
         #  (as the bot moves on, he will later be closer to the blob)
         #  one reason todo so is that if the blob is too far away, the blobs position is highly incorrect
-        currentBlobsList.put(blob)
+        currentBlobsList.append(blob)
 
     nextState = 3  # 3 = move to next blob
-    if currentBlobsList.empty():
+    if len(currentBlobsList)==0:
         nextState = 6 # 6 = move to next goal
 
     return nextState, currentBlobsList
@@ -299,16 +305,28 @@ def findAllBlobs(clientId, youBotCam, homoMatrix):
     return blobList
 
 '''
+def getListFromQueue(queue):
+    tempQueue = Queue()
+    list = []
+    while not queue.empty():
+        object = visitedBlobsQueue.get()
+        tempQueue.put(object)
+        list.append(object)
+    print("List from Queue made: ",tempQueue, " and ",list)
+    return list, tempQueue
+'''
+
+'''
 Arm Kinematics functions
 '''
 
-# grabs a blob and returns the next state
+# grabs a blob and returns the next state, also removes the grabed blob from the blobsList
 def grabBlob(clientID, blobsList):
     print("Start grab blob")
-    blobToGrab = blobsList.get()
+    blobToGrab = blobsList[0]
     # TODO: Implement grabing and specify state
     print("Stop grab blob")
-    return 6
+    return 6, blobsList[1:]
 
 # This function compares two points with some latitude
 def isSameBlob(pointA, pointB):

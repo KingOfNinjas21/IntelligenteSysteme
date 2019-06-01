@@ -77,7 +77,7 @@ def main():
         # space to store data to share between states
         h_matrix = -1
         path = Queue()
-        blobsList = Queue()
+        blobsList = []
         visitedBlobsList = []
         posBeforeMoveToBlob = move.getPos(clientID)[0][:-1]
 
@@ -89,14 +89,13 @@ def main():
             elif state == 2:
                 # find all blobs that are 360 degrees around youBot
                 state, blobsList = ex.findBlobs(clientID, youBotCam, h_matrix, blobsList, visitedBlobsList)
-                state = 6
             elif state == 3: # TODO implement getToNextBlob() function
                 # get to next blob state
                 posBeforeMoveToBlob = move.getPos(clientID)[0][:-1] # store current position for moving back later
                 state, blobsList, visitedBlobsList = ex.getToNextBlob(clientID, blobsList, visitedBlobsList)
 
             elif state == 4:                # TODO implement grab
-                state = ex.grabBlob(clientID, blobsList)
+                state, blobsList = ex.grabBlob(clientID, blobsList)
 
             elif state == 5:                # TODO implement moveBack
                 state = ex.moveBack(clientID, posBeforeMoveToBlob)
