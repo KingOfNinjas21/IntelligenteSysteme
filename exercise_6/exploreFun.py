@@ -7,6 +7,8 @@ import rangeSensorFunctions as rangeSensor
 import math
 import colorDetection as colorDet
 import constants as c
+import numpy as np
+import cv2
 
 def initPath():
     queue = Queue()
@@ -232,6 +234,60 @@ def moveBack(clientID, posBeforeMoveToBlob):
     print("End moving back")
     return state
 
+def pdControl(clientID, youBotCam, goal):
+    print("begin PD control")
+    nextState = 4
+    wheelJoints = move.getWheelJoints(clientID)
+    err, res, image = vrep.simxGetVisionSensorImage(clientID, youBotCam, 0, vrep.simx_opmode_buffer)
+    cv2Image = colorDet.convertToCv2Format(image, res)
+
+    #cv2.imshow("Current Image of youBot", cv2Image)
+    #cv2.waitKey(0)
+
+    cor = getRedBlobPicture(cv2Image)
+    preCor = cor
+    rotVel = 0.5
+    dt = 0.0
+    forwBackVel = 0.5
+    leftRightVel = 0.5
+    while not velOk(forwBackVel, leftRightVel):
+        # retrieve new coordinate of red blob
+        err, res, image = vrep.simxGetVisionSensorImage(clientID, youBotCam, 0, vrep.simx_opmode_buffer)
+        cv2Image = colorDet.convertToCv2Format(image, res)
+
+        cor = getRedBlobPicture(cv2Image)
+
+        # calculate new velocities
+        forwBackVel = 0.1 * (cor[0][0] - goal[0]) - 0.002 * (cor[0][0] - preCor[0][0])
+        leftRightVel = 0.08 * (cor[0][1] - goal[1]) - 0.001 * (cor[0][1] - preCor[0][1])
+        print("Forward: ", forwBackVel)
+        print("Left: ", leftRightVel)
+        preCor = cor
+
+        #vf, vr, w0 = move.formatVel(forwBackVel, leftRightVel, rotVel)
+
+        # update velocities
+
+
+        move.setWheelVelocity(clientID, 0.0)
+        #time.sleep(1)
+        vrep.simxPauseCommunication(clientID, True)
+        for i in range(0, 4):
+            vrep.simxSetJointTargetVelocity(clientID, wheelJoints[i], move.wheelVel(forwBackVel/10.0, leftRightVel/10.0, 0.0)[i],
+                                            vrep.simx_opmode_oneshot)
+        vrep.simxPauseCommunication(clientID, False)
+    move.setWheelVelocity(clientID, 0.0)
+    cv2.imshow("Current Image of youBot", cv2Image)
+    cv2.waitKey(0)
+    print("velocity is nearly zero")
+    print("begin PD control")
+    return nextState
+
+def velOk(forwBackVel, leftRightVel):
+    tolerance = 0.1
+    forwBackOk = forwBackVel < tolerance and forwBackVel > -tolerance
+    leftRightOk = leftRightVel < tolerance and leftRightVel > -tolerance
+    return forwBackOk and leftRightOk
 '''
 Color Detection Functions
 '''
@@ -303,6 +359,85 @@ def findAllBlobs(clientId, youBotCam, homoMatrix):
         move.rotate(degreePerPic, clientId, True)
     print("End find all blobs")
     return blobList
+
+# detects the nearest red blob and returns its egocentric position
+def detectOneBlob(clientId, youBotCam, homoMatrix):
+    print("Start finding one red blob")
+    blobList = []
+
+    err, res, image = vrep.simxGetVisionSensorImage(clientId, youBotCam, 0, vrep.simx_opmode_buffer)
+
+    if err == vrep.simx_return_ok:
+        # do some image stuff ----------------------------------------------------------------------------------
+
+        cv2Image = colorDet.convertToCv2Format(image, res)
+
+        tempBlobs = getRedBlobs(cv2Image, homoMatrix, clientId)
+
+        count = 0
+        for tb in tempBlobs:
+            count = 0
+            for b in blobList:
+                if isSameBlob(tb[0], b[0]) and tb[1] == b[1]:
+                    count = count + 1
+
+            if count == 0:
+                print("Added", tb, " to blobList")
+                blobList.append(tb)
+
+    # get the closest blob
+    currentPos = move.getPos(clientId)[0]
+    closestBlob = blobList[0]
+    closestDistance = move.getDistanceBetweenPoints(blobList[0], currentPos)
+    for blob in blobList:
+        distNewBlob = move.getDistanceBetweenPoints(blob[0], currentPos)# distance to new blob
+        if(closestDistance-distNewBlob>0): # check if the current blobs position is nearer than the current closest blob
+            # set new blob as nearest blob and update closest distance
+            closestBlob = blob
+            closestDistance = distNewBlob
+
+    print("End find one red blob")
+    closestBlob[0] = colorDet.globalToEgocentric(closestBlob[9], clientId)
+    return closestBlob[0]
+
+
+# returns red blobs in a picture
+def getRedBlobs(img, homoMatrix, clientID):
+    imgCopy = img
+    iC = img
+    points = []
+    boundariesRed = ([0, 0, 190], [86, 86, 255])
+
+    img = imgCopy
+    cnts = colorDet.getContours(img, boundariesRed)
+
+    for k in cnts:
+        newPoint = np.dot(homoMatrix, colorDet.getBottom(k))
+        newPoint = newPoint / newPoint[2]
+        newPoint = colorDet.egocentricToGlobal(newPoint, clientID)
+        # print(newPoint)
+
+        points.append((newPoint, boundariesRed))
+
+    #cv2.drawContours(iC, cnts, -1, (255, 255, 255), 1)
+    # cv2.imshow("Current Image of youBot", iC)
+    # cv2.waitKey(0)
+
+    return points
+
+# returns red blobs in a picture with its picture coordinate
+def getRedBlobPicture(img):
+    points = []
+    boundariesRed = ([0, 0, 190], [86, 86, 255])
+
+    contours = colorDet.getContours(img, boundariesRed)
+
+    for k in contours:
+        newPoint = colorDet.getBottom(k)
+
+        points.append(newPoint)
+
+    return points
 
 '''
 def getListFromQueue(queue):
