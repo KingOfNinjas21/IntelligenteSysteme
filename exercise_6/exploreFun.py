@@ -478,18 +478,6 @@ def isSameBlob(pointA, pointB):
 
 
 '''
-def getListFromQueue(queue):
-    tempQueue = Queue()
-    list = []
-    while not queue.empty():
-        object = visitedBlobsQueue.get()
-        tempQueue.put(object)
-        list.append(object)
-    print("List from Queue made: ",tempQueue, " and ",list)
-    return list, tempQueue
-'''
-
-'''
 Arm Kinematics functions
 '''
 
