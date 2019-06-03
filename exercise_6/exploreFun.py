@@ -10,6 +10,7 @@ import constants as c
 import numpy as np
 import cv2
 
+
 def initPath():
     queue = Queue()
     explorePath = [(3.0, 1.0), (6.5, 3.0), (4.4, 5.9), (-4.0, 6.6), (-4.4, -1.0), (-3.6, -4.0), (-5.0, -4.6), (+1.5, -5.0), (3.5, -5.0), (3.5, -2.0), (-0.3, -2.0)]
@@ -17,6 +18,7 @@ def initPath():
         print ("added to queue: ", explorePath[i])
         queue.put(explorePath[i])
     return queue
+
 
 def init_state(youBotCam, clientID):
     path = initPath()
@@ -29,6 +31,7 @@ def init_state(youBotCam, clientID):
 '''
 Needed adjusted movement functions 
 '''
+
 
 # adjusted of distbug algorithm
 def distB(clientID, sensorHandles, path):
@@ -78,6 +81,7 @@ def headTowardsModel(clientID, targetPos, rangeSensorHandles):
 
     return case, hit
 
+
 # drives forward to the target position long as there is no obstacle around the bot within the distance of 0.3
 # around the bot means ca +90 and -90 degrees(from the front)
 # returns true if the bot encounterd an obstacle, and false if the bot reached the target
@@ -126,6 +130,7 @@ def isSamePoint(pointA, pointB):
         return True
 
     return False
+
 
 # rotates the youBot until he reached a certain orientation value
 # copied from movementFunctions but changed only the rotation velocity
@@ -213,6 +218,7 @@ def rotateUntilOrientation(clientID, targetOrient):
 
     return
 
+
 # moves youBot to the nex blob in the blob list
 def getToNextBlob(clientID, blobsList, visitedBlobsList):
     print("Start getting to the next blob")
@@ -236,6 +242,7 @@ def getToNextBlob(clientID, blobsList, visitedBlobsList):
     print("End getting to the next blob")
     return 4, blobsList, visitedBlobsList   # grab blob
 
+
 # moves youBot back to the posBeforeMoveToBlob point
 def moveBack(clientID, posBeforeMoveToBlob):
     print("Start moving back to " + posBeforeMoveToBlob)
@@ -246,9 +253,10 @@ def moveBack(clientID, posBeforeMoveToBlob):
     print("End moving back")
     return state
 
+
 def pdControl(clientID, youBotCam, goal):
     print("begin PD control")
-    nextState = 4
+
     wheelJoints = move.getWheelJoints(clientID)
     err, res, image = vrep.simxGetVisionSensorImage(clientID, youBotCam, 0, vrep.simx_opmode_buffer)
     cv2Image = colorDet.convertToCv2Format(image, res)
@@ -258,48 +266,58 @@ def pdControl(clientID, youBotCam, goal):
 
     cor = getRedBlobPicture(cv2Image)
     preCor = cor
-    rotVel = 0.5
-    dt = 0.0
-    forwBackVel = 0.5
-    leftRightVel = 0.5
+    rotVel = 0.0
+    forwBackVel = 999  # just a random number to initialize while loop
+    leftRightVel = 999  # just a random number to initialize while loop
     while not velOk(forwBackVel, leftRightVel):
         # retrieve new coordinate of red blob
         err, res, image = vrep.simxGetVisionSensorImage(clientID, youBotCam, 0, vrep.simx_opmode_buffer)
         cv2Image = colorDet.convertToCv2Format(image, res)
-
         cor = getRedBlobPicture(cv2Image)
 
         # calculate new velocities
         forwBackVel = 0.1 * (cor[0][0] - goal[0]) - 0.002 * (cor[0][0] - preCor[0][0])
         leftRightVel = 0.08 * (cor[0][1] - goal[1]) - 0.001 * (cor[0][1] - preCor[0][1])
-        print("Forward: ", forwBackVel)
-        print("Left: ", leftRightVel)
+
+        # save current coordinates as previous coordinates
         preCor = cor
 
-        #vf, vr, w0 = move.formatVel(forwBackVel, leftRightVel, rotVel)
-
         # update velocities
-
-
         move.setWheelVelocity(clientID, 0.0)
-        #time.sleep(1)
+
         vrep.simxPauseCommunication(clientID, True)
         for i in range(0, 4):
-            vrep.simxSetJointTargetVelocity(clientID, wheelJoints[i], move.wheelVel(forwBackVel/10.0, leftRightVel/10.0, 0.0)[i],
+            vrep.simxSetJointTargetVelocity(clientID, wheelJoints[i], move.wheelVel(forwBackVel/10.0, leftRightVel/10.0, rotVel)[i],
                                             vrep.simx_opmode_oneshot)
         vrep.simxPauseCommunication(clientID, False)
+
+    # stop moving
     move.setWheelVelocity(clientID, 0.0)
-    cv2.imshow("Current Image of youBot", cv2Image)
-    cv2.waitKey(0)
-    print("velocity is nearly zero")
-    print("begin PD control")
-    return nextState
+
+    #cv2.imshow("Current Image of youBot", cv2Image)
+    #cv2.waitKey(0)
+
+    print("end PD control")
+
 
 def velOk(forwBackVel, leftRightVel):
     tolerance = 0.1
     forwBackOk = forwBackVel < tolerance and forwBackVel > -tolerance
     leftRightOk = leftRightVel < tolerance and leftRightVel > -tolerance
     return forwBackOk and leftRightOk
+
+
+def alignToBlob(clientID):
+    nextState = 4  # 4 = grab state
+
+    # TODO rotate by 90°
+
+    # use PD to move right to the block
+    pdControl(clientID, youBotCam, c.grabPosition)
+
+    return nextState
+
+
 '''
 Color Detection Functions
 '''
@@ -451,6 +469,14 @@ def getRedBlobPicture(img):
 
     return points
 
+# This function compares two points with some latitude
+def isSameBlob(pointA, pointB):
+    latituteRadius = 1.3
+    if move.getDistanceBetweenPoints(pointA, pointB) <= latituteRadius:
+        return True
+    return False
+
+
 '''
 def getListFromQueue(queue):
     tempQueue = Queue()
@@ -474,15 +500,3 @@ def grabBlob(clientID, blobsList):
     # TODO: Implement grabing and specify state
     print("Stop grab blob")
     return 6, blobsList[1:]
-
-# This function compares two points with some latitude
-def isSameBlob(pointA, pointB):
-    latituteRadius = 1.3
-    if move.getDistanceBetweenPoints(pointA, pointB) <= latituteRadius:
-        return True
-    return False
-
-def alignToBlock(clientID):
-    # TODO rotate by 90°
-    # TODO use PD to move right to the block
-    return 4        # go to the grab state

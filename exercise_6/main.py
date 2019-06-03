@@ -105,8 +105,8 @@ def main():
                 state = ex.distB(clientID, hokuyo, path)
 
             elif state == 7:        # TODO align to block
-                state = ex.alignToBlock(clientID)
-                
+                state = ex.alignToBlob(clientID)
+
             elif state == -1:               # finish with error
                 print("An error has occurred. Program finished with state -1.")
                 state = 0
