@@ -250,11 +250,12 @@ def moveBack(clientID, posBeforeMoveToBlob):
     # TODO: move back
     #  maybe use the following for moving back: ex.headTowardsModel(clientID, posBeforeMoveToBlob, hokuyo)
 
-    state = 3 # 3 = move to next blob
+    state = 3  # 3 = move to next blob
     print("End moving back")
     return state
 
 
+# drives the youBot to a certain position, specified by goal ( [x,y] coordinate )
 def pdControl(clientID, youBotCam, goal):
     print("begin PD control")
 
@@ -265,6 +266,7 @@ def pdControl(clientID, youBotCam, goal):
     #cv2.imshow("Current Image of youBot", cv2Image)
     #cv2.waitKey(0)
 
+    # initialize variables for while loop
     cor = getRedBlobPicture(cv2Image)
     preCor = cor
     rotVel = 0.0
