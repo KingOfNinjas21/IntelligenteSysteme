@@ -239,8 +239,9 @@ def getToNextBlob(clientID, blobsList, visitedBlobsList):
     # move forward until block dist - constants.maxDistToBlock
     move.moveToCoordinate(shortenXA, shortenYA, clientID)
 
+    nextState = 7
     print("End getting to the next blob")
-    return 4, blobsList, visitedBlobsList   # grab blob
+    return nextState, blobsList, visitedBlobsList   # grab blob
 
 
 # moves youBot back to the posBeforeMoveToBlob point
