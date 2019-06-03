@@ -334,3 +334,9 @@ def isSameBlob(pointA, pointB):
     if move.getDistanceBetweenPoints(pointA, pointB) <= latituteRadius:
         return True
     return False
+
+def alignToBlock(clientID):
+    # TODO rotate by 90°
+    # TODO use PD to move right to the block
+    x=0
+    return 4        # go to the grab state

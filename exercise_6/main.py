@@ -70,7 +70,7 @@ def main():
         # programmable space -------------------------------------------------------------------------------------------
 
         # implement state machine
-        # 1 - init | 2 - detectBlob | 3 - moveToBlob | 4 - grab | 5 - moveBack | 6 - moveToNextGoal |
+        # 1 - init | 2 - detectBlob | 3 - moveToBlob | 4 - grab | 5 - moveBack | 6 - moveToNextGoal | 7 - align to block
         # 0 - finish | -1 - finish with error
         state = 1
 
@@ -103,6 +103,9 @@ def main():
             elif state == 6:
                 # move to next goal
                 state = ex.distB(clientID, hokuyo, path)
+
+            elif state == 7:        # TODO align to block
+                state = ex.alignToBlock(clientID)
                 
             elif state == -1:               # finish with error
                 print("An error has occurred. Program finished with state -1.")
