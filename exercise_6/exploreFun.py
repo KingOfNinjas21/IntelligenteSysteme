@@ -214,13 +214,25 @@ def rotateUntilOrientation(clientID, targetOrient):
 # moves youBot to the nex blob in the blob list
 def getToNextBlob(clientID, blobsList, visitedBlobsList):
     print("Start getting to the next blob")
-    state = 4 # grab blob
     nextBlob = blobsList[0]
     visitedBlobsList.append(nextBlob)
-    # TODO: move to the exact position of next blob
+
+    # get robot pos
+    roboPos = move.getPos(clientID)
+
+    # move to the position of next blob
+    xA = nextBlob[0] - roboPos[0]
+    yA = nextBlob[1] - roboPos[1]
+    lenA = math.sqrt(xA * xA + yA * yA)
+
+    shortenXA = xA * (1 - (c.maxDistToBlock / lenA))
+    shortenYA = yA * (1 - (c.maxDistToBlock / lenA))
+
+    # move forward until block dist - constants.maxDistToBlock
+    move.moveToCoordinate(shortenXA, shortenYA, clientID)
 
     print("End getting to the next blob")
-    return state, blobsList, visitedBlobsList
+    return 4, blobsList, visitedBlobsList   # grab blob
 
 # moves youBot back to the posBeforeMoveToBlob point
 def moveBack(clientID, posBeforeMoveToBlob):
@@ -338,5 +350,4 @@ def isSameBlob(pointA, pointB):
 def alignToBlock(clientID):
     # TODO rotate by 90°
     # TODO use PD to move right to the block
-    x=0
     return 4        # go to the grab state
