@@ -12,19 +12,30 @@ import cv2
 
 
 def initPath():
-    queue = Queue()
-    explorePath = [(3.0, 1.0), (6.5, 3.0), (4.4, 5.9), (-4.0, 6.6), (-4.4, -1.0), (-3.6, -4.0), (-5.0, -4.6), (+1.5, -5.0), (3.5, -5.0), (3.5, -2.0), (-0.3, -2.0)]
-    for i in range(len(explorePath)):
-        print ("added to queue: ", explorePath[i])
-        queue.put(explorePath[i])
-    return queue
+    exploreQueue = Queue()
+    for path in c.explorePaths:
+        tempQueue = Queue()
+        for i in range(len(explorePath)):
+            print ("added to queue: ", path[i])
+            tempQueue.put(explorePath[i])
+        queue.put(tempQueue)
+
+    basketQueue = Queue()
+    for path in c.explorePaths:
+        tempQueue = Queue()
+        for i in range(len(explorePath)):
+            print ("added to queue: ", path[i])
+            tempQueue.put(explorePath[i])
+        queue.put(tempQueue)
+    return exploreQueue, basketQueue
 
 
 def init_state(youBotCam, clientID):
-    path = initPath()
-
+    print("Current state: initState")
+    explorePaths, basketPaths = initPath()
+    nextState = 5 # 5 = follow next explore path
     # init H-Matrix
-    return 2, path, colorDet.get_H_matrix(c.gCX, youBotCam, clientID)
+    return nextState, explorePaths, basketPaths, colorDet.get_H_matrix(c.gCX, youBotCam, clientID)
 
 
 
@@ -32,33 +43,72 @@ def init_state(youBotCam, clientID):
 Needed adjusted movement functions 
 '''
 
+# follows the next path from the queue basketPath
+# if no explore path in queue explorePaths is left, programm comes to an end
+def followExplorePath(clientID, sensorHandles, explorePaths):
+    print("Current state: follow next explore path state")
+    print("Start following explore path")
+    if not explorePaths.empty():
+        nextPath = explorePaths.get()
+        while not nextPath.empty():
+            targetPos = nextPath.get()
+            nextState = -1
+            isNotGoal = True
+            while (isNotGoal):
+                isNotGoal, hitRay = headTowardsModel(clientID, targetPos, sensorHandles)
 
-# adjusted of distbug algorithm
-def distB(clientID, sensorHandles, path):
-    if not path.empty():
-        targetPos = path.get()
-        nextState = -1
-        isNotGoal = True
-        while (isNotGoal):
-            isNotGoal, hitRay = headTowardsModel(clientID, targetPos, sensorHandles)
+                # if headTowardsModel returned False it means it successfully got to the goal point
+                if (not isNotGoal):
+                    print("REACHED GOAL")
+                    nextState = 2  # 2 = find all blobs
+                    return nextState
 
-            # if headTowardsModel returned False it means it successfully got to the goal point
-            if (not isNotGoal):
-                print("REACHED GOAL")
-                nextState = 2  # 2 = find all blobs
-                return nextState
+                # youBot encountered an little bot -> headTowardsModel returned True -> wait a few seconds and try again to reach the next position
+                else:
+                    print("encountered dick head -> i will wait")
+                    # wait 5 seconds
+                    time.sleep(5)
 
-            # if there is no chair and headTowardsModel returned True -> follow the boundary
-            else:
-                # orient to wall to have a better start when following a wall
-                isRight = bug.wallOrient(clientID, sensorHandles, hitRay, False)
-                bug.followBoundary(clientID, sensorHandles, isRight)
-
-            print("Bot is in goal: {}".format(not isNotGoal))
+        nextState = 2  # 2 = detect blob state
+        print("End following explore path")
     else:
-        nextState = 0 # 0 = finished with programm
+        nextState = 0  # 0 = finish state
+        print("No paths left")
+
     return nextState
 
+# follows the next path from the queue basketPath
+# fails if queue is empty
+def followBasketPath(clientID, sensorHandles, basketPaths):
+    print("Current state: following next basket path")
+    print("Start following basket path")
+    if not basketPaths.empty():
+        nextPath = basketPaths.get()
+        while not nextPath.empty():
+            targetPos = nextPath.get()
+            nextState = -1
+            isNotGoal = True
+            while (isNotGoal):
+                isNotGoal, hitRay = headTowardsModel(clientID, targetPos, sensorHandles)
+
+                # if headTowardsModel returned False it means it successfully got to the goal point
+                if (not isNotGoal):
+                    print("REACHED GOAL")
+                    nextState = 2  # 2 = find all blobs
+                    return nextState
+
+                # youBot encountered an little bot -> headTowardsModel returned True -> wait a few seconds and try again to reach the next position
+                else:
+                    print("encountered dick head -> i will wait")
+                    # wait 5 seconds
+                    time.sleep(5)
+
+        nextState = 8  # 8 = drop blob state
+        print("End following basket path")
+    else:
+        print("Error -> no basket paths left")
+        nextState = -1  # -1 = fail state, which shouldn't happen
+    return nextState
 
 # Get to the targetPos [x,y]
 # returns false if the bot successfully reached the target and true if the bot encountered an obstacle
@@ -221,6 +271,7 @@ def rotateUntilOrientation(clientID, targetOrient):
 
 # moves youBot to the nex blob in the blob list
 def getToNextBlob(clientID, blobsList, visitedBlobsList):
+    print("Current state: get to next blob")
     print("Start getting to the next blob")
     nextBlob = blobsList[0]
     visitedBlobsList.append(nextBlob)
@@ -239,7 +290,7 @@ def getToNextBlob(clientID, blobsList, visitedBlobsList):
     # move forward until block dist - constants.maxDistToBlock
     move.moveToCoordinate(shortenXA, shortenYA, clientID)
 
-    nextState = 7
+    nextState = 6 # align to blob state
     print("End getting to the next blob")
     return nextState, blobsList, visitedBlobsList   # grab blob
 
@@ -311,13 +362,14 @@ def velOk(forwBackVel, leftRightVel):
 
 
 def alignToBlob(clientID):
+    print("Current state: Align to blob")
     nextState = 4  # 4 = grab state
 
     # TODO rotate by 90°
 
-    # use PD to move right to the block
-    pdControl(clientID, youBotCam, c.grabPosition)
-
+    # use PD to move right to the block, decomment following, just now not needed for test purposes
+    #pdControl(clientID, youBotCam, c.grabPosition)
+    print("End aligning to blob")
     return nextState
 
 
@@ -327,6 +379,7 @@ Color Detection Functions
 
 # finds all new blobs, that are not already visited
 def findBlobs(clientID, youBotCam, H, currentBlobsList, visitedBlobsList):
+    print("Current state: find blobs state")
     blobs = findAllBlobs(clientID, youBotCam, H)
     #visitedBlobsList, visitedBlobsQueue = getListFromQueue(visitedBlobsQueue)
     obstacleList = []
@@ -359,41 +412,29 @@ def findBlobs(clientID, youBotCam, H, currentBlobsList, visitedBlobsList):
 # returns a list with all found blobs
 def findAllBlobs(clientId, youBotCam, homoMatrix):
     print("Start find all blobs around youBot")
-    currentDegree = 0
-    degreePerPic = 60.0
-    amountPics = math.ceil(360.0/degreePerPic)
     blobList = []
-    # we will rotate for 360 degree to spot all blobs near the bot
-    i = 0
 
-    while (i < amountPics):
-        i += 1
+    err, res, image = vrep.simxGetVisionSensorImage(clientId, youBotCam, 0, vrep.simx_opmode_buffer)
 
-        err, res, image = vrep.simxGetVisionSensorImage(clientId, youBotCam, 0, vrep.simx_opmode_buffer)
+    if err == vrep.simx_return_ok:
+        cv2Image = colorDet.convertToCv2Format(image, res)
 
-        if err == vrep.simx_return_ok:
-            # do some image stuff ----------------------------------------------------------------------------------
+        tempBlobs = colorDet.getBlobsGlobal(cv2Image, homoMatrix, clientId)
 
-            cv2Image = colorDet.convertToCv2Format(image, res)
-
-            tempBlobs = colorDet.getBlobsGlobal(cv2Image, homoMatrix, clientId)
-
+        count = 0
+        for tb in tempBlobs:
             count = 0
-            for tb in tempBlobs:
-                count = 0
-                for b in blobList:
-                    if isSameBlob(tb[0], b[0]) and tb[1] == b[1]:
-                        count = count + 1
+            for b in blobList:
+                if isSameBlob(tb[0], b[0]) and tb[1] == b[1]:
+                    count = count + 1
 
-                if count == 0:
-                    print("Added", tb, " to blobList")
-                    blobList.append(tb)
-
-        move.rotate(degreePerPic, clientId, True)
+            if count == 0:
+                print("Added", tb, " to blobList")
+                blobList.append(tb)
     print("End find all blobs")
     return blobList
 
-# detects the nearest red blob and returns its egocentric position
+# detects the nearest red or blue blob and returns its egocentric position
 def detectOneBlob(clientId, youBotCam, homoMatrix):
     print("Start finding one red blob")
     blobList = []
@@ -405,7 +446,7 @@ def detectOneBlob(clientId, youBotCam, homoMatrix):
 
         cv2Image = colorDet.convertToCv2Format(image, res)
 
-        tempBlobs = getRedBlobs(cv2Image, homoMatrix, clientId)
+        tempBlobs = getRedBlueBlobs(cv2Image, homoMatrix, clientId)
 
         count = 0
         for tb in tempBlobs:
@@ -429,32 +470,39 @@ def detectOneBlob(clientId, youBotCam, homoMatrix):
             closestBlob = blob
             closestDistance = distNewBlob
 
-    print("End find one red blob")
+    print("End find red or blue blob")
     closestBlob[0] = colorDet.globalToEgocentric(closestBlob[9], clientId)
     return closestBlob[0]
 
 
 # returns red blobs in a picture
-def getRedBlobs(img, homoMatrix, clientID):
+def getRedBlueBlobs(img, homoMatrix, clientID):
     imgCopy = img
     iC = img
     points = []
     boundariesRed = ([0, 0, 190], [86, 86, 255])
-
+    boundariesBlue = ([190, 0, 0], [255, 85, 85])
+    colors = [boundariesRed, boundariesBlue]
     img = imgCopy
-    cnts = colorDet.getContours(img, boundariesRed)
 
-    for k in cnts:
-        newPoint = np.dot(homoMatrix, colorDet.getBottom(k))
-        newPoint = newPoint / newPoint[2]
-        newPoint = colorDet.egocentricToGlobal(newPoint, clientID)
-        # print(newPoint)
+    for c in colors:
+        img = imgCopy
+        cnts = colorDet.getContours(img, c)
+        for k in cnts:
+            if c == boundariesRed:
+                print("Found red blob -> moving to basket for red blobs")
+            else:
+                print("Found blue blob -> moving to basket for blue blobs")
+            newPoint = np.dot(homoMatrix, colorDet.getBottom(k))
+            newPoint = newPoint / newPoint[2]
+            newPoint = colorDet.egocentricToGlobal(newPoint, clientID)
+            # print(newPoint)
 
-        points.append((newPoint, boundariesRed))
+            points.append((newPoint, boundariesRed))
 
-    #cv2.drawContours(iC, cnts, -1, (255, 255, 255), 1)
-    # cv2.imshow("Current Image of youBot", iC)
-    # cv2.waitKey(0)
+        #cv2.drawContours(iC, cnts, -1, (255, 255, 255), 1)
+        # cv2.imshow("Current Image of youBot", iC)
+        # cv2.waitKey(0)
 
     return points
 
@@ -486,8 +534,10 @@ Arm Kinematics functions
 
 # grabs a blob and returns the next state, also removes the grabed blob from the blobsList
 def grabBlob(clientID, blobsList):
+    print("Current state: grab blob")
     print("Start grab blob")
+    nextState = 7
     blobToGrab = blobsList[0]
     # TODO: Implement grabing and specify state
     print("Stop grab blob")
-    return 6, blobsList[1:]
+    return nextState, blobsList[1:]
