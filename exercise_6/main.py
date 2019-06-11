@@ -70,8 +70,8 @@ def main():
         # programmable space -------------------------------------------------------------------------------------------
 
         # implement state machine
-        # 1 - init | 2 - detectBlob | 3 - moveToBlob | 4 - grab | 5 - moveBack | 6 - moveToNextGoal | 7 - align to block
-        # 0 - finish | -1 - finish with error
+        # 1 - init | 2 - detect blob | 3 - move to blob | 4 - grab | 5 - follow next explore path | 6 - align to blob | 7 - follow next basket path
+        # 8 - drop block | 0 - finish | -1 - finish with error
         state = 1
 
         # space to store data to share between states
@@ -82,30 +82,33 @@ def main():
         posBeforeMoveToBlob = move.getPos(clientID)[0][:-1]
 
         while state != 0:
-            if state == 1:
+            if state == 1:      # init
                 # init path, H, and next state
                 state, path, h_matrix = ex.init_state(youBotCam, clientID)
 
-            elif state == 2:
+            elif state == 2:    # detect blob
                 # find all blobs that are 360 degrees around youBot
                 state, blobsList = ex.findBlobs(clientID, youBotCam, h_matrix, blobsList, visitedBlobsList)
-            elif state == 3: # TODO implement getToNextBlob() function
+
+            elif state == 3:    # move to blob
                 # get to next blob state
                 posBeforeMoveToBlob = move.getPos(clientID)[0][:-1] # store current position for moving back later
                 state, blobsList, visitedBlobsList = ex.getToNextBlob(clientID, blobsList, visitedBlobsList)
 
-            elif state == 4:                # TODO implement grab
+            elif state == 4:    # grab
                 state, blobsList = ex.grabBlob(clientID, blobsList)
 
-            elif state == 5:                # TODO implement moveBack
+            elif state == 5:    # follow next explore path
                 state = ex.moveBack(clientID, posBeforeMoveToBlob)
 
-            elif state == 6:
-                # move to next goal
+            elif state == 6:    # align to blob
+                state = ex.alignToBlob(clientID)
+
+            elif state == 7:    # follow next basket path
                 state = ex.distB(clientID, hokuyo, path)
 
-            elif state == 7:        # TODO align to block
-                state = ex.alignToBlob(clientID)
+            elif state == 8:    # drop block
+                x=0
 
             elif state == -1:               # finish with error
                 print("An error has occurred. Program finished with state -1.")
