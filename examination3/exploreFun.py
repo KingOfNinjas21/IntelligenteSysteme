@@ -13,9 +13,9 @@ import cv2
 
 def initPath():
     queue = Queue()
-    explorePath = [(3.0, 1.0), (6.5, 3.0), (4.4, 5.9), (-4.0, 6.6), (-4.4, -1.0), (-3.6, -4.0), (-5.0, -4.6), (+1.5, -5.0), (3.5, -5.0), (3.5, -2.0), (-0.3, -2.0)]
+    explorePath = c.explorePath
     for i in range(len(explorePath)):
-        print ("added to queue: ", explorePath[i])
+        print("added to queue: ", explorePath[i])
         queue.put(explorePath[i])
     return queue
 
