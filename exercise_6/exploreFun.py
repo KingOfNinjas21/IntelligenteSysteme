@@ -15,18 +15,18 @@ def initPath():
     exploreQueue = Queue()
     for path in c.explorePaths:
         tempQueue = Queue()
-        for i in range(len(explorePath)):
-            print ("added to queue: ", path[i])
-            tempQueue.put(explorePath[i])
-        queue.put(tempQueue)
+        for i in range(len(path)):
+            #print ("added to exploreQueue: ", path[i])
+            tempQueue.put(path[i])
+        exploreQueue.put(tempQueue)
 
     basketQueue = Queue()
-    for path in c.explorePaths:
+    for path in c.basketPaths:
         tempQueue = Queue()
-        for i in range(len(explorePath)):
-            print ("added to queue: ", path[i])
-            tempQueue.put(explorePath[i])
-        queue.put(tempQueue)
+        for i in range(len(path)):
+            #print ("added to basketQueue: ", path[i])
+            tempQueue.put(path[i])
+        basketQueue.put(tempQueue)
     return exploreQueue, basketQueue
 
 
@@ -59,9 +59,7 @@ def followExplorePath(clientID, sensorHandles, explorePaths):
 
                 # if headTowardsModel returned False it means it successfully got to the goal point
                 if (not isNotGoal):
-                    print("REACHED GOAL")
-                    nextState = 2  # 2 = find all blobs
-                    return nextState
+                    print("REACHED POINT")
 
                 # youBot encountered an little bot -> headTowardsModel returned True -> wait a few seconds and try again to reach the next position
                 else:
@@ -93,9 +91,7 @@ def followBasketPath(clientID, sensorHandles, basketPaths):
 
                 # if headTowardsModel returned False it means it successfully got to the goal point
                 if (not isNotGoal):
-                    print("REACHED GOAL")
-                    nextState = 2  # 2 = find all blobs
-                    return nextState
+                    print("REACHED POINT")
 
                 # youBot encountered an little bot -> headTowardsModel returned True -> wait a few seconds and try again to reach the next position
                 else:
@@ -113,7 +109,6 @@ def followBasketPath(clientID, sensorHandles, basketPaths):
 # Get to the targetPos [x,y]
 # returns false if the bot successfully reached the target and true if the bot encountered an obstacle
 def headTowardsModel(clientID, targetPos, rangeSensorHandles):
-    print("HeadTowardsModel: start")
     print("Next goal: x={}, y={}".format(targetPos[0], targetPos[1]))
     # get the needed position information's of youBot and modelName (target)
     xTarget = targetPos[0]
