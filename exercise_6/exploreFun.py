@@ -148,7 +148,8 @@ def forwardUntilObstacleAnywhere(targetPos, clientID, rangeSensorHandles):
         # get range sensor data as list of x,y,z,distance
         rangeData = rangeSensor.getSensorData(clientID, rangeSensorHandles)
         # range sensor angle is estimated for about 250 degrees
-        for i in range(95, 588): #95 and 588 are estimated values for data from range sensor which are between -90 and 90 degrees (0 is front)
+        #for i in range(95, 588): #95 and 588 are estimated values for data from range sensor which are between -90 and 90 degrees (0 is front)
+        for i in range(75, 602): #95 and 588 are estimated values for data from range sensor which are between -90 and 90 degrees (0 is front)
             if rangeData[i][3]<=0.3:
                 stop=True
                 hit = i
@@ -532,7 +533,7 @@ def grabBlob(clientID, blobsList):
     print("Current state: grab blob")
     print("Start grab blob")
     nextState = 7
-    blobToGrab = blobsList[0]
+    #blobToGrab = blobsList[0]
     # TODO: Implement grabing and specify state
     print("Stop grab blob")
     return nextState, blobsList[1:]
