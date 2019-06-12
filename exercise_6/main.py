@@ -76,8 +76,7 @@ def main():
 
         # space to store data to share between states
         h_matrix = -1
-        explorePaths = Queue()
-        basketPaths = Queue()
+        path = Queue()
         blobsList = []
         visitedBlobsList = []
         posBeforeMoveToBlob = move.getPos(clientID)[0][:-1]
@@ -85,7 +84,7 @@ def main():
         while state != 0:
             if state == 1:      # init
                 # init path, H, and next state
-                state, explorePaths, basketPaths, h_matrix = ex.init_state(youBotCam, clientID)
+                state, path, h_matrix = ex.init_state(youBotCam, clientID)
 
             elif state == 2:    # detect blob
                 # find all blobs that are 360 degrees around youBot
@@ -100,25 +99,21 @@ def main():
                 state, blobsList = ex.grabBlob(clientID, blobsList)
 
             elif state == 5:    # follow next explore path
-                state = ex.followExplorePath(clientID, hokuyo, explorePaths)
+                state = ex.moveBack(clientID, posBeforeMoveToBlob)
 
             elif state == 6:    # align to blob
                 state = ex.alignToBlob(clientID)
 
             elif state == 7:    # follow next basket path
-                state = ex.followBasketPath(clientID, hokuyo, basketPaths)
+                state = ex.distB(clientID, hokuyo, path)
 
-            elif state == 8:    # drop blob
-                print("Current state: drop blob state")
-                print("Start drop")
-                state = 5
-                print("End drop")
+            elif state == 8:    # drop block
+                x=0
 
             elif state == -1:               # finish with error
-                print("Current state: fail state!")
                 print("An error has occurred. Program finished with state -1.")
                 state = 0
-        print("End of blob grabing shit")
+
 
         # end of programmable space --------------------------------------------------------------------------------------------
 
