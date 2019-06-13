@@ -268,14 +268,13 @@ def rotateUntilOrientation(clientID, targetOrient):
 # moves youBot to the nex blob in the blob list
 def getToNextBlob(clientID, blobsList, visitedBlobsList):
     print("Current state: get to next blob")
-    print("Start getting to the next blob")
     nextBlob = blobsList[0]
     visitedBlobsList.append(nextBlob)
 
     # get robot pos
-    roboPos = move.getPos(clientID)
+    roboPos, ori = move.getPos(clientID)
 
-    # move to the position of next blob
+    # get shorten egocentric coordinates to the blob
     xA = nextBlob[0] - roboPos[0]
     yA = nextBlob[1] - roboPos[1]
     lenA = math.sqrt(xA * xA + yA * yA)
@@ -283,12 +282,18 @@ def getToNextBlob(clientID, blobsList, visitedBlobsList):
     shortenXA = xA * (1 - (c.maxDistToBlock / lenA))
     shortenYA = yA * (1 - (c.maxDistToBlock / lenA))
 
-    # move forward until block dist - constants.maxDistToBlock
-    move.moveToCoordinate(shortenXA, shortenYA, clientID)
+    # transform egocentric coordinates to global space
+    x = shortenXA + roboPos[0]
+    y = shortenYA + roboPos[1]
 
-    nextState = 6 # align to blob state
-    print("End getting to the next blob")
-    return nextState, blobsList, visitedBlobsList   # grab blob
+    # move forward until block dist - constants.maxDistToBlock
+    move.moveToCoordinate(x, y, clientID)
+
+    # rotate by 90° to get vision to the blob
+    move.rotate(90, clientID, False)
+
+    nextState = 6   # align to blob state
+    return nextState, blobsList, visitedBlobsList
 
 
 # moves youBot back to the posBeforeMoveToBlob point
