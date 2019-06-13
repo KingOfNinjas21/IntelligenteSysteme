@@ -80,12 +80,13 @@ def main():
         basketPaths = Queue()
         blobsList = []
         visitedBlobsList = []
+        orientations = Queue()
         posBeforeMoveToBlob = move.getPos(clientID)[0][:-1]
 
         while state != 0:
             if state == 1:      # init
                 # init path, H, and next state
-                state, explorePaths, basketPaths, h_matrix = ex.init_state(youBotCam, clientID)
+                state, explorePaths, basketPaths, orientations, h_matrix = ex.init_state(youBotCam, clientID)
 
             elif state == 2:    # detect blob
                 # find all blobs that are 360 degrees around youBot
@@ -100,7 +101,7 @@ def main():
                 state, blobsList = ex.grabBlob(clientID, blobsList)
 
             elif state == 5:    # follow next explore path
-                state = ex.followExplorePath(clientID, hokuyo, explorePaths)
+                state = ex.followExplorePath(clientID, hokuyo, explorePaths, orientations)
 
             elif state == 6:    # align to blob
                 state = ex.alignToBlob(clientID)

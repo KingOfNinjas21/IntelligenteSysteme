@@ -27,15 +27,22 @@ def initPath():
             #print ("added to basketQueue: ", path[i])
             tempQueue.put(path[i])
         basketQueue.put(tempQueue)
-    return exploreQueue, basketQueue
+
+
+    orientationQueue = Queue()
+    for ori in c.exploreOrientation:
+        orientationQueue.put(ori)
+
+    return exploreQueue, basketQueue, orientationQueue
+
 
 
 def init_state(youBotCam, clientID):
     print("Current state: initState")
-    explorePaths, basketPaths = initPath()
+    explorePaths, basketPaths, orientations = initPath()
     nextState = 5 # 5 = follow next explore path
     # init H-Matrix
-    return nextState, explorePaths, basketPaths, colorDet.get_H_matrix(c.gCX, youBotCam, clientID)
+    return nextState, explorePaths, basketPaths, orientations, colorDet.get_H_matrix(c.gCX, youBotCam, clientID)
 
 
 
@@ -45,7 +52,7 @@ Needed adjusted movement functions
 
 # follows the next path from the queue basketPath
 # if no explore path in queue explorePaths is left, programm comes to an end
-def followExplorePath(clientID, sensorHandles, explorePaths):
+def followExplorePath(clientID, sensorHandles, explorePaths, orientations):
     print("Current state: follow next explore path state")
     print("Start following explore path")
     if not explorePaths.empty():
@@ -66,6 +73,9 @@ def followExplorePath(clientID, sensorHandles, explorePaths):
                     print("encountered dick head -> i will wait")
                     # wait 5 seconds
                     time.sleep(5)
+
+        # orient to blob
+        move.rotateUntilOrientation(clientID, orientations.get())
 
         nextState = 2  # 2 = detect blob state
         print("End following explore path")
