@@ -16,12 +16,12 @@ explorePaths =      [[(5.1, 1.6)],  # blob 0 r
                      [(-3.5, -3.6), (-4.1, -4.8)],  # blob 4 r
                      [(6.2, 6.2), (6.5, 1.4), (-0.5, 0.8), (-0.4, -1.4)]]   # blob 5 b
 
-exploreOrientation = [-35.0,    # blob 0
-                      70.0,     # blob 1
-                      30.0,     # blob 2
-                      -10,      # blob 3
-                      -60,      # blob 4
-                      -15]      # blob 5
+exploreOrientation = [145.0,    # blob 0
+                      -110.0,     # blob 1
+                      -150.0,     # blob 2
+                      170,      # blob 3
+                      120,      # blob 4
+                      165]      # blob 5
 
 # TODO: Define the right basket paths
 basketPaths =      [[(6.5, 3.8), (0.6, 4.6)],                               # basket red
