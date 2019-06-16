@@ -556,8 +556,6 @@ def grabBlob(clientID, h_matrix, youBotCam):
 
     # get position of next blob
     blobPos = detectOneBlob(clientID, youBotCam, h_matrix)
-    blobPos[0] -=0.02
-    blobPos[1] -=0.02
     blobPos = colorDet.egocentricToGlobal(blobPos, clientID)
     pos, orient = getArmPos(clientID)
 
@@ -618,11 +616,15 @@ def getBlobPos(clientID):
 def getAngle(clientID, targetX, targetY):
     
     pos, orient = getArmPos(clientID)
+    blobPos, blobOrient = getBlobPos(clientID) #TODO blob coords from sensor 
     uPos, uOrient = move.getPos(clientID)
 
+    #for testing
+    targetX = blobPos[0]
+    targetY = blobPos[1]
 
     print(move.calcTargetOrient(pos[0],pos[1],targetX, targetY)) 
-    orient[2] =  orient[2] #- math.pi
+    orient[2] =  orient[2] - math.pi
     print(180/math.pi*orient[2])
     a = move.calcTargetOrient(pos[0],pos[1],targetX, targetY) - 180/math.pi*orient[2]
     print(a)

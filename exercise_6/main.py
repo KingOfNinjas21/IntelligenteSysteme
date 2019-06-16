@@ -73,7 +73,6 @@ def main():
         # 1 - init | 2 - detect blob | 3 - move to blob | 4 - grab | 5 - follow next explore path | 6 - align to blob | 7 - follow next basket path
         # 8 - drop block | 0 - finish | -1 - finish with error
 
-        '''
         state = 1
 
         # space to store data to share between states
@@ -119,10 +118,8 @@ def main():
                 print("An error has occurred. Program finished with state -1.")
                 state = 0
         print("End of blob grabing shit")
-        '''
-        state, explorePaths, basketPaths, orientations, h_matrix = ex.init_state(youBotCam, clientID)
-        move.forward(0.5, clientID)
-        ex.grabBlob(clientID, h_matrix, youBotCam)
+
+
         #ex.moveArm(clientID, -90, 20,70,0,0)
         #ex.moveArm(clientID, -90, 90,0,0,0)
         #ex.getAngle(clientID)
