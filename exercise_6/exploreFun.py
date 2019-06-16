@@ -48,7 +48,7 @@ def initPath():
 
 def init_state(youBotCam, clientID):
     print("Current state: initState")
-    explorePaths, basketPaths, orientations = initPath()
+    explorePaths, basketPaths, orientations, blockColors = initPath()
     nextState = 5 # 5 = follow next explore path
     # init H-Matrix
     return nextState, explorePaths, basketPaths, orientations, blockColors, colorDet.get_H_matrix(c.gCX, youBotCam, clientID)
