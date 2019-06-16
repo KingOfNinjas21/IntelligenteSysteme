@@ -302,10 +302,11 @@ def getToNextBlob(clientID, blobsList, visitedBlobsList):
     y = shortenYA + roboPos[1]
 
     # move forward until block dist - constants.maxDistToBlock
-    move.moveToCoordinate(x, y, clientID)
+    #move.moveToCoordinate(x, y, clientID)
+    #targetOrientation = calcTargetOrient(roboPos[0], roboPos[1], x, y)  # get orientation to target
 
     # rotate by 90° to get vision to the blob
-    move.rotate(90, clientID, False)
+    #move.rotate(90, clientID, False)
 
     nextState = 6   # align to blob state
     return nextState, blobsList, visitedBlobsList
@@ -371,7 +372,7 @@ def pdControl(clientID, youBotCam, goal):
 
 
 def velOk(forwBackVel, leftRightVel):
-    tolerance = 0.1
+    tolerance = 0.2
     forwBackOk = forwBackVel < tolerance and forwBackVel > -tolerance
     leftRightOk = leftRightVel < tolerance and leftRightVel > -tolerance
     return forwBackOk and leftRightOk
@@ -556,18 +557,43 @@ def grabBlob(clientID, h_matrix, youBotCam):
 
     # get position of next blob
     blobPos = detectOneBlob(clientID, youBotCam, h_matrix)
-    blobPos[0] -=0.02
-    blobPos[1] -=0.02
+    blobPos[0] += 0.012
+    blobPos[1] +0.023
+    print(blobPos[0], " ", blobPos[1])
+    p, o = getBlobPos(clientID)
+    p = colorDet.globalToEgocentric(p, clientID)
+    print(p[0], " ", p[1])
     blobPos = colorDet.egocentricToGlobal(blobPos, clientID)
     pos, orient = getArmPos(clientID)
 
+    # get position of next blob
+    #blobPos = detectOneBlob(clientID, youBotCam, h_matrix)
+    #blobPos[0] -=0.02
+    #blobPos[1] -=0.02
+    #blobPos = colorDet.egocentricToGlobal(blobPos, clientID)
+    #pos, orient = getArmPos(clientID)
+
     distance = 1000*move.calcDistanceToTarget(pos[0],pos[1],blobPos[0],blobPos[1])
     a,b,y = armPos(120, distance)
+    print("A",a)
     x = getAngle(clientID, blobPos[0], blobPos[1])
-    moveArm(clientID,x ,20,70,0,0)
-    moveArm(clientID,x,a, 45,45,0)
-    #moveArm(clientID, x,a , b, 45,0)
-    moveArm(clientID, x,a, b, y, 0)
+    #x-=10.0
+    moveArm(clientID,x ,0,0,-40,0.0)
+    tt = 0.0
+    moveArm(clientID, x, a, 0, -40, 0.0)
+    time.sleep(tt)
+    moveArm(clientID,x,a, 45,-40,0.0)
+    time.sleep(tt)
+    moveArm(clientID,x,a, 45,-40.0,0.0)
+    #moveArm(clientID,x,a, 45+10,-40.0,0.0)
+
+    #moveArm(clientID,x,a, 45+10,0.0,0.0)
+    print("FINISH-GRAB")
+    time.sleep(5)
+    #moveArm(clientID,x,a, 45+20,45-30,0.0)
+    moveArm(clientID, x,a , b, y,0)
+    #time.sleep(3)
+
     closeHand(clientID)
 
 
@@ -610,7 +636,7 @@ def getArmPos(clientID):
 
 
 def getBlobPos(clientID):
-    res, base = vrep.simxGetObjectHandle(clientID, 'redCylinder4', vrep.simx_opmode_oneshot_wait)
+    res, base = vrep.simxGetObjectHandle(clientID, 'redCylinder5', vrep.simx_opmode_oneshot_wait)
     base_pos = vrep.simxGetObjectPosition(clientID, base, -1, vrep.simx_opmode_oneshot_wait)
     base_orient = vrep.simxGetObjectOrientation(clientID, base, -1, vrep.simx_opmode_oneshot_wait)
     return base_pos[1], base_orient[1]
@@ -630,9 +656,9 @@ def getAngle(clientID, targetX, targetY):
     return a 
   
 def armPos(height, dist):
-        height = height - uBotHight+armPart3*np.sin(math.pi/180*30)  #because ubot arm is on top of the robot (-armPart3 if arm 90 degree to the ground)
+        height = height - uBotHight+armPart3*np.sin(math.pi/180*20)  #because ubot arm is on top of the robot (-armPart3 if arm 90 degree to the ground)
         print("height: " , height)
-        dist = dist - armPart3*np.cos(math.pi/180*30) #lastPart of the arm is parallel to the ground (+armPart3 if arm 90 degree to the ground)
+        dist = dist - armPart3*np.cos(math.pi/180*20) #lastPart of the arm is parallel to the ground (+armPart3 if arm 90 degree to the ground)
         print(dist)
         E2 = height * height + dist *dist #diagonaly between the 2 joint and the armcenter on the robot 
         print(E2)
@@ -652,7 +678,7 @@ def armPos(height, dist):
         if(height < 0): 
             a = math.pi/2 + (a2 - a1)  # angle for the first joint
         
-        y = math.pi/2 - a - b + math.pi/180*30 #angle for the third (math.pi if last armPart 90 degree to the ground, math.pi/2 if parallel)
+        y = math.pi/2 - a - b + math.pi/180*20 #angle for the third (math.pi if last armPart 90 degree to the ground, math.pi/2 if parallel)
 
        # print(180/math.pi * a," ",   180/math.pi*b," ",180/ math.pi*y)
 

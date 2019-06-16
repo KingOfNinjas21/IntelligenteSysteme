@@ -119,15 +119,18 @@ def main():
                 print("An error has occurred. Program finished with state -1.")
                 state = 0
         print("End of blob grabing shit")
+
         '''
         state, explorePaths, basketPaths, orientations, h_matrix = ex.init_state(youBotCam, clientID)
         move.forward(0.5, clientID)
+        ex.alignToBlob(clientID, youBotCam)
         ex.grabBlob(clientID, h_matrix, youBotCam)
         #ex.moveArm(clientID, -90, 20,70,0,0)
         #ex.moveArm(clientID, -90, 90,0,0,0)
         #ex.getAngle(clientID)
         #ex.moveArm(clientID, 0, 0,0,0,0)
        # ex.moveArm(clientID, 180/math.pi*ex.getAngle(clientID), 95,40,35,0)
+
         # end of programmable space --------------------------------------------------------------------------------------------
 
         # Stop simulation
