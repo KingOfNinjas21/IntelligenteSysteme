@@ -544,11 +544,72 @@ Arm Kinematics functions
 '''
 
 # grabs a blob and returns the next state, also removes the grabed blob from the blobsList
-def grabBlob(clientID, blobsList):
+def grabBlob(clientID):
     print("Current state: grab blob")
     print("Start grab blob")
     nextState = 7
     #blobToGrab = blobsList[0]
     # TODO: Implement grabing and specify state
     print("Stop grab blob")
-    return nextState, blobsList[1:]
+    return nextState
+
+def moveArm(clientID, bottomAngle, a,b,y, handAngle):
+    #retrieve arm joints
+  armJointsHandle=np.empty(5, dtype=np.int); armJointsHandle.fill(-1)
+  for i in range(0, 5):
+      res,armJointsHandle[i]=vrep.simxGetObjectHandle(clientID,'youBotArmJoint%d'%i,vrep.simx_opmode_oneshot_wait)
+ 
+  #define grasp joints
+  # ...
+  graspJoints = [bottomAngle*math.pi/180, a*math.pi/180, b*math.pi/180, y*math.pi/180, handAngle*math.pi/180];
+  #move arm
+  vrep.simxPauseCommunication(clientID, True)
+  for i in range(0, 5):
+      res = vrep.simxSetJointTargetPosition(clientID, armJointsHandle[i], graspJoints[i],vrep.simx_opmode_oneshot);
+  vrep.simxPauseCommunication(clientID, False)
+  time.sleep(10)
+
+def openHand(clientID):
+    #open the gripper
+    res = vrep.simxSetIntegerSignal(clientID, 'gripper_open',1,vrep.simx_opmode_oneshot_wait)
+def closeHand(clientID): 
+    #close the gripper
+    res = vrep.simxSetIntegerSignal(clientID, 'gripper_open',0,vrep.simx_opmode_oneshot_wait)
+    time.sleep(10)
+
+
+def getArmPos(clientID):
+    res, base = vrep.simxGetObjectHandle(clientID, 'ME_Arm1_m0_sub0_sub0', vrep.simx_opmode_oneshot_wait)
+    base_pos = vrep.simxGetObjectPosition(clientID, base, -1, vrep.simx_opmode_oneshot_wait)
+    base_orient = vrep.simxGetObjectOrientation(clientID, base, -1, vrep.simx_opmode_oneshot_wait)
+    return base_pos[1], base_orient[1]
+
+
+def getBlobPos(clientID):
+    res, base = vrep.simxGetObjectHandle(clientID, 'Cylinder0', vrep.simx_opmode_oneshot_wait)
+    base_pos = vrep.simxGetObjectPosition(clientID, base, -1, vrep.simx_opmode_oneshot_wait)
+    base_orient = vrep.simxGetObjectOrientation(clientID, base, -1, vrep.simx_opmode_oneshot_wait)
+    return base_pos[1], base_orient[1]
+
+def getAngle(clientID):
+    
+    pos, orient = getArmPos(clientID)
+    blobPos, blobOrient = getBlobPos(clientID) #TODO blob coords from sensor 
+    uPos, uOrient = move.getPos(clientID)
+    """
+    x = blobPos[0] - pos[0]
+    y = blobPos[1] - pos[1]
+
+    print(uOrient[2]-math.pi)
+    print(math.atan2(y,x))
+    """
+    print(move.calcTargetOrient(pos[0],pos[1],blobPos[0], blobPos[1])) 
+    orient[2] =  orient[2]# - math.pi 
+    print(180/math.pi*orient[2])
+    a = move.calcTargetOrient(pos[0],pos[1],blobPos[0], blobPos[1]) - 180/math.pi*orient[2]
+    print(a)
+    moveArm(clientID,a ,0,0,0,0)
+    moveArm(clientID,a ,85,35,15,0)
+    closeHand(clientID)
+    moveArm(clientID,a ,0,0,0,0)
+    #  math.atan2(y,x)-(uOrient[2]-math.pi)
