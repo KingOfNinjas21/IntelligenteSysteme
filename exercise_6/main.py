@@ -99,13 +99,13 @@ def main():
                 state, blobsList, visitedBlobsList = ex.getToNextBlob(clientID, blobsList, visitedBlobsList)
 
             elif state == 4:    # grab
-                state, blobsList = ex.grabBlob(clientID, h_matrix, youBotCam)
+                state = ex.grabBlob(clientID, h_matrix, youBotCam)
 
             elif state == 5:    # follow next explore path
                 state = ex.followExplorePath(clientID, hokuyo, explorePaths, orientations)
 
             elif state == 6:    # align to blob
-                state = ex.alignToBlob(clientID)
+                state = ex.alignToBlob(clientID,youBotCam)
 
             elif state == 7:    # follow next basket path
                 state = ex.followBasketPath(clientID, hokuyo, basketPaths)

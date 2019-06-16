@@ -377,14 +377,14 @@ def velOk(forwBackVel, leftRightVel):
     return forwBackOk and leftRightOk
 
 
-def alignToBlob(clientID):
+def alignToBlob(clientID,youBotCam):
     print("Current state: Align to blob")
     nextState = 4  # 4 = grab state
 
     # TODO rotate by 90°
 
-    # use PD to move right to the block, decomment following, just now not needed for test purposes
-    #pdControl(clientID, youBotCam, c.grabPosition)
+    # use PD to move right to the block
+    pdControl(clientID, youBotCam, c.grabPosition)
     print("End aligning to blob")
     return nextState
 
@@ -485,9 +485,9 @@ def detectOneBlob(clientId, youBotCam, homoMatrix):
             # set new blob as nearest blob and update closest distance
             closestBlob = blob
             closestDistance = distNewBlob
-
+    print("COORD: ", closestBlob[0])
     print("End find red or blue blob")
-    returnCorrd = colorDet.globalToEgocentric(closestBlob[0][0], clientId)
+    returnCorrd = colorDet.globalToEgocentric(closestBlob[0], clientId)
     return returnCorrd
 
 
@@ -556,12 +556,12 @@ def grabBlob(clientID, h_matrix, youBotCam):
 
     # get position of next blob
     blobPos = detectOneBlob(clientID, youBotCam, h_matrix)
-
+    blobPos = colorDet.egocentricToGlobal(blobPos, clientID)
     pos, orient = getArmPos(clientID)
 
     distance = 1000*move.calcDistanceToTarget(pos[0],pos[1],blobPos[0],blobPos[1])
     a,b,y = armPos(120, distance)
-    x = getAngle(clientID, 0,0)
+    x = getAngle(clientID, blobPos[0], blobPos[1])
     moveArm(clientID,x ,20,70,0,0)
     moveArm(clientID,x,a, 45,45,0)
     #moveArm(clientID, x,a , b, 45,0)
@@ -589,7 +589,7 @@ def moveArm(clientID, bottomAngle, a,b,y, handAngle):
   for i in range(0, 5):
       res = vrep.simxSetJointTargetPosition(clientID, armJointsHandle[i], graspJoints[i],vrep.simx_opmode_oneshot);
   vrep.simxPauseCommunication(clientID, False)
-  time.sleep(10)
+  time.sleep(2)
 
 def openHand(clientID):
     #open the gripper
@@ -597,7 +597,7 @@ def openHand(clientID):
 def closeHand(clientID): 
     #close the gripper
     res = vrep.simxSetIntegerSignal(clientID, 'gripper_open',0,vrep.simx_opmode_oneshot_wait)
-    time.sleep(10)
+    time.sleep(2)
 
 
 def getArmPos(clientID):
@@ -624,7 +624,7 @@ def getAngle(clientID, targetX, targetY):
     targetY = blobPos[1]
 
     print(move.calcTargetOrient(pos[0],pos[1],targetX, targetY)) 
-    orient[2] =  orient[2]# - math.pi 
+    orient[2] =  orient[2] - math.pi
     print(180/math.pi*orient[2])
     a = move.calcTargetOrient(pos[0],pos[1],targetX, targetY) - 180/math.pi*orient[2]
     print(a)
