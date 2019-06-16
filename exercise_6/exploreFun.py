@@ -366,7 +366,7 @@ def pdControl(clientID, youBotCam, goal):
         # calculate new velocities
         forwBackVel = 0.1 * (cor[0][0] - goal[0]) - 0.002 * (cor[0][0] - preCor[0][0])
         leftRightVel = 0.08 * (cor[0][1] - goal[1]) - 0.001 * (cor[0][1] - preCor[0][1])
-
+        
         # save current coordinates as previous coordinates
         preCor = cor
 
@@ -375,7 +375,7 @@ def pdControl(clientID, youBotCam, goal):
 
         vrep.simxPauseCommunication(clientID, True)
         for i in range(0, 4):
-            vrep.simxSetJointTargetVelocity(clientID, wheelJoints[i], move.wheelVel(forwBackVel/5.0, leftRightVel/5.0, rotVel)[i],
+            vrep.simxSetJointTargetVelocity(clientID, wheelJoints[i], move.wheelVel(forwBackVel/10.0, leftRightVel/10.0, rotVel)[i],
                                             vrep.simx_opmode_oneshot)
         vrep.simxPauseCommunication(clientID, False)
 
@@ -389,6 +389,8 @@ def pdControl(clientID, youBotCam, goal):
 
 
 def velOk(forwBackVel, leftRightVel):
+    forwBackVel = forwBackVel/5.0
+    leftRightVel = leftRightVel/5.0
     tolerance = 0.2
     forwBackOk = forwBackVel < tolerance and forwBackVel > -tolerance
     leftRightOk = leftRightVel < tolerance and leftRightVel > -tolerance
@@ -718,20 +720,21 @@ def armPos(height, dist):
         
         y = math.pi/2 - a - b + math.pi/180*40 #angle for the third (math.pi if last armPart 90 degree to the ground, math.pi/2 if parallel)
 
-       # print(180/math.pi * a," ",   180/math.pi*b," ",180/ math.pi*y)
+        # print(180/math.pi * a," ",   180/math.pi*b," ",180/ math.pi*y)
 
         return 180/math.pi * a,180/math.pi*b,180/ math.pi*y
 
 def dropBlob(clientID):
     print("Current state: drop blob state")
     print("Start drop")
-    a = getAngle(clientID)
+    a = getAngle(clientID,0,0)
+    a = 90.0
     nextState = 5
     moveArm(clientID, a, 20,70,0,0)
 
     openHand(clientID)
 
     #Save Pos
-    moveArm(clientID, 0, 20 , 70, 0)
+    moveArm(clientID, 0, 20 , 70, 0, 0)
     print("End drop")
     return nextState

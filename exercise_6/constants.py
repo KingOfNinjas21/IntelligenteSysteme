@@ -4,7 +4,7 @@ gCX = [[-0.025, 0.125, 1.0], [-0.025, 0.075, 1.0], [-0.025, 0.025, 1.0], [-0.075
        [-0.125, 0.125, 1.0], [-0.125, 0.075, 1.0], [-0.125, 0.025, 1.0], [-0.175, 0.125, 1.0],
        [-0.175, 0.075, 1.0], [-0.175, 0.025, 1.0]]
 
-maxDistToBlock = 0.5        # distance to tell goToNextBlob when to stop
+maxDistToBlock = 0.7        # distance to tell goToNextBlob when to stop
 
 grabPosition = [355.0, 495.0] # defines the position in a image 512x512 where the youBot should stay in order to grab it
 
@@ -20,7 +20,7 @@ exploreOrientation = [145.0,    # blob 0
                       -110.0,     # blob 1
                       -150.0,     # blob 2
                       170,      # blob 3
-                      100,      # blob 4
+                      120,      # blob 4
                       165]      # blob 5
 
 # TODO: Define the right basket paths
@@ -45,4 +45,4 @@ basketCoordinate =  [(-0.2246, 5.95, -90.0),      # RED Basket
                      (-3.6246, 1.8249, 0.0)]      # BLUE Basket
 
 # after driving to basketCoordinate step this value to the
-sidewardDistToBasket = 0.3
+sidewardDistToBasket = 0.5
