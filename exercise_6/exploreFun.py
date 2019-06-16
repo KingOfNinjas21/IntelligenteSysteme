@@ -487,8 +487,8 @@ def detectOneBlob(clientId, youBotCam, homoMatrix):
             closestDistance = distNewBlob
 
     print("End find red or blue blob")
-    closestBlob[0] = colorDet.globalToEgocentric(closestBlob[0], clientId)
-    return closestBlob[0]
+    returnCorrd = colorDet.globalToEgocentric(closestBlob[0][0], clientId)
+    return returnCorrd
 
 
 # returns red blobs in a picture
