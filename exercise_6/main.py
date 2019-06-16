@@ -83,11 +83,12 @@ def main():
         visitedBlobsList = []
         orientations = Queue()
         posBeforeMoveToBlob = move.getPos(clientID)[0][:-1]
+        blockColors = []
 
         while state != 0:
             if state == 1:      # init
                 # init path, H, and next state
-                state, explorePaths, basketPaths, orientations, h_matrix = ex.init_state(youBotCam, clientID)
+                state, explorePaths, basketPaths, orientations, blockColors, h_matrix = ex.init_state(youBotCam, clientID)
 
             elif state == 2:    # detect blob
                 # find all blobs that are 360 degrees around youBot
@@ -108,7 +109,7 @@ def main():
                 state = ex.alignToBlob(clientID,youBotCam)
 
             elif state == 7:    # follow next basket path
-                state = ex.followBasketPath(clientID, hokuyo, basketPaths)
+                state = ex.followBasketPath(clientID, hokuyo, basketPaths, blockColors)
 
             elif state == 8:    # drop blob
                 state = ex.dropBlob(clientID)

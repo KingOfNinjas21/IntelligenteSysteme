@@ -30,3 +30,19 @@ basketPaths =      [[(6.5, 3.8), (0.6, 4.6)],                               # ba
                     [(-3.2, 1.3)],                                          # basket blue
                     [(-3.5, -3.6), (-5.5, 6.5), (-0.5, 6.3), (0.0, 5.8)],   # basket red
                     [(3.6, -2.7), (3.4, -4.6), (-3.5, -4.4), (-3.1, 1.2)]]  # basket blue
+
+# 0 - RED | 1 - BLUE
+blockColor =        [0,
+                     0,
+                     1,
+                     1,
+                     0,
+                     1
+                     ]
+
+# coordinate and orientation to go to the basket (x, y, ori)
+basketCoordinate =  [(-0.2246, 5.95, -95),      # RED Basket
+                     (-3.6246, 1.8249, 0)]      # BLUE Basket
+
+# after driving to basketCoordinate step this value to the
+sidewardDistToBasket = 0.3

@@ -38,7 +38,11 @@ def initPath():
     for ori in c.exploreOrientation:
         orientationQueue.put(ori)
 
-    return exploreQueue, basketQueue, orientationQueue
+    blockColorQueue = Queue()
+    for color in c.blockColor:
+        blockColorQueue.put(color)
+
+    return exploreQueue, basketQueue, orientationQueue, blockColorQueue
 
 
 
@@ -47,7 +51,7 @@ def init_state(youBotCam, clientID):
     explorePaths, basketPaths, orientations = initPath()
     nextState = 5 # 5 = follow next explore path
     # init H-Matrix
-    return nextState, explorePaths, basketPaths, orientations, colorDet.get_H_matrix(c.gCX, youBotCam, clientID)
+    return nextState, explorePaths, basketPaths, orientations, blockColors, colorDet.get_H_matrix(c.gCX, youBotCam, clientID)
 
 
 
@@ -92,7 +96,7 @@ def followExplorePath(clientID, sensorHandles, explorePaths, orientations):
 
 # follows the next path from the queue basketPath
 # fails if queue is empty
-def followBasketPath(clientID, sensorHandles, basketPaths):
+def followBasketPath(clientID, sensorHandles, basketPaths, blockColors):
     print("Current state: following next basket path")
     print("Start following basket path")
     if not basketPaths.empty():
@@ -113,6 +117,14 @@ def followBasketPath(clientID, sensorHandles, basketPaths):
                     print("encountered dick head -> i will wait")
                     # wait 5 seconds
                     time.sleep(5)
+
+        # align to basket to drop the block
+        color = blockColors.get()
+        # if color = 0 -> red block -> align to red basket
+        # if color = 1 -> blue block -> align to blue basket
+        move.moveToCoordinate(c.basketPaths[color][0], c.basketPaths[color][1], clientID)
+        move.rotateUntilOrientation(c.basketPaths[color][2], clientID)
+        move.sideway(c.sidewardDistToBasket, clientID, True)
 
         nextState = 8  # 8 = drop blob state
         print("End following basket path")
