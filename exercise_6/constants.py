@@ -19,9 +19,9 @@ explorePaths =      [[(5.1, 1.6)],  # blob 0 r
 exploreOrientation = [145.0,    # blob 0
                       -110.0,     # blob 1
                       -150.0,     # blob 2
-                      170,      # blob 3
-                      120,      # blob 4
-                      165]      # blob 5
+                      170.0,      # blob 3
+                      80.0,      # blob 4
+                      165.0]      # blob 5
 
 # TODO: Define the right basket paths
 basketPaths =      [[(6.5, 3.8), (1.4, 5.3)],                               # basket red
@@ -41,8 +41,8 @@ blockColor =        [0,
                      ]
 
 # coordinate and orientation to go to the basket (x, y, ori)
-basketCoordinate =  [(-0.2246, 5.95, -90.0),      # RED Basket
-                     (-3.6246, 1.8249, 0.0)]      # BLUE Basket
+basketCoordinate = [(-0.1246, 5.85, -90.0),      # RED Basket
+                     (-3.9246, 1.8249, 0.0)]      # BLUE Basket
 
 # after driving to basketCoordinate step this value to the
-sidewardDistToBasket = 0.5
+sidewardDistToBasket = 0.7

@@ -123,7 +123,7 @@ def followBasketPath(clientID, sensorHandles, basketPaths, blockColors):
         # if color = 0 -> red block -> align to red basket
         # if color = 1 -> blue block -> align to blue basket
         x, y, ori = c.basketCoordinate[color]
-        move.moveToCoordinate(x, y, clientID)
+        headTowardsModel(clientID, (x,y), sensorHandles)
         move.rotateUntilOrientation(clientID, ori)
         move.sideway(c.sidewardDistToBasket, clientID, False)
 
@@ -628,14 +628,12 @@ def grabBlob(clientID, h_matrix, youBotCam):
     moveArm(clientID, x, a, 151, y-0.5, 0.0)
     time.sleep(tt)
     moveArm(clientID, x, a, b, y-5.0, 0.0)
-    print("FINISH-GRAB")
 
     #moveArm(clientID,x,a, 45+20,45-30,0.0)
 
     #time.sleep(3)
 
     closeHand(clientID)
-    time.sleep(5)
 
     print("Stop grab blob")
 
@@ -731,7 +729,7 @@ def dropBlob(clientID):
     a = 90.0
     nextState = 5
     moveArm(clientID, a, 20,70,0,0)
-
+    time.sleep(2)
     openHand(clientID)
 
     #Save Pos
