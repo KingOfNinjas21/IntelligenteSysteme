@@ -113,6 +113,7 @@ def main():
 
             elif state == 8:    # drop blob
                 state = ex.dropBlob(clientID)
+                move.sideway(c.maxDistToBlock, clientID, True)
 
             elif state == -1:               # finish with error
                 print("Current state: fail state!")

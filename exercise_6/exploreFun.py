@@ -122,9 +122,10 @@ def followBasketPath(clientID, sensorHandles, basketPaths, blockColors):
         color = blockColors.get()
         # if color = 0 -> red block -> align to red basket
         # if color = 1 -> blue block -> align to blue basket
-        move.moveToCoordinate(c.basketPaths[color][0], c.basketPaths[color][1], clientID)
-        move.rotateUntilOrientation(c.basketPaths[color][2], clientID)
-        move.sideway(c.sidewardDistToBasket, clientID, True)
+        x, y, ori = c.basketCoordinate[color]
+        move.moveToCoordinate(x, y, clientID)
+        move.rotateUntilOrientation(clientID, ori)
+        move.sideway(c.sidewardDistToBasket, clientID, False)
 
         nextState = 8  # 8 = drop blob state
         print("End following basket path")
