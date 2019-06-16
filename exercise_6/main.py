@@ -73,7 +73,7 @@ def main():
         # 1 - init | 2 - detect blob | 3 - move to blob | 4 - grab | 5 - follow next explore path | 6 - align to blob | 7 - follow next basket path
         # 8 - drop block | 0 - finish | -1 - finish with error
 
-
+        '''
         state = 1
 
         # space to store data to share between states
@@ -123,7 +123,7 @@ def main():
         print("End of blob grabing shit")
 
         '''
-        state, explorePaths, basketPaths, orientations, h_matrix = ex.init_state(youBotCam, clientID)
+        state, explorePaths, basketPaths, orientations, blockColors, h_matrix = ex.init_state(youBotCam, clientID)
         move.forward(0.5, clientID)
         ex.alignToBlob(clientID, youBotCam)
         ex.grabBlob(clientID, h_matrix, youBotCam)
@@ -133,7 +133,7 @@ def main():
         #ex.getAngle(clientID)
         #ex.moveArm(clientID, 0, 0,0,0,0)
         # ex.moveArm(clientID, 180/math.pi*ex.getAngle(clientID), 95,40,35,0)
-        '''
+
         # end of programmable space --------------------------------------------------------------------------------------------
 
         # Stop simulation

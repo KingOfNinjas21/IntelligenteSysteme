@@ -363,9 +363,8 @@ def pdControl(clientID, youBotCam, goal):
 
         if len(cor)==0:
             cor = getBlueBlobPicture(cv2Image)
-        print("LEN:", len(cor))
         # calculate new velocities
-        forwBackVel = 0.2 * (cor[0][0] - goal[0]) - 0.002 * (cor[0][0] - preCor[0][0])
+        forwBackVel = 0.1 * (cor[0][0] - goal[0]) - 0.002 * (cor[0][0] - preCor[0][0])
         leftRightVel = 0.08 * (cor[0][1] - goal[1]) - 0.001 * (cor[0][1] - preCor[0][1])
 
         # save current coordinates as previous coordinates
@@ -609,19 +608,24 @@ def grabBlob(clientID, h_matrix, youBotCam):
     distance = 1000*move.calcDistanceToTarget(pos[0],pos[1],blobPos[0],blobPos[1])
     a,b,y = armPos(125, distance)
     print("A",a)
+    print("b",b)
+    print("y",y)
     x = getAngle(clientID, blobPos[0], blobPos[1])
     #x-=10.0
     moveArm(clientID,x ,0,0,-40,0.0)
-    tt = 0.0
+    tt = 0.5
     moveArm(clientID, x, a, 0, -40, 0.0)
-    #time.sleep(tt)
+    time.sleep(tt)
     moveArm(clientID,x,a, 45,-40,0.0)
-    #time.sleep(tt)
-    moveArm(clientID,x,a, 45,-40.0,0.0)
-    moveArm(clientID,x,a, b,-40.0,0.0)
+    time.sleep(tt)
+    moveArm(clientID,x,a, 45,-90,0.0)
+    time.sleep(tt)
 
-    #moveArm(clientID,x,a, 45+10,0.0,0.0)
-    moveArm(clientID, x, a, b, y, 0.0)
+    moveArm(clientID, x, a, 151, -90, 0.0)
+    time.sleep(tt)
+    moveArm(clientID, x, a, 151, y-0.5, 0.0)
+    time.sleep(tt)
+    moveArm(clientID, x, a, b, y-5.0, 0.0)
     print("FINISH-GRAB")
 
     #moveArm(clientID,x,a, 45+20,45-30,0.0)
