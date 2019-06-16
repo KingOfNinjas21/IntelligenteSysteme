@@ -478,7 +478,7 @@ def detectOneBlob(clientId, youBotCam, homoMatrix):
     # get the closest blob
     currentPos = move.getPos(clientId)[0]
     closestBlob = blobList[0]
-    closestDistance = move.getDistanceBetweenPoints(blobList[0], currentPos)
+    closestDistance = move.getDistanceBetweenPoints(blobList[0][0], currentPos)
     for blob in blobList:
         distNewBlob = move.getDistanceBetweenPoints(blob[0], currentPos)# distance to new blob
         if(closestDistance-distNewBlob>0): # check if the current blobs position is nearer than the current closest blob
@@ -487,7 +487,7 @@ def detectOneBlob(clientId, youBotCam, homoMatrix):
             closestDistance = distNewBlob
 
     print("End find red or blue blob")
-    closestBlob[0] = colorDet.globalToEgocentric(closestBlob[9], clientId)
+    closestBlob[0] = colorDet.globalToEgocentric(closestBlob[0], clientId)
     return closestBlob[0]
 
 
@@ -549,12 +549,15 @@ Arm Kinematics functions
 '''
 
 # grabs a blob and returns the next state, also removes the grabed blob from the blobsList
-def grabBlob(clientID):
+def grabBlob(clientID, h_matrix, youBotCam):
     print("Current state: grab blob")
     print("Start grab blob")
     nextState = 7
+
+    # get position of next blob
+    blobPos = detectOneBlob(clientID, youBotCam, h_matrix)
+
     pos, orient = getArmPos(clientID)
-    blobPos, blobOrient = getBlobPos(clientID) #TODO blob coords from sensor 
 
     distance = 1000*move.calcDistanceToTarget(pos[0],pos[1],blobPos[0],blobPos[1])
     a,b,y = armPos(120, distance)
@@ -565,9 +568,7 @@ def grabBlob(clientID):
     moveArm(clientID, x,a, b, y, 0)
     closeHand(clientID)
 
-    #  math.atan2(y,x)-(uOrient[2]-math.pi)
-    #blobToGrab = blobsList[0]
-    # TODO: Implement grabing and specify state
+
     print("Stop grab blob")
 
     #Save Pos
@@ -660,7 +661,8 @@ def armPos(height, dist):
         return 180/math.pi * a,180/math.pi*b,180/ math.pi*y
 
 def dropBlob(clientID):
-    print("Start to drop  blob")
+    print("Current state: drop blob state")
+    print("Start drop")
     a = getAngle(clientID)
     nextState = 5
     moveArm(clientID, a, 20,70,0,0)
@@ -669,5 +671,5 @@ def dropBlob(clientID):
 
     #Save Pos
     moveArm(clientID, 0, 20 , 70, 0)
-
+    print("End drop")
     return nextState

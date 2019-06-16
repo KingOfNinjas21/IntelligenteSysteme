@@ -72,7 +72,7 @@ def main():
         # implement state machine
         # 1 - init | 2 - detect blob | 3 - move to blob | 4 - grab | 5 - follow next explore path | 6 - align to blob | 7 - follow next basket path
         # 8 - drop block | 0 - finish | -1 - finish with error
-        """
+
         state = 1
 
         # space to store data to share between states
@@ -99,7 +99,7 @@ def main():
                 state, blobsList, visitedBlobsList = ex.getToNextBlob(clientID, blobsList, visitedBlobsList)
 
             elif state == 4:    # grab
-                state, blobsList = ex.grabBlob(clientID, blobsList)
+                state, blobsList = ex.grabBlob(clientID, h_matrix, youBotCam)
 
             elif state == 5:    # follow next explore path
                 state = ex.followExplorePath(clientID, hokuyo, explorePaths, orientations)
@@ -111,18 +111,15 @@ def main():
                 state = ex.followBasketPath(clientID, hokuyo, basketPaths)
 
             elif state == 8:    # drop blob
-                print("Current state: drop blob state")
-                print("Start drop")
-                state = 5
-                print("End drop")
+                state = ex.dropBlob(clientID)
 
             elif state == -1:               # finish with error
                 print("Current state: fail state!")
                 print("An error has occurred. Program finished with state -1.")
                 state = 0
         print("End of blob grabing shit")
-        """
-        ex.grabBlob(clientID)
+
+
         #ex.moveArm(clientID, -90, 20,70,0,0)
         #ex.moveArm(clientID, -90, 90,0,0,0)
         #ex.getAngle(clientID)
