@@ -24,9 +24,25 @@ exploreOrientation = [145.0,    # blob 0
                       165]      # blob 5
 
 # TODO: Define the right basket paths
-basketPaths =      [[(6.5, 3.8), (0.6, 4.6)],                               # basket red
-                    [(0.6, 4.6)],                                           # basket red
-                    [(3.6, 6.5), (-2.8, 6.5), (-3.0, 2.8)],                 # basket blue
-                    [(-3.2, 1.3)],                                          # basket blue
-                    [(-3.5, -3.6), (-5.5, 6.5), (-0.5, 6.3), (0.0, 5.8)],   # basket red
-                    [(3.6, -2.7), (3.4, -4.6), (-3.5, -4.4), (-3.1, 1.2)]]  # basket blue
+basketPaths =      [[(6.5, 3.8), (1.4, 5.3)],                               # basket red
+                    [(1.4, 5.3)],                                           # basket red
+                    [(3.6, 6.5), (-2.8, 6.5)],                              # basket blue
+                    [(-4.0, 0.0)],                                          # basket blue
+                    [(-3.5, -3.6), (-5.5, 6.5), (-0.5, 6.3)],               # basket red
+                    [(3.6, -2.7), (3.4, -4.6), (-3.5, -4.4), (-4.0, 0.0)]]  # basket blue
+
+# 0 - RED | 1 - BLUE
+blockColor =        [0,
+                     0,
+                     1,
+                     1,
+                     0,
+                     1
+                     ]
+
+# coordinate and orientation to go to the basket (x, y, ori)
+basketCoordinate =  [(-0.2246, 5.95, -90.0),      # RED Basket
+                     (-3.6246, 1.8249, 0.0)]      # BLUE Basket
+
+# after driving to basketCoordinate step this value to the
+sidewardDistToBasket = 0.3
