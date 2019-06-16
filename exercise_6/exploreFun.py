@@ -11,6 +11,11 @@ import numpy as np
 import cv2
 
 
+armPart1 = 155
+armPart2 = 135
+armPart3 = 171
+uBotHight =  287
+
 def initPath():
     exploreQueue = Queue()
     for path in c.explorePaths:
@@ -548,9 +553,25 @@ def grabBlob(clientID):
     print("Current state: grab blob")
     print("Start grab blob")
     nextState = 7
+    pos, orient = getArmPos(clientID)
+    blobPos, blobOrient = getBlobPos(clientID) #TODO blob coords from sensor 
+
+    distance = 1000*move.calcDistanceToTarget(pos[0],pos[1],blobPos[0],blobPos[1])
+    a,b,y = armPos(120, distance)
+    x = getAngle(clientID, 0,0)
+    moveArm(clientID,x ,20,70,0,0)
+    moveArm(clientID,x,a, 45,45,0)
+    #moveArm(clientID, x,a , b, 45,0)
+    moveArm(clientID, x,a, b, y, 0)
+    closeHand(clientID)
+
+    #  math.atan2(y,x)-(uOrient[2]-math.pi)
     #blobToGrab = blobsList[0]
     # TODO: Implement grabing and specify state
     print("Stop grab blob")
+
+    #Save Pos
+    moveArm(clientID, -0, 20,70,0,0)
     return nextState
 
 def moveArm(clientID, bottomAngle, a,b,y, handAngle):
@@ -586,30 +607,67 @@ def getArmPos(clientID):
 
 
 def getBlobPos(clientID):
-    res, base = vrep.simxGetObjectHandle(clientID, 'Cylinder0', vrep.simx_opmode_oneshot_wait)
+    res, base = vrep.simxGetObjectHandle(clientID, 'redCylinder4', vrep.simx_opmode_oneshot_wait)
     base_pos = vrep.simxGetObjectPosition(clientID, base, -1, vrep.simx_opmode_oneshot_wait)
     base_orient = vrep.simxGetObjectOrientation(clientID, base, -1, vrep.simx_opmode_oneshot_wait)
     return base_pos[1], base_orient[1]
 
-def getAngle(clientID):
+def getAngle(clientID, targetX, targetY):
     
     pos, orient = getArmPos(clientID)
     blobPos, blobOrient = getBlobPos(clientID) #TODO blob coords from sensor 
     uPos, uOrient = move.getPos(clientID)
-    """
-    x = blobPos[0] - pos[0]
-    y = blobPos[1] - pos[1]
 
-    print(uOrient[2]-math.pi)
-    print(math.atan2(y,x))
-    """
-    print(move.calcTargetOrient(pos[0],pos[1],blobPos[0], blobPos[1])) 
+    #for testing
+    targetX = blobPos[0]
+    targetY = blobPos[1]
+
+    print(move.calcTargetOrient(pos[0],pos[1],targetX, targetY)) 
     orient[2] =  orient[2]# - math.pi 
     print(180/math.pi*orient[2])
-    a = move.calcTargetOrient(pos[0],pos[1],blobPos[0], blobPos[1]) - 180/math.pi*orient[2]
+    a = move.calcTargetOrient(pos[0],pos[1],targetX, targetY) - 180/math.pi*orient[2]
     print(a)
-    moveArm(clientID,a ,0,0,0,0)
-    moveArm(clientID,a ,85,35,15,0)
-    closeHand(clientID)
-    moveArm(clientID,a ,0,0,0,0)
-    #  math.atan2(y,x)-(uOrient[2]-math.pi)
+
+    return a 
+  
+def armPos(height, dist):
+        height = height - uBotHight+armPart3*np.sin(math.pi/180*30)  #because ubot arm is on top of the robot (-armPart3 if arm 90 degree to the ground)
+        print("height: " , height)
+        dist = dist - armPart3*np.cos(math.pi/180*30) #lastPart of the arm is parallel to the ground (+armPart3 if arm 90 degree to the ground)
+        print(dist)
+        E2 = height * height + dist *dist #diagonaly between the 2 joint and the armcenter on the robot 
+        print(E2)
+        if(math.sqrt(E2) > armPart2+armPart1): #arm cant reach the blob
+            return 0,0,0
+        b1 = np.arccos((E2 - armPart1*armPart1 - armPart2*armPart2)/(-2*armPart1*armPart2)) #angle between the 1 and 2 armPart
+        print(b1)
+        b = math.pi - b1 #angle for the second joint
+
+
+        if(E2 != 0):
+            a1 =np.arccos((armPart2*armPart2-E2 - armPart1*armPart1)/(-2*math.sqrt(E2)*armPart1)) #angle between arm and E
+
+        a2 = np.arccos(dist/math.sqrt(E2)) #angle between E and de ground 
+        if(height > 0):
+            a = math.pi/2 - a1 - a2 # angle for the first joint
+        if(height < 0): 
+            a = math.pi/2 + (a2 - a1)  # angle for the first joint
+        
+        y = math.pi/2 - a - b + math.pi/180*30 #angle for the third (math.pi if last armPart 90 degree to the ground, math.pi/2 if parallel)
+
+       # print(180/math.pi * a," ",   180/math.pi*b," ",180/ math.pi*y)
+
+        return 180/math.pi * a,180/math.pi*b,180/ math.pi*y
+
+def dropBlob(clientID):
+    print("Start to drop  blob")
+    a = getAngle(clientID)
+    nextState = 5
+    moveArm(clientID, a, 20,70,0,0)
+
+    openHand(clientID)
+
+    #Save Pos
+    moveArm(clientID, 0, 20 , 70, 0)
+
+    return nextState

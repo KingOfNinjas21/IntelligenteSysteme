@@ -122,9 +122,10 @@ def main():
                 state = 0
         print("End of blob grabing shit")
         """
-        #ex.moveArm(clientID, -90, 0,0,0,0)
+        ex.grabBlob(clientID)
+        #ex.moveArm(clientID, -90, 20,70,0,0)
         #ex.moveArm(clientID, -90, 90,0,0,0)
-        ex.getAngle(clientID)
+        #ex.getAngle(clientID)
         #ex.moveArm(clientID, 0, 0,0,0,0)
        # ex.moveArm(clientID, 180/math.pi*ex.getAngle(clientID), 95,40,35,0)
         # end of programmable space --------------------------------------------------------------------------------------------
