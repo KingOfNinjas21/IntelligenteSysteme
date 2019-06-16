@@ -20,7 +20,7 @@ exploreOrientation = [145.0,    # blob 0
                       -110.0,     # blob 1
                       -150.0,     # blob 2
                       170,      # blob 3
-                      120,      # blob 4
+                      100,      # blob 4
                       165]      # blob 5
 
 # TODO: Define the right basket paths
