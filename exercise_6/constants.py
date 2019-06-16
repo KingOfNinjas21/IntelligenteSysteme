@@ -6,7 +6,7 @@ gCX = [[-0.025, 0.125, 1.0], [-0.025, 0.075, 1.0], [-0.025, 0.025, 1.0], [-0.075
 
 maxDistToBlock = 0.5        # distance to tell goToNextBlob when to stop
 
-grabPosition = [355.0, 485.0] # defines the position in a image 512x512 where the youBot should stay in order to grab it
+grabPosition = [355.0, 495.0] # defines the position in a image 512x512 where the youBot should stay in order to grab it
 
 # TODO: Define the right explore paths
 explorePaths =      [[(5.1, 1.6)],  # blob 0 r

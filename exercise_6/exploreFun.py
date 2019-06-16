@@ -336,6 +336,8 @@ def pdControl(clientID, youBotCam, goal):
 
     # initialize variables for while loop
     cor = getRedBlobPicture(cv2Image)
+    if len(cor) == 0:
+        cor = getBlueBlobPicture(cv2Image)
     preCor = cor
     rotVel = 0.0
     forwBackVel = 999  # just a random number to initialize while loop
@@ -346,8 +348,11 @@ def pdControl(clientID, youBotCam, goal):
         cv2Image = colorDet.convertToCv2Format(image, res)
         cor = getRedBlobPicture(cv2Image)
 
+        if len(cor)==0:
+            cor = getBlueBlobPicture(cv2Image)
+        print("LEN:", len(cor))
         # calculate new velocities
-        forwBackVel = 0.1 * (cor[0][0] - goal[0]) - 0.002 * (cor[0][0] - preCor[0][0])
+        forwBackVel = 0.2 * (cor[0][0] - goal[0]) - 0.002 * (cor[0][0] - preCor[0][0])
         leftRightVel = 0.08 * (cor[0][1] - goal[1]) - 0.001 * (cor[0][1] - preCor[0][1])
 
         # save current coordinates as previous coordinates
@@ -358,7 +363,7 @@ def pdControl(clientID, youBotCam, goal):
 
         vrep.simxPauseCommunication(clientID, True)
         for i in range(0, 4):
-            vrep.simxSetJointTargetVelocity(clientID, wheelJoints[i], move.wheelVel(forwBackVel/10.0, leftRightVel/10.0, rotVel)[i],
+            vrep.simxSetJointTargetVelocity(clientID, wheelJoints[i], move.wheelVel(forwBackVel/5.0, leftRightVel/5.0, rotVel)[i],
                                             vrep.simx_opmode_oneshot)
         vrep.simxPauseCommunication(clientID, False)
 
@@ -537,6 +542,20 @@ def getRedBlobPicture(img):
 
     return points
 
+# returns red blobs in a picture with its picture coordinate
+def getBlueBlobPicture(img):
+    points = []
+    boundariesBlue = ([190, 0, 0], [255, 85, 85])
+
+    contours = colorDet.getContours(img, boundariesBlue)
+
+    for k in contours:
+        newPoint = colorDet.getBottom(k)
+
+        points.append(newPoint)
+
+    return points
+
 # This function compares two points with some latitude
 def isSameBlob(pointA, pointB):
     latituteRadius = 1.3
@@ -558,12 +577,13 @@ def grabBlob(clientID, h_matrix, youBotCam):
     # get position of next blob
     blobPos = detectOneBlob(clientID, youBotCam, h_matrix)
     blobPos[0] += 0.012
-    blobPos[1] +0.023
+    blobPos[1] += 0.023
     print(blobPos[0], " ", blobPos[1])
     p, o = getBlobPos(clientID)
     p = colorDet.globalToEgocentric(p, clientID)
     print(p[0], " ", p[1])
     blobPos = colorDet.egocentricToGlobal(blobPos, clientID)
+
     pos, orient = getArmPos(clientID)
 
     # get position of next blob
@@ -574,28 +594,29 @@ def grabBlob(clientID, h_matrix, youBotCam):
     #pos, orient = getArmPos(clientID)
 
     distance = 1000*move.calcDistanceToTarget(pos[0],pos[1],blobPos[0],blobPos[1])
-    a,b,y = armPos(120, distance)
+    a,b,y = armPos(125, distance)
     print("A",a)
     x = getAngle(clientID, blobPos[0], blobPos[1])
     #x-=10.0
     moveArm(clientID,x ,0,0,-40,0.0)
     tt = 0.0
     moveArm(clientID, x, a, 0, -40, 0.0)
-    time.sleep(tt)
+    #time.sleep(tt)
     moveArm(clientID,x,a, 45,-40,0.0)
-    time.sleep(tt)
+    #time.sleep(tt)
     moveArm(clientID,x,a, 45,-40.0,0.0)
-    #moveArm(clientID,x,a, 45+10,-40.0,0.0)
+    moveArm(clientID,x,a, b,-40.0,0.0)
 
     #moveArm(clientID,x,a, 45+10,0.0,0.0)
+    moveArm(clientID, x, a, b, y, 0.0)
     print("FINISH-GRAB")
-    time.sleep(5)
+
     #moveArm(clientID,x,a, 45+20,45-30,0.0)
-    moveArm(clientID, x,a , b, y,0)
+
     #time.sleep(3)
 
     closeHand(clientID)
-
+    time.sleep(5)
 
     print("Stop grab blob")
 
@@ -617,7 +638,7 @@ def moveArm(clientID, bottomAngle, a,b,y, handAngle):
   for i in range(0, 5):
       res = vrep.simxSetJointTargetPosition(clientID, armJointsHandle[i], graspJoints[i],vrep.simx_opmode_oneshot);
   vrep.simxPauseCommunication(clientID, False)
-  time.sleep(2)
+  time.sleep(1)
 
 def openHand(clientID):
     #open the gripper
@@ -656,9 +677,9 @@ def getAngle(clientID, targetX, targetY):
     return a 
   
 def armPos(height, dist):
-        height = height - uBotHight+armPart3*np.sin(math.pi/180*20)  #because ubot arm is on top of the robot (-armPart3 if arm 90 degree to the ground)
+        height = height - uBotHight+armPart3*np.sin(math.pi/180*40)  #because ubot arm is on top of the robot (-armPart3 if arm 90 degree to the ground)
         print("height: " , height)
-        dist = dist - armPart3*np.cos(math.pi/180*20) #lastPart of the arm is parallel to the ground (+armPart3 if arm 90 degree to the ground)
+        dist = dist - armPart3*np.cos(math.pi/180*40) #lastPart of the arm is parallel to the ground (+armPart3 if arm 90 degree to the ground)
         print(dist)
         E2 = height * height + dist *dist #diagonaly between the 2 joint and the armcenter on the robot 
         print(E2)
@@ -678,7 +699,7 @@ def armPos(height, dist):
         if(height < 0): 
             a = math.pi/2 + (a2 - a1)  # angle for the first joint
         
-        y = math.pi/2 - a - b + math.pi/180*20 #angle for the third (math.pi if last armPart 90 degree to the ground, math.pi/2 if parallel)
+        y = math.pi/2 - a - b + math.pi/180*40 #angle for the third (math.pi if last armPart 90 degree to the ground, math.pi/2 if parallel)
 
        # print(180/math.pi * a," ",   180/math.pi*b," ",180/ math.pi*y)
 
